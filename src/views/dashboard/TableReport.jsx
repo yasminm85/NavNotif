@@ -23,43 +23,31 @@ export default function TableReport() {
     const [filters, setFilters] = useState({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-        'country.name': { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-        representative: { value: null, matchMode: FilterMatchMode.IN },
+        bidang: { value: null, matchMode: FilterMatchMode.IN },
         status: { value: null, matchMode: FilterMatchMode.EQUALS },
         verified: { value: null, matchMode: FilterMatchMode.EQUALS }
     });
     const [loading, setLoading] = useState(true);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
-    const [representatives] = useState([
-        { name: 'Amy Elsner', image: 'amyelsner.png' },
-        { name: 'Anna Fali', image: 'annafali.png' },
-        { name: 'Asiya Javayant', image: 'asiyajavayant.png' },
-        { name: 'Bernardo Dominic', image: 'bernardodominic.png' },
-        { name: 'Elwin Sharvill', image: 'elwinsharvill.png' },
-        { name: 'Ioni Bowcher', image: 'ionibowcher.png' },
-        { name: 'Ivan Magalhaes', image: 'ivanmagalhaes.png' },
-        { name: 'Onyama Limba', image: 'onyamalimba.png' },
-        { name: 'Stephen Shaw', image: 'stephenshaw.png' },
-        { name: 'XuXue Feng', image: 'xuxuefeng.png' }
+    const [bidangs] = useState([
+        { name: 'IT' },
+        { name: 'Audit' },
+        { name: 'Corporate' },
+        { name: 'Safety' },
+        { name: 'Legal' },
+        { name: 'Secretary' },
+        { name: 'Tata Usaha' },
+        { name: 'SDM' },
     ]);
-    const [statuses] = useState(['unqualified', 'qualified', 'new', 'negotiation', 'renewal']);
+    const [statuses] = useState(['Belum Melaporkan', 'Sudah Melaporkan']);
 
     const getSeverity = (status) => {
         switch (status) {
-            case 'unqualified':
+            case 'Belum Melaporkan':
                 return 'danger';
 
-            case 'qualified':
+            case 'Sudah Melaporkan':
                 return 'success';
-
-            case 'new':
-                return 'info';
-
-            case 'negotiation':
-                return 'warning';
-
-            case 'renewal':
-                return null;
         }
     };
 
@@ -68,7 +56,7 @@ export default function TableReport() {
             setCustomers(getCustomers(data));
             setLoading(false);
         });
-    }, []); 
+    }, []);
 
     const getCustomers = (data) => {
         return [...(data || [])].map((d) => {
@@ -109,12 +97,11 @@ export default function TableReport() {
     };
 
     const representativeBodyTemplate = (rowData) => {
-        const representative = rowData.representative;
+        const bidang = rowData.bidang;
 
         return (
             <div className="flex align-items-center gap-2">
-                <img alt={representative.name} src={`https://primefaces.org/cdn/primereact/images/avatar/${representative.image}`} width="32" />
-                <span>{representative.name}</span>
+                <span>{bidang.name}</span>
             </div>
         );
     };
@@ -122,7 +109,6 @@ export default function TableReport() {
     const representativesItemTemplate = (option) => {
         return (
             <div className="flex align-items-center gap-2">
-                <img alt={option.name} src={`https://primefaces.org/cdn/primereact/images/avatar/${option.image}`} width="32" />
                 <span>{option.name}</span>
             </div>
         );
@@ -144,11 +130,11 @@ export default function TableReport() {
         return (
             <MultiSelect
                 value={options.value}
-                options={representatives}
+                options={bidangs}
                 itemTemplate={representativesItemTemplate}
                 onChange={(e) => options.filterApplyCallback(e.value)}
                 optionLabel="name"
-                placeholder="Any"
+                placeholder="Pilih bidang"
                 className="p-column-filter"
                 maxSelectedLabels={1}
                 style={{ minWidth: '14rem' }}
@@ -158,7 +144,7 @@ export default function TableReport() {
 
     const statusRowFilterTemplate = (options) => {
         return (
-            <Dropdown value={options.value} options={statuses} onChange={(e) => options.filterApplyCallback(e.value)} itemTemplate={statusItemTemplate} placeholder="Select One" className="p-column-filter" showClear style={{ minWidth: '12rem' }} />
+            <Dropdown value={options.value} options={statuses} onChange={(e) => options.filterApplyCallback(e.value)} itemTemplate={statusItemTemplate} placeholder="Pilih Hasil Pelaporan" className="p-column-filter" showClear style={{ minWidth: '12rem' }} />
         );
     };
 
@@ -171,15 +157,12 @@ export default function TableReport() {
     return (
         <div className="card">
             <DataTable value={customers} paginator rows={10} dataKey="id" filters={filters} filterDisplay="row" loading={loading}
-                    globalFilterFields={['name', 'country.name', 'representative.name', 'status']} header={header} emptyMessage="No customers found.">
-                <Column field="name" header="Name" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
-                <Column header="Country" filterField="country.name" style={{ minWidth: '12rem' }} body={countryBodyTemplate} filter filterPlaceholder="Search by country" />
-                <Column header="Agent" filterField="representative" showFilterMenu={false} filterMenuStyle={{ width: '14rem' }} style={{ minWidth: '14rem' }}
+                globalFilterFields={['jmlkegiatan', 'bidang.name', 'hasilpelaporan']} header={header} emptyMessage="No customers found.">
+                <Column header="Bidang" filterField="bidang" showFilterMenu={false} filterMenuStyle={{ width: '14rem' }} style={{ minWidth: '14rem' }}
                     body={representativeBodyTemplate} filter filterElement={representativeRowFilterTemplate} />
-                <Column field="status" header="Status" showFilterMenu={false} filterMenuStyle={{ width: '14rem' }} style={{ minWidth: '12rem' }} body={statusBodyTemplate} filter filterElement={statusRowFilterTemplate} />
-                <Column field="verified" header="Verified" dataType="boolean" style={{ minWidth: '6rem' }} body={verifiedBodyTemplate} filter filterElement={verifiedRowFilterTemplate} />
+                <Column field="jmlkegiatan" header="Jumlah Kegiatan"  />
+                <Column field="status" header="Hasil Pelaporan" showFilterMenu={false} filterMenuStyle={{ width: '14rem' }} style={{ minWidth: '12rem' }} body={statusBodyTemplate} filter filterElement={statusRowFilterTemplate} />
             </DataTable>
         </div>
     );
 }
-        
