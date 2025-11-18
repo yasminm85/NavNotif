@@ -40,7 +40,7 @@ export default function Customization() {
           onClick={handleToggle}
           size="medium"
           variant="circular"
-          color="secondary"
+          color="primary"
           sx={{
             borderRadius: 0,
             borderTopLeftRadius: '50%',

@@ -28,15 +28,16 @@ const pages = {
           url: '/pages/login',
           target: true
         },
-        {
-          id: 'register',
-          title: 'register',
-          type: 'item',
-          url: '/pages/register',
-          target: true
-        }
       ]
-    }
+    },
+    {
+          id: 'sample-page',
+          title: 'Sample Page',
+          type: 'item',
+          url: '/sample-page',
+          icon: icons.IconBrandChrome,
+          breadcrumbs: false
+        },
   ]
 };
 

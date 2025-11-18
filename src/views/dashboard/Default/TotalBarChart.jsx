@@ -14,12 +14,12 @@ import Chart from 'react-apexcharts';
 
 // project imports
 import useConfig from 'hooks/useConfig';
-import SkeletonTotalGrowthBarChart from 'ui-component/cards/Skeleton/TotalGrowthBarChart';
+import SkeletonTotalBarChart from 'ui-component/cards/Skeleton/TotalBarChart';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
 
 // chart data
-import chartData from './chart-data/total-growth-bar-chart';
+import chartData from './chart-data/total-bar-chart';
 
 const status = [
   {
@@ -36,7 +36,7 @@ const status = [
   }
 ];
 
-export default function TotalGrowthBarChart({ isLoading }) {
+export default function TotalBarChart({ isLoading }) {
   const [value, setValue] = React.useState('today');
   const theme = useTheme();
   const { mode } = useConfig();
@@ -50,11 +50,13 @@ export default function TotalGrowthBarChart({ isLoading }) {
   const primaryDark = theme.palette.primary.dark;
   const secondaryMain = theme.palette.secondary.main;
   const secondaryLight = theme.palette.secondary.light;
+  const errorMain = theme.palette.error.main;
+  const successDark = theme.palette.success.dark;
 
   React.useEffect(() => {
     const newChartData = {
       ...chartData.options,
-      colors: [primary200, primaryDark, secondaryMain, secondaryLight],
+      colors: [errorMain, successDark],
       xaxis: {
         labels: {
           style: {
@@ -78,12 +80,12 @@ export default function TotalGrowthBarChart({ isLoading }) {
     if (!isLoading) {
       ApexCharts.exec(`bar-chart`, 'updateOptions', newChartData);
     }
-  }, [mode, primary200, primaryDark, secondaryMain, secondaryLight, primary, darkLight, divider, isLoading, grey500]);
+  }, [mode, errorMain, successDark, primary, darkLight, divider, isLoading, grey500]);
 
   return (
     <>
       {isLoading ? (
-        <SkeletonTotalGrowthBarChart />
+        <SkeletonTotalBarChart />
       ) : (
         <MainCard>
           <Grid container spacing={gridSpacing}>
@@ -92,10 +94,10 @@ export default function TotalGrowthBarChart({ isLoading }) {
                 <Grid>
                   <Grid container direction="column" spacing={1}>
                     <Grid>
-                      <Typography variant="subtitle2">Total Growth</Typography>
+                      <Typography variant="subtitle2">Total Kegiatan</Typography>
                     </Grid>
                     <Grid>
-                      <Typography variant="h3">$2,324.00</Typography>
+                      <Typography variant="h3">50</Typography>
                     </Grid>
                   </Grid>
                 </Grid>
@@ -140,4 +142,4 @@ export default function TotalGrowthBarChart({ isLoading }) {
   );
 }
 
-TotalGrowthBarChart.propTypes = { isLoading: PropTypes.bool };
+TotalBarChart.propTypes = { isLoading: PropTypes.bool };

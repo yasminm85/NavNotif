@@ -14,6 +14,7 @@ import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
 
 // assets
 import { IconMenu2 } from '@tabler/icons-react';
+import { Typography } from '@mui/material';
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
@@ -38,11 +39,11 @@ export default function Header() {
             ...theme.typography.mediumAvatar,
             overflow: 'hidden',
             transition: 'all .2s ease-in-out',
-            bgcolor: 'secondary.light',
-            color: 'secondary.dark',
+            bgcolor: 'primary.light',
+            color: 'primary.dark',
             '&:hover': {
-              bgcolor: 'secondary.dark',
-              color: 'secondary.light'
+              bgcolor: 'primary.dark',
+              color: 'primary.light'
             }
           }}
           onClick={() => handlerDrawerOpen(!drawerOpen)}
@@ -53,13 +54,11 @@ export default function Header() {
       </Box>
 
       {/* header search */}
-      <SearchSection />
       <Box sx={{ flexGrow: 1 }} />
       <Box sx={{ flexGrow: 1 }} />
 
       {/* notification */}
-      <NotificationSection />
-
+        
       {/* profile */}
       <ProfileSection />
     </>

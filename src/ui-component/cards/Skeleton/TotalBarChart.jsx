@@ -9,7 +9,7 @@ import { gridSpacing } from 'store/constant';
 
 // ==============================|| SKELETON TOTAL GROWTH BAR CHART ||============================== //
 
-export default function TotalGrowthBarChart() {
+export default function TotalBarChart() {
   return (
     <Card>
       <CardContent>
