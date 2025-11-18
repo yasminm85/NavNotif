@@ -6,7 +6,7 @@ import Grid from '@mui/material/Grid2';
 // project imports
 import TotalDispo from './TotalDispo';
 import TotalBarChart from './TotalBarChart';
-
+import TableReport from '../TableReport';
 import { gridSpacing } from 'store/constant';
 
 // assets
@@ -35,6 +35,13 @@ export default function Dashboard() {
         <Grid container spacing={gridSpacing}>
           <Grid size={{ xs: 12, md: 12 }}>
             <TotalBarChart isLoading={isLoading} />
+          </Grid>
+        </Grid>
+      </Grid>
+      <Grid size={12}>
+        <Grid container spacing={gridSpacing}>
+          <Grid size={{ xs: 12, md: 12 }}>
+            <TableReport isLoading={isLoading} />
           </Grid>
         </Grid>
       </Grid>
