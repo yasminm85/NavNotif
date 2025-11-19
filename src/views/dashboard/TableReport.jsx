@@ -19,7 +19,7 @@ import 'primeflex/primeflex.css';
 
 
 export default function TableReport() {
-    const [customers, setCustomers] = useState(null);
+    const [bidang, setBidang] = useState(null);
     const [filters, setFilters] = useState({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
@@ -52,13 +52,13 @@ export default function TableReport() {
     };
 
     useEffect(() => {
-        DataServices.getCustomersMedium().then((data) => {
-            setCustomers(getCustomers(data));
+        DataServices.getBidangMedium().then((data) => {
+            setBidang(getBidang(data));
             setLoading(false);
         });
     }, []);
 
-    const getCustomers = (data) => {
+    const getBidang = (data) => {
         return [...(data || [])].map((d) => {
             d.date = new Date(d.date);
 
@@ -149,7 +149,7 @@ export default function TableReport() {
 
     return (
         <div className="card">
-            <DataTable value={customers} paginator rows={10} dataKey="id" filters={filters} filterDisplay="row" loading={loading}
+            <DataTable value={bidang} paginator rows={5} dataKey="id" filters={filters} filterDisplay="row" loading={loading}
                 globalFilterFields={['jmlkegiatan', 'bidang.name', 'hasilpelaporan']} header={header} emptyMessage="No customers found.">
                 <Column header="Bidang" filterField="bidang" showFilterMenu={false} filterMenuStyle={{ width: '14rem' }} style={{ minWidth: '14rem' }}
                     body={representativeBodyTemplate} filter filterElement={representativeRowFilterTemplate} />

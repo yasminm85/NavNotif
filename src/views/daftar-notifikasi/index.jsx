@@ -125,11 +125,11 @@ export default function SuratTugas() {
 
         return (
             <div className="card">
-                <MainCard title="Surat Tugas">
+                <MainCard title="Daftar Notifikasi">
 
                     <div className="flex justify-content-end mb-3">
                         <Button
-                            label="Buat Surat Tugas"
+                            label="Buat Laporan"
                             onClick={() => {
                                 setShowForm(true);
                                 setErrors({});
@@ -138,7 +138,7 @@ export default function SuratTugas() {
                     </div>
 
                 <Dialog
-                    header="Form Surat Tugas"
+                    header="Form Laporan"
                     visible={showForm}
                     modal
                     style={{ width: "30rem" }}
@@ -251,7 +251,7 @@ export default function SuratTugas() {
                 <DataTable
                     value={customers}
                     paginator
-                    rows={10}
+                    rows={5}
                     loading={loading}
                     dataKey="id"
                     emptyMessage="Tidak ada data."

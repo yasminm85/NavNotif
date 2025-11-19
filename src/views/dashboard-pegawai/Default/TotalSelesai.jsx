@@ -13,7 +13,7 @@ import MainCard from 'ui-component/cards/MainCard';
 import SkeletonTotalOrderCard from 'ui-component/cards/Skeleton/EarningCard';
 
 // assets
-import AssignmentIcon from '@mui/icons-material/Assignment';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 
 export default function TotalSelesai({ isLoading }) {
   const theme = useTheme();
@@ -32,7 +32,7 @@ export default function TotalSelesai({ isLoading }) {
           border={false}
           content={false}
           sx={{
-            bgcolor: 'primary.dark',
+            bgcolor: 'success.dark',
             color: '#fff',
             overflow: 'hidden',
             position: 'relative',
@@ -45,7 +45,7 @@ export default function TotalSelesai({ isLoading }) {
               position: 'absolute',
               width: 210,
               height: 210,
-              background: theme.palette.primary[800],
+              background: theme.palette.success.main,
               borderRadius: '50%',
               top: { xs: -85 },
               right: { xs: -95 }
@@ -55,7 +55,7 @@ export default function TotalSelesai({ isLoading }) {
               position: 'absolute',
               width: 210,
               height: 210,
-              background: theme.palette.primary[800],
+              background: theme.palette.success.main,
               borderRadius: '50%',
               top: { xs: -125 },
               right: { xs: -15 },
@@ -73,12 +73,12 @@ export default function TotalSelesai({ isLoading }) {
                       sx={{
                         ...theme.typography.commonAvatar,
                         ...theme.typography.largeAvatar,
-                        bgcolor: 'primary.800',
+                        bgcolor: 'success.main',
                         color: '#fff',
                         mt: 1
                       }}
                     >
-                      <AssignmentIcon fontSize="inherit" />
+                      <AssignmentTurnedInIcon fontSize="inherit" />
                     </Avatar>
                   </Grid>
                 </Grid>
@@ -88,7 +88,7 @@ export default function TotalSelesai({ isLoading }) {
               <Grid>
                 <Grid container sx={{ alignItems: 'center' }}>
                   <Grid>
-                    <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>2 Dispo</Typography>
+                    <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>2 Notifikasi Selesai</Typography>
                   </Grid>
                 </Grid>
               </Grid>
@@ -97,7 +97,7 @@ export default function TotalSelesai({ isLoading }) {
                   sx={{
                     fontSize: '1rem',
                     fontWeight: 500,
-                    color: 'primary.200'
+                    color: 'success.light'
                   }}
                 >
                   Total Notifikasi Sudah Selesai
