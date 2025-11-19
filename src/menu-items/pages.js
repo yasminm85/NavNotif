@@ -31,10 +31,10 @@ const pages = {
       ]
     },
     {
-          id: 'sample-page',
-          title: 'Sample Page',
+          id: 'surat-tugas',
+          title: 'Surat Tugas',
           type: 'item',
-          url: '/sample-page',
+          url: '/surat-tugas',
           icon: icons.IconBrandChrome,
           breadcrumbs: false
         },

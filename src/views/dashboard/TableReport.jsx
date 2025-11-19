@@ -87,14 +87,7 @@ export default function TableReport() {
         );
     };
 
-    const countryBodyTemplate = (rowData) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <img alt="flag" src="https://primefaces.org/cdn/primereact/images/flag/flag_placeholder.png" className={`flag flag-${rowData.country.code}`} style={{ width: '24px' }} />
-                <span>{rowData.country.name}</span>
-            </div>
-        );
-    };
+
 
     const representativeBodyTemplate = (rowData) => {
         const bidang = rowData.bidang;
