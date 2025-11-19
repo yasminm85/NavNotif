@@ -10,6 +10,12 @@ const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')))
 // Surat Tugas routing
 const SuratTugas = Loadable(lazy(() => import('views/surat-tugas')));
 
+// dashboard pegawai routing
+const DashboardPegawai = Loadable(lazy(() => import('views/dashboard-pegawai/Default')));
+
+//daftar notifikasi routing
+const DaftarNotifikasi = Loadable(lazy(() => import('views/daftar-notifikasi')));
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -32,6 +38,14 @@ const MainRoutes = {
     {
       path: '/surat-tugas',
       element: <SuratTugas />
+    },
+    {
+      path: '/dashboard-pegawai',
+      element: <DashboardPegawai />
+    },
+    {
+      path: '/daftar-notifikasi',
+      element: <DaftarNotifikasi />
     }
   ]
 };

@@ -35,7 +35,7 @@ export default function TotalNotifikasi({ isLoading }) {
           border={false}
           content={false}
           sx={{
-            bgcolor: 'primary.dark',
+            bgcolor: 'orange.dark',
             color: '#fff',
             overflow: 'hidden',
             position: 'relative',
@@ -48,7 +48,7 @@ export default function TotalNotifikasi({ isLoading }) {
               position: 'absolute',
               width: 210,
               height: 210,
-              background: theme.palette.primary[800],
+              background: theme.palette.orange.main,
               borderRadius: '50%',
               top: { xs: -85 },
               right: { xs: -95 }
@@ -58,7 +58,7 @@ export default function TotalNotifikasi({ isLoading }) {
               position: 'absolute',
               width: 210,
               height: 210,
-              background: theme.palette.primary[800],
+              background: theme.palette.orange.main,
               borderRadius: '50%',
               top: { xs: -125 },
               right: { xs: -15 },
@@ -76,7 +76,7 @@ export default function TotalNotifikasi({ isLoading }) {
                       sx={{
                         ...theme.typography.commonAvatar,
                         ...theme.typography.largeAvatar,
-                        bgcolor: 'primary.800',
+                        bgcolor: 'orange.main',
                         color: '#fff',
                         mt: 1
                       }}
@@ -91,7 +91,7 @@ export default function TotalNotifikasi({ isLoading }) {
               <Grid>
                 <Grid container sx={{ alignItems: 'center' }}>
                   <Grid>
-                    <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>2 Dispo</Typography>
+                    <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>2 Notifikasi Masuk</Typography>
                   </Grid>
                 </Grid>
               </Grid>
@@ -100,7 +100,7 @@ export default function TotalNotifikasi({ isLoading }) {
                   sx={{
                     fontSize: '1rem',
                     fontWeight: 500,
-                    color: 'primary.200'
+                    color: 'orange.light'
                   }}
                 >
                   Total Notifikasi Yang Masuk

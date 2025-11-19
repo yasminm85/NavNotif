@@ -1,8 +1,8 @@
 // assets
-import { IconBrandChrome, IconHelp } from '@tabler/icons-react';
+import { IconBrandChrome, IconHelp, IconDashboard, IconNotification } from '@tabler/icons-react';
 
 // constant
-const icons = { IconBrandChrome, IconHelp };
+const icons = { IconBrandChrome, IconHelp, IconDashboard, IconNotification };
 
 // ==============================|| Surat Tugas & DOCUMENTATION MENU ITEMS ||============================== //
 
@@ -16,6 +16,22 @@ const other = {
       type: 'item',
       url: '/surat-tugas',
       icon: icons.IconBrandChrome,
+      breadcrumbs: false
+    },
+    {
+      id: 'dashboard-pegawai',
+      title: 'Dashboard Pegawai',
+      type: 'item',
+      url: '/dashboard-pegawai',
+      icon: icons.IconDashboard,
+      breadcrumbs: false
+    },
+    {
+      id: 'daftar-notifikasi',
+      title: 'Daftar Notifikasi',
+      type: 'item',
+      url: '/daftar-notifikasi',
+      icon: icons.IconNotification,
       breadcrumbs: false
     },
   ]

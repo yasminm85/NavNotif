@@ -24,7 +24,7 @@ export default function Dashboard() {
     <Grid container spacing={gridSpacing}>
       <Grid size={12}>
         <Grid container spacing={gridSpacing}>
-          <Grid size={{ lg: 4, md: 6, sm: 6, xs: 12 }}>
+          <Grid size={{ lg: 12, md: 6, sm: 6, xs: 12 }}>
             <TotalDispo isLoading={isLoading} />
           </Grid>
           <Grid size={{ lg: 4, md: 12, sm: 12, xs: 12 }}>
