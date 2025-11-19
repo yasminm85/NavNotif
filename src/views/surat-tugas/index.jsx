@@ -9,16 +9,14 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { DataSurat } from './DataSurat';
+import { MultiSelect } from 'primereact/multiselect';
+import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
-import { IconField } from 'primereact/iconfield';
-import { InputIcon } from 'primereact/inputicon';
-
 
 export default function SuratTugas() {
-
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -27,6 +25,7 @@ export default function SuratTugas() {
     const [showDetail, setShowDetail] = useState(false);
     const [selectedNote, setSelectedNote] = useState("");
     const [form, setForm] = useState({
+        status:"",
         namakegiatan: "",
         tanggal: null,
         jamMulai: "",
@@ -35,6 +34,15 @@ export default function SuratTugas() {
         file: null,
         catatan: "",
     });
+
+    const [selectedpegawai, setSelectedpegawai] = useState('');
+    const pegawai = [
+        { name: 'Lorem1', code: 'YA' },
+        { name: 'Lorem2', code: 'PU' },
+        { name: 'Lorem3', code: 'LDN' },
+        { name: 'Lorem4', code: 'IST' },
+        { name: 'Lorem5', code: 'PRS' }
+    ]
 
     const [errors, setErrors] = useState({});
 
@@ -52,7 +60,6 @@ export default function SuratTugas() {
 
     const validateForm = () => {
         let newErrors = {};
-
         if (!form.namakegiatan) newErrors.namakegiatan = "Nama kegiatan wajib diisi.";
         if (!form.agenda) newErrors.agenda = "Agenda wajib diisi.";
         if (!form.tanggal) newErrors.tanggal = "Tanggal wajib diisi.";
@@ -70,7 +77,9 @@ export default function SuratTugas() {
         if (Object.keys(validation).length > 0) return;
 
         const newData = {
+
             id: customers.length + 1,
+            status: form.status,
             namakegiatan: form.namakegiatan,
             agenda: form.agenda,
             tanggal: form.tanggal?.toLocaleDateString("id-ID"),
@@ -117,6 +126,14 @@ export default function SuratTugas() {
                 }}
             ></i>
         );
+    };
+
+    const statusBodyTemplate = (rowData) => {
+        return <i className={classNames('pi', { 'true-icon pi-check-circle': rowData.status, 'false-icon pi-times-circle': !rowData.status })}></i>;
+    };
+
+    const statusRowFilterTemplate = (options) => {
+        return <TriStateCheckbox value={options.value} onChange={(e) => options.filterApplyCallback(e.value)} />;
     };
 
     const footer = (
@@ -168,6 +185,20 @@ export default function SuratTugas() {
                     </div>
 
                     <div className="mb-3">
+                        <MultiSelect
+                            placeholder="Nama yang dituju *"
+                            className={`w-full ${errors.pegawai ? "p-invalid" : ""}`}
+                            value={selectedpegawai}
+                            options={pegawai}
+                            optionLabel='name'
+                            display='chip'
+                            onChange={(e) => setSelectedpegawai(e.value)}
+                        />
+                        {errors.pegawai && <small className="p-error">{errors.pegawai}</small>}
+                    </div>
+
+
+                    <div className="mb-3">
                         <Calendar
                             placeholder="Tanggal *"
                             className={`w-full ${errors.tanggal ? "p-invalid" : ""}`}
@@ -191,14 +222,13 @@ export default function SuratTugas() {
                         </div>
 
                         <div className="p-inputgroup w-1/2">
-                            <span className="p-inputgroup-addon">
-                                <i className="pi pi-clock"></i>
-                            </span>
-                            <Calendar showTime={true} timeOnly={true}
+                            <Calendar 
                                 placeholder="Jam Selesai *"
                                 className={errors.jamSelesai ? "p-invalid" : ""}
                                 value={form.jamSelesai}
                                 onChange={(e) => handleChange("jamSelesai", e.target.value)}
+                                showIcon timeOnly
+                                icon={() => <i className="pi pi-clock" />}
                             />
                         </div>
                     </div>
@@ -234,7 +264,7 @@ export default function SuratTugas() {
                         placeholder="Dresscode"
                         className="w-full mb-3"
                         value={form.nama}
-                        // onChange={(e) => handleChange("namakegiatan", e.target.value)}
+                        // onChange={(e) => handleChange("dresscode", e.target.value)}
                     />
                 </Dialog>
 
@@ -247,21 +277,23 @@ export default function SuratTugas() {
                 >
                     <p>{selectedNote}</p>
                 </Dialog>
-
+                
                 <DataTable
                     value={customers}
-                    paginator
-                    rows={10}
+                    paginator rows={5}
                     loading={loading}
                     dataKey="id"
+                    filterDisplay="row"
                     emptyMessage="Tidak ada data."
                 >
+                    <Column field="status" header="Status" dataType="boolean" style={{ minWidth: '4rem' }} />
                     <Column field="namakegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
                     <Column field="tanggal" header="Tanggal" style={{ minWidth: '10rem' }} />
                     <Column field="jam" header="Jam" style={{ minWidth: '10rem' }} />
-                    <Column header="File" body={fileBodyTemplate} style={{ minWidth: '8rem' }} />
+                    {/* <Column header="File" body={fileBodyTemplate} style={{ minWidth: '8rem' }} /> */}
                     <Column field="tempat" header="Tempat" style={{ minWidth: '12rem' }} />
                     <Column header="Catatan" body={catatanBodyTemplate} style={{ textAlign: 'center', width: '6rem' }} />
+                    <Column header="Detail" style={{ textAlign: 'center', width: '6rem' }}/>
                 </DataTable>
 
             </MainCard>
