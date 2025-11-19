@@ -13,6 +13,9 @@ import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
+import { IconField } from 'primereact/iconfield';
+import { InputIcon } from 'primereact/inputicon';
+
 
 export default function SuratTugas() {
 
@@ -177,14 +180,13 @@ export default function SuratTugas() {
 
                     <div className="flex gap-2 mb-2">
                         <div className="p-inputgroup w-1/2">
-                            <span className="p-inputgroup-addon">
-                                <i className="pi pi-clock"></i>
-                            </span>
-                            <InputText
+                            <Calendar
                                 placeholder="Jam Mulai *"
                                 className={errors.jamMulai ? "p-invalid" : ""}
                                 value={form.jamMulai}
                                 onChange={(e) => handleChange("jamMulai", e.target.value)}
+                                showIcon timeOnly  
+                                icon={() => <i className="pi pi-clock" />} 
                             />
                         </div>
 
@@ -192,7 +194,7 @@ export default function SuratTugas() {
                             <span className="p-inputgroup-addon">
                                 <i className="pi pi-clock"></i>
                             </span>
-                            <InputText
+                            <Calendar showTime={true} timeOnly={true}
                                 placeholder="Jam Selesai *"
                                 className={errors.jamSelesai ? "p-invalid" : ""}
                                 value={form.jamSelesai}
