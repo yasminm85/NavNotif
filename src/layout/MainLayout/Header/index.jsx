@@ -6,15 +6,12 @@ import Box from '@mui/material/Box';
 
 // project imports
 import LogoSection from '../LogoSection';
-import SearchSection from './SearchSection';
 import ProfileSection from './ProfileSection';
-import NotificationSection from './NotificationSection';
 
 import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
 
 // assets
 import { IconMenu2 } from '@tabler/icons-react';
-import { Typography } from '@mui/material';
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 

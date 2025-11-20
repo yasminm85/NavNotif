@@ -81,21 +81,6 @@ export default function ProfileSection() {
             lineHeight: 0
           }
         }}
-        icon={
-          <Avatar
-            src={User1}
-            alt="user-images"
-            sx={{
-              ...theme.typography.mediumAvatar,
-              margin: '8px 0 8px 8px !important',
-              cursor: 'pointer'
-            }}
-            ref={anchorRef}
-            aria-controls={open ? 'menu-list-grow' : undefined}
-            aria-haspopup="true"
-            color="inherit"
-          />
-        }
         label={<IconSettings stroke={1.5} size="24px" />}
         ref={anchorRef}
         aria-controls={open ? 'menu-list-grow' : undefined}
@@ -127,31 +112,7 @@ export default function ProfileSection() {
                 {open && (
                   <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
                     <Box sx={{ p: 2, pb: 0 }}>
-                      <Stack>
-                        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-                          <Typography variant="h4">Good Morning,</Typography>
-                          <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                            Johne Doe
-                          </Typography>
-                        </Stack>
-                        <Typography variant="subtitle2">Project Admin</Typography>
-                      </Stack>
-                      <OutlinedInput
-                        sx={{ width: '100%', pr: 1, pl: 2, my: 2 }}
-                        id="input-search-profile"
-                        value={value}
-                        onChange={(e) => setValue(e.target.value)}
-                        placeholder="Search profile options"
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <IconSearch stroke={1.5} size="16px" />
-                          </InputAdornment>
-                        }
-                        aria-describedby="search-helper-text"
-                        inputProps={{
-                          'aria-label': 'weight'
-                        }}
-                      />
+                        
                       <Divider />
                     </Box>
                     <Box
@@ -164,46 +125,6 @@ export default function ProfileSection() {
                         '&::-webkit-scrollbar': { width: 5 }
                       }}
                     >
-                      <UpgradePlanCard />
-                      <Divider />
-                      <Card sx={{ bgcolor: 'primary.light', my: 2 }}>
-                        <CardContent>
-                          <Grid container spacing={3} direction="column">
-                            <Grid>
-                              <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Grid>
-                                  <Typography variant="subtitle1">Start DND Mode</Typography>
-                                </Grid>
-                                <Grid>
-                                  <Switch
-                                    color="primary"
-                                    checked={sdm}
-                                    onChange={(e) => setSdm(e.target.checked)}
-                                    name="sdm"
-                                    size="small"
-                                  />
-                                </Grid>
-                              </Grid>
-                            </Grid>
-                            <Grid>
-                              <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Grid>
-                                  <Typography variant="subtitle1">Allow Notifications</Typography>
-                                </Grid>
-                                <Grid>
-                                  <Switch
-                                    checked={notification}
-                                    onChange={(e) => setNotification(e.target.checked)}
-                                    name="sdm"
-                                    size="small"
-                                  />
-                                </Grid>
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                        </CardContent>
-                      </Card>
-                      <Divider />
                       <List
                         component="nav"
                         sx={{
@@ -219,29 +140,6 @@ export default function ProfileSection() {
                             <IconSettings stroke={1.5} size="20px" />
                           </ListItemIcon>
                           <ListItemText primary={<Typography variant="body2">Account Settings</Typography>} />
-                        </ListItemButton>
-                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }} selected={selectedIndex === 1}>
-                          <ListItemIcon>
-                            <IconUser stroke={1.5} size="20px" />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={
-                              <Grid container spacing={1} sx={{ justifyContent: 'space-between' }}>
-                                <Grid>
-                                  <Typography variant="body2">Social Profile</Typography>
-                                </Grid>
-                                <Grid>
-                                  <Chip
-                                    label="02"
-                                    variant="filled"
-                                    size="small"
-                                    color="warning"
-                                    sx={{ '& .MuiChip-label': { mt: 0.25 } }}
-                                  />
-                                </Grid>
-                              </Grid>
-                            }
-                          />
                         </ListItemButton>
                         <ListItemButton sx={{ borderRadius: `${borderRadius}px` }} selected={selectedIndex === 4}>
                           <ListItemIcon>
