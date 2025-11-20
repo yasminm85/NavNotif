@@ -541,8 +541,8 @@ export default function SuratTugas() {
                     <Column field="tanggal" header="Tanggal" style={{ minWidth: '10rem' }} />
                     <Column field="jam" header="Jam" style={{ minWidth: '10rem' }} />
                     <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
-                    <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '10rem', textAlign: 'center' }} />
-                    <Column header="Catatan" body={catatanBodyTemplate} style={{ minWidth: '10rem', textAlign: 'center' }} />
+                    <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
+                    <Column header="Catatan" body={catatanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
 
                     {/* === ACTION === */}
                     <Column header="Action" body={actionBodyTemplate} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} style={{ width: "10rem" }} />
