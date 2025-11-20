@@ -263,6 +263,23 @@ export default function SuratTugas() {
         );
     };
 
+    const laporanBodyTemplate = (rowData) => {
+        return (
+            <div className="flex gap-2">
+
+                {/* LAPORAN */}
+                <Button
+                    icon="pi pi-book"
+                    className="p-button-rounded p-button-info p-button-sm"
+                    onClick={() => {
+                        setSelectedData(rowData);  //belum diganti by view laporan
+                        setShowView(true);
+                    }}
+                />
+            </div>
+        );
+    };
+
     {/* CATATAN */ }
     const catatanBodyTemplate = (rowData) => {
         return (
@@ -524,7 +541,7 @@ export default function SuratTugas() {
                     <Column field="tanggal" header="Tanggal" style={{ minWidth: '10rem' }} />
                     <Column field="jam" header="Jam" style={{ minWidth: '10rem' }} />
                     <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
-                    <Column field="laporan" header="Laporan" style={{ minWidth: '10rem', textAlign: 'center' }} />
+                    <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '10rem', textAlign: 'center' }} />
                     <Column header="Catatan" body={catatanBodyTemplate} style={{ minWidth: '10rem', textAlign: 'center' }} />
 
                     {/* === ACTION === */}
