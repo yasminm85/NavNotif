@@ -8,7 +8,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { DataSurat } from './DataSurat';
+import { DataDisposisi } from './DataDisposisi';
 import { MultiSelect } from 'primereact/multiselect';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -17,7 +17,7 @@ import 'primeflex/primeflex.css';
 import './app.css';
 
 
-export default function SuratTugas() {
+export default function Disposisi() {
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -75,7 +75,7 @@ export default function SuratTugas() {
 
     // GET DATA
     useEffect(() => {
-        DataSurat.getCustomersMedium().then((data) => {
+        DataDisposisi.getCustomersMedium().then((data) => {
             setCustomers(data || []);
             setLoading(false);
         });
@@ -315,10 +315,10 @@ export default function SuratTugas() {
     return (
 
         <div className="card">
-            <MainCard title="Surat Tugas">
+            <MainCard title="Disposisi">
                 <div className="flex justify-content-end mb-3">
                     <Button
-                        label="Buat Surat Tugas"
+                        label="Buat Disposisi"
                         onClick={() => {
                             setShowForm(true);
                             setEditMode(false);
@@ -349,7 +349,7 @@ export default function SuratTugas() {
                 
                 {/* FORM */}
                 <Dialog
-                    header={editMode ? "Edit Surat Tugas" : "Form Surat Tugas"}
+                    header={editMode ? "Edit Disposisi" : "Form Disposisi"}
                     visible={showForm}
                     modal
                     style={{ width: "30rem" }}
@@ -499,7 +499,7 @@ export default function SuratTugas() {
 
                 {/* DETAIL */}
                 <Dialog
-                    header="Catatan Surat Tugas"
+                    header="Catatan Disposisi"
                     visible={showDetail}
                     modal
                     style={{ width: "25rem" }}
@@ -510,7 +510,7 @@ export default function SuratTugas() {
 
                 {/* VIEW DETAIL LENGKAP */}
                 <Dialog
-                    header="Detail Surat Tugas"
+                    header="Detail Disposisi"
                     visible={showView}
                     modal
                     style={{ width: "30rem" }}

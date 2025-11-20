@@ -7,8 +7,8 @@ import Loadable from 'ui-component/Loadable';
 // dashboard routing
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
-// Surat Tugas routing
-const SuratTugas = Loadable(lazy(() => import('views/surat-tugas')));
+// Disposisi routing
+const Disposisi = Loadable(lazy(() => import('views/disposisi')));
 
 // dashboard pegawai routing
 const DashboardPegawai = Loadable(lazy(() => import('views/dashboard-pegawai/Default')));
@@ -36,8 +36,8 @@ const MainRoutes = {
       ]
     },
     {
-      path: '/surat-tugas',
-      element: <SuratTugas />
+      path: '/disposisi',
+      element: <Disposisi />
     },
     {
       path: '/dashboard-pegawai',

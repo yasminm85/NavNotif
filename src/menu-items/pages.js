@@ -31,10 +31,10 @@ const pages = {
       ]
     },
     {
-          id: 'surat-tugas',
-          title: 'Surat Tugas',
+          id: 'disposisi',
+          title: 'Disposisi',
           type: 'item',
-          url: '/surat-tugas',
+          url: '/disposisi',
           icon: icons.IconBrandChrome,
           breadcrumbs: false
         },

@@ -1,4 +1,4 @@
-export const DataSurat = {
+export const DataDisposisi = {
     async getCustomersMedium() {
         return [
             {

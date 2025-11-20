@@ -4,17 +4,17 @@ import { IconBrandChrome, IconNotification } from '@tabler/icons-react';
 // constant
 const icons = { IconBrandChrome, IconNotification };
 
-// ==============================|| Surat Tugas & DOCUMENTATION MENU ITEMS ||============================== //
+// ==============================|| Disposisi & DOCUMENTATION MENU ITEMS ||============================== //
 
 const other = {
   id: 'sample-docs-roadmap',
   type: 'group',
   children: [
     {
-      id: 'surat-tugas',
-      title: 'Surat Tugas',
+      id: 'disposisi',
+      title: 'Disposisi',
       type: 'item',
-      url: '/surat-tugas',
+      url: '/disposisi',
       icon: icons.IconBrandChrome,
       breadcrumbs: false
     },
