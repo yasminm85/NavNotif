@@ -144,7 +144,7 @@ export default function SuratTugas() {
 
             // ADD NEW DATA
         const newData = {
-            id: customers.length + 1,
+            id: Date.now(),
             status: form.status,
             namakegiatan: form.namakegiatan,
             agenda: form.agenda,
@@ -269,6 +269,26 @@ export default function SuratTugas() {
                             setShowForm(true);
                             setEditMode(false);
                             setErrors({});
+
+                            // RESET FORM
+                            setForm({
+                                id: null,
+                                status: "",
+                                namakegiatan: "",
+                                agenda: "",
+                                tanggal: null,
+                                jamMulai: "",
+                                jamSelesai: "",
+                                tempat: "",
+                                file: null,
+                                catatan: "",
+                                dresscode: "",
+                            });
+
+                            // RESET MULTISELECT
+                            setSelectedpegawai([]);
+                            setSelecteddirectorat([]);
+                            setSelecteddivisi([]);
                         }}
                     />
                 </div>
