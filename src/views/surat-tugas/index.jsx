@@ -32,6 +32,9 @@ export default function SuratTugas() {
         status: "",
         namakegiatan: "",
         agenda: "",
+        namayangdituju: "",
+        direktorat:"",
+        divisi:"",
         tanggal: null,
         jamMulai: "",
         jamSelesai: "",
@@ -66,7 +69,7 @@ export default function SuratTugas() {
         { name: 'Lorem4', code: 'IST' },
         { name: 'Lorem5', code: 'PRS' }
     ]
-    
+
     const [errors, setErrors] = useState({});
 
     // GET DATA
@@ -86,26 +89,31 @@ export default function SuratTugas() {
         let newErrors = {};
         if (!form.namakegiatan) newErrors.namakegiatan = "Nama kegiatan wajib diisi.";
         if (!form.agenda) newErrors.agenda = "Agenda wajib diisi.";
+        if (!selectedpegawai || selectedpegawai.length === 0)
+            newErrors.namayangdituju = "Nama yang dituju wajib diisi.";
+        if (!selecteddirectorat || selecteddirectorat.length === 0)
+            newErrors.direktorat = "Direktorat wajib diisi.";
+        if (!selecteddivisi || selecteddivisi.length === 0)
+            newErrors.divisi = "Divisi wajib diisi.";
         if (!form.tanggal) newErrors.tanggal = "Tanggal wajib diisi.";
         if (!form.jamMulai) newErrors.jamMulai = "Jam mulai wajib diisi.";
-        if (!form.jamSelesai) newErrors.jamSelesai = "Jam selesai wajib diisi.";
         if (!form.tempat) newErrors.tempat = "Tempat wajib diisi.";
         return newErrors;
     };
 
     const statusBodyTemplate = (rowData) => {
         return (
-                <i
-                    className={
-                        rowData.status
-                            ? "pi pi-check-circle"
-                            : "pi pi-times-circle"
-                    }
-                    style={{
-                        fontSize: "1.3rem",
-                        color: rowData.status ? "green" : "red"
-                    }}
-                ></i>
+            <i
+                className={
+                    rowData.status
+                        ? "pi pi-check-circle"
+                        : "pi pi-times-circle"
+                }
+                style={{
+                    fontSize: "1.3rem",
+                    color: rowData.status ? "green" : "red"
+                }}
+            ></i>
         );
     };
 
@@ -116,49 +124,76 @@ export default function SuratTugas() {
         if (Object.keys(validation).length > 0) return;
 
         if (editMode) {
+            const formatTime = (date) => {
+                if (!date) return "";
+                const h = date.getHours().toString().padStart(2, "0");
+                const m = date.getMinutes().toString().padStart(2, "0");
+                return `${h}.${m}`;
+            };
+
             // UPDATE DATA
-        const updated = customers.map((item) =>
-            item.id === form.id
-                ? {
-                    ...item,
-                    status: form.status,
-                    namakegiatan: form.namakegiatan,
-                    agenda: form.agenda,
-                    tanggal: form.tanggal?.toLocaleDateString("id-ID"),
-                    tanggalRaw: form.tanggal,
-                    jam: `${form.jamMulai} - ${form.jamSelesai}`,
-                    jamMulai: form.jamMulai,
-                    jamSelesai: form.jamSelesai,
-                    tempat: form.tempat,
-                    file: form.file?.name || item.file,
-                    fileRaw: form.file || item.fileRaw,
-                    pegawai: selectedpegawai,
-                    catatan: form.catatan
-                }
-                : item
+            const jamMulaiFormatted = formatTime(form.jamMulai);
+            const jamSelesaiFormatted = form.jamSelesai ? formatTime(form.jamSelesai) : null;
 
+            const jamFinal = jamSelesaiFormatted
+                ? `${jamMulaiFormatted} - ${jamSelesaiFormatted}`
+                : `${jamMulaiFormatted} - selesai`;
 
+            const updated = customers.map((item) =>
+                item.id === form.id
+                    ? {
+                        ...item,
+                        status: form.status,
+                        namakegiatan: form.namakegiatan,
+                        agenda: form.agenda,
+                        tanggal: form.tanggal?.toLocaleDateString("id-ID"),
+                        tanggalRaw: form.tanggal,
+                        jam: jamFinal,
+                        jamMulai: jamMulaiFormatted,
+                        jamSelesai: jamSelesaiFormatted ? jamSelesaiFormatted : "selesai",
+                        tempat: form.tempat,
+                        file: form.file?.name || item.file,
+                        fileRaw: form.file || item.fileRaw,
+                        pegawai: selectedpegawai,
+                        catatan: form.catatan
+                    }
+                    : item
             );
             setCustomers(updated);
         } else {
 
             // ADD NEW DATA
-        const newData = {
-            id: Date.now(),
-            status: form.status,
-            namakegiatan: form.namakegiatan,
-            agenda: form.agenda,
-            tanggal: form.tanggal?.toLocaleDateString("id-ID"),
-            tanggalRaw: form.tanggal,  // simpan juga Date asli
-            jam: `${form.jamMulai} - ${form.jamSelesai}`,
-            jamMulai: form.jamMulai,   // simpan jam asli
-            jamSelesai: form.jamSelesai,
-            tempat: form.tempat,
-            file: form.file ? form.file.name : "-",
-            fileRaw: form.file,        // simpan file asli
-            pegawai: selectedpegawai,  // simpan pegawai yang dipilih
-            catatan: form.catatan
-        };
+            const formatTime = (date) => {
+                if (!date) return "";
+                const h = date.getHours().toString().padStart(2, "0");
+                const m = date.getMinutes().toString().padStart(2, "0");
+                return `${h}.${m}`;
+            };
+
+                const jamMulaiFormatted = formatTime(form.jamMulai);
+                const jamSelesaiFormatted = form.jamSelesai ? formatTime(form.jamSelesai) : null;
+
+                const jamFinal = jamSelesaiFormatted
+                    ? `${jamMulaiFormatted} - ${jamSelesaiFormatted}`
+                    : `${jamMulaiFormatted} - selesai`;
+
+
+            const newData = {
+                id: Date.now(),
+                status: form.status,
+                namakegiatan: form.namakegiatan,
+                agenda: form.agenda,
+                tanggal: form.tanggal?.toLocaleDateString("id-ID"),
+                tanggalRaw: form.tanggal,  // simpan juga Date asli
+                jam: jamFinal,
+                jamMulai: jamMulaiFormatted,
+                jamSelesai: jamSelesaiFormatted ? jamSelesaiFormatted : "selesai",
+                tempat: form.tempat,
+                file: form.file ? form.file.name : "-",
+                fileRaw: form.file,        // simpan file asli
+                pegawai: selectedpegawai,  // simpan pegawai yang dipilih
+                catatan: form.catatan
+            };
 
             setCustomers([...customers, newData]);
         }
@@ -180,7 +215,6 @@ export default function SuratTugas() {
         setErrors({});
         setEditMode(false);
     };
-    
 
     // === DELETE === //
     const handleDelete = (row) => {
@@ -189,9 +223,7 @@ export default function SuratTugas() {
         }
     };
 
-
     // === ACTION BUTTONS === //
-
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="flex gap-2">
@@ -199,19 +231,16 @@ export default function SuratTugas() {
                 {/* VIEW */}
                 <Button
                     icon="pi pi-eye"
-                    // style={{ fontSize: '0.7rem', width: '1.8rem', height: '1.8rem' }}
                     className="p-button-rounded p-button-info p-button-sm"
                     onClick={() => {
                         setSelectedData(rowData);
                         setShowView(true);
                     }}
                 />
-                
 
                 {/* EDIT */}
                 <Button
                     icon="pi pi-pencil"
-                    // style={{ fontSize: '0.7rem', width: '1.8rem', height: '1.8rem' }}
                     className="p-button-rounded p-button-warning p-button-sm"
                     onClick={() => {
                         setForm({
@@ -228,7 +257,6 @@ export default function SuratTugas() {
                 {/* DELETE */}
                 <Button
                     icon="pi pi-trash"
-                    // style={{ fontSize: '0.7rem', width: '1.8rem', height: '1.8rem' }}
                     className="p-button-rounded p-button-danger p-button-sm"
                     onClick={() => handleDelete(rowData)}
                 />
@@ -236,15 +264,13 @@ export default function SuratTugas() {
         );
     };
 
-
-    {/* CATATAN */}
-
+    {/* CATATAN */ }
     const catatanBodyTemplate = (rowData) => {
         return (
             <div className="flex gap-2">
                 <Button
                     icon="pi pi-pen-to-square"
-                    className="p-button-rounded p-button-danger p-button-sm"
+                    className="p-button-rounded p-button-secondary p-button-sm"
                     onClick={() => {
                         setSelectedNote(rowData.catatan);
                         setShowDetail(true);
@@ -259,7 +285,7 @@ export default function SuratTugas() {
     );
 
     return (
-        
+
         <div className="card">
             <MainCard title="Surat Tugas">
                 <div className="flex justify-content-end mb-3">
@@ -292,7 +318,7 @@ export default function SuratTugas() {
                         }}
                     />
                 </div>
-
+                
                 {/* FORM */}
                 <Dialog
                     header={editMode ? "Edit Surat Tugas" : "Form Surat Tugas"}
@@ -336,6 +362,7 @@ export default function SuratTugas() {
                             display='chip'
                             onChange={(e) => setSelectedpegawai(e.value)}
                         />
+                        {errors.namayangdituju && <small className="p-error">{errors.namayangdituju}</small>}
                     </div>
 
                     {/* Direktorat */}
@@ -349,6 +376,7 @@ export default function SuratTugas() {
                             display='chip'
                             onChange={(e) => setSelecteddirectorat(e.value)}
                         />
+                        {errors.direktorat && <small className="p-error">{errors.direktorat}</small>}
                     </div>
 
                     {/* Divisi */}
@@ -362,6 +390,7 @@ export default function SuratTugas() {
                             display='chip'
                             onChange={(e) => setSelecteddivisi(e.value)}
                         />
+                        {errors.divisi && <small className="p-error">{errors.divisi}</small>}
                     </div>
 
                     {/* Tanggal */}
@@ -379,7 +408,7 @@ export default function SuratTugas() {
                     {/* Jam Mulai */}
                     <div className="flex gap-2 mb-2">
                         <div className="p-inputgroup w-1/2">
-                            <Calendar 
+                            <Calendar
                                 placeholder="Jam Mulai *"
                                 className={errors.jamMulai ? "p-invalid" : ""}
                                 icon={() => <i className="pi pi-clock" />}
@@ -392,8 +421,7 @@ export default function SuratTugas() {
                         {/* Jam Selesai */}
                         <div className="p-inputgroup w-1/2">
                             <Calendar
-                                placeholder="Jam Selesai *"
-                                className={errors.jamSelesai ? "p-invalid" : ""}
+                                placeholder="Jam Selesai "
                                 icon={() => <i className="pi pi-clock" />}
                                 value={form.jamSelesai}
                                 onChange={(e) => handleChange("jamSelesai", e.target.value)}
@@ -401,9 +429,7 @@ export default function SuratTugas() {
                             />
                         </div>
                     </div>
-
                     {errors.jamMulai && <small className="p-error">{errors.jamMulai}</small>}
-                    {errors.jamSelesai && <small className="p-error">{errors.jamSelesai}</small>}
 
                     {/* Tempat */}
                     <div className="mt-3 mb-3">
@@ -421,7 +447,7 @@ export default function SuratTugas() {
                         className="w-full mb-3"
                         onChange={(e) => handleChange("file", e.target.files[0])}
                     />
-                    
+
                     {/* Catatan */}
                     <InputTextarea
                         placeholder="Catatan"
@@ -433,13 +459,13 @@ export default function SuratTugas() {
 
                     {/* Dresscode */}
                     <div className='mt-3 mb-3'>
-                    <InputText
-                        placeholder="Dresscode"
-                        className="w-full mb-3"
-                        rows={3}
-                        value={form.dresscode}
-                        onChange={(e) => handleChange("dresscode", e.target.value)}
-                    />
+                        <InputText
+                            placeholder="Dresscode"
+                            className="w-full mb-3"
+                            rows={3}
+                            value={form.dresscode}
+                            onChange={(e) => handleChange("dresscode", e.target.value)}
+                        />
                     </div>
                 </Dialog>
 
@@ -464,7 +490,7 @@ export default function SuratTugas() {
                 >
                     {selectedData && (
                         <div className="flex flex-column gap-2">
-
+                            
                             <p><strong>Status:</strong> {selectedData.status || "-"}</p>
                             <p><strong>Nama Kegiatan:</strong> {selectedData.namakegiatan}</p>
                             <p><strong>Agenda Kegiatan:</strong> {selectedData.agenda}</p>
@@ -487,7 +513,6 @@ export default function SuratTugas() {
                     )}
                 </Dialog>
 
-
                 {/* TABLE */}
                 <DataTable
                     value={customers}
@@ -495,7 +520,7 @@ export default function SuratTugas() {
                     loading={loading}
                     dataKey="id"
                 >
-                    <Column field="status" header="Status" bodyClassName="text-center" style={{ minWidth: '5rem' }} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} body={statusBodyTemplate}/>
+                    <Column field="status" header="Status" bodyClassName="text-center" style={{ minWidth: '5rem' }} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} body={statusBodyTemplate} />
                     <Column field="namakegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
                     <Column field="tanggal" header="Tanggal" style={{ minWidth: '10rem' }} />
                     <Column field="jam" header="Jam" style={{ minWidth: '10rem' }} />
