@@ -14,6 +14,8 @@ import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
+import './app.css';
+
 
 export default function SuratTugas() {
     const [customers, setCustomers] = useState([]);
@@ -296,6 +298,16 @@ export default function SuratTugas() {
         );
     };
 
+    const rowClass = (rowData) => {
+            if (rowData.tempat === "Auditorium") {
+                return 'highlight-row';
+            }
+            if (rowData.tempat === 'Gedung') {
+                return 'out-of-stock-row';
+            }
+            return ''; 
+        };
+
     const footer = (
         <Button label="Submit" className="w-full" onClick={handleSubmit} />
     );
@@ -535,6 +547,7 @@ export default function SuratTugas() {
                     paginator rows={5}
                     loading={loading}
                     dataKey="id"
+                    rowClassName={rowClass}
                 >
                     <Column field="status" header="Status" bodyClassName="text-center" style={{ minWidth: '5rem' }} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} body={statusBodyTemplate} />
                     <Column field="namakegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
