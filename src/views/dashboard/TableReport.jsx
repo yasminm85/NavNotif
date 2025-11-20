@@ -141,9 +141,9 @@ export default function TableReport() {
         );
     };
 
-    const verifiedRowFilterTemplate = (options) => {
-        return <TriStateCheckbox value={options.value} onChange={(e) => options.filterApplyCallback(e.value)} />;
-    };
+    // const verifiedRowFilterTemplate = (options) => {
+    //     return <TriStateCheckbox value={options.value} onChange={(e) => options.filterApplyCallback(e.value)} />;
+    // };
 
     const header = renderHeader();
 

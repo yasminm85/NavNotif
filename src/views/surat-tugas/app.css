@@ -1,0 +1,10 @@
+/* App.css */
+.p-datatable .p-datatable-tbody .highlight-row {
+    background-color: #ffdd57 !important; 
+    color: #333 !important;
+}
+
+.p-datatable .p-datatable-tbody .out-of-stock-row {
+    background-color: #ff4d4d !important;
+    color: white !important;
+}

@@ -1,4 +1,3 @@
-// project imports
 import MainCard from 'ui-component/cards/MainCard';
 import React, { useState, useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
@@ -10,17 +9,16 @@ import { Calendar } from 'primereact/calendar';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { DataSurat } from './DataSurat';
 import { MultiSelect } from 'primereact/multiselect';
-import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
+import './app.css';
 
 export default function SuratTugas() {
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // === STATE FORM === //
     const [showForm, setShowForm] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
     const [selectedNote, setSelectedNote] = useState("");
@@ -42,6 +40,17 @@ export default function SuratTugas() {
         file: null,
         catatan: "",
     });
+
+    const css = `
+        .my-switch-slider {
+            border-radius: 0;
+        }
+
+        .my-switch-slider:before {
+            border-radius: 0;
+        }
+    `;
+
 
     const [selectedpegawai, setSelectedpegawai] = useState('');
     const pegawai = [
@@ -72,7 +81,6 @@ export default function SuratTugas() {
 
     const [errors, setErrors] = useState({});
 
-    // GET DATA
     useEffect(() => {
         DataSurat.getCustomersMedium().then((data) => {
             setCustomers(data || []);
@@ -194,11 +202,9 @@ export default function SuratTugas() {
                 pegawai: selectedpegawai,  // simpan pegawai yang dipilih
                 catatan: form.catatan
             };
-
             setCustomers([...customers, newData]);
         }
 
-        // reset
         setShowForm(false);
         setForm({
             id: null,
@@ -278,6 +284,16 @@ export default function SuratTugas() {
                 />
             </div>
         );
+    };
+
+    const rowClass = (rowData) => {
+        if (rowData.tempat === "Auditorium") {
+            return 'highlight-row';
+        }
+        if (rowData.tempat === 'Gedung') {
+            return 'out-of-stock-row';
+        }
+        return ''; 
     };
 
     const footer = (
@@ -519,6 +535,7 @@ export default function SuratTugas() {
                     paginator rows={5}
                     loading={loading}
                     dataKey="id"
+                    rowClassName={rowClass}
                 >
                     <Column field="status" header="Status" bodyClassName="text-center" style={{ minWidth: '5rem' }} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} body={statusBodyTemplate} />
                     <Column field="namakegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />

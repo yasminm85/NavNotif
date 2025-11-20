@@ -1,15 +1,16 @@
-export const DataSurat = {
-    async getCustomersMedium() {
+export const DataNotifikasi = {
+    async getNotifikasiMedium() {
         return [
             {
                 id: 1,
                 namakegiatan: "Perkumpulan...",
-                tanggal: "12-11-2025",
+                tanggal: "20-11-2025",
                 jam: "13.30 - 15.30",
                 file: "file_1",
                 fileUrl: "#",
                 tempat: "Auditorium",
-                catatan: "Catatan 1"
+                catatan: "Catatan 1",
+                isSubmitted: false
             },
             {
                 id: 2,
@@ -19,7 +20,8 @@ export const DataSurat = {
                 file: "file_2",
                 fileUrl: "#",
                 tempat: "Gedung Support",
-                catatan: "Catatan 2"
+                catatan: "Catatan 2",
+                isSubmitted: false
             }
         ];
     }

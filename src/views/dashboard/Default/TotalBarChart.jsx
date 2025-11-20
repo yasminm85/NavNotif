@@ -21,21 +21,6 @@ import { gridSpacing } from 'store/constant';
 // chart data
 import chartData from './chart-data/total-bar-chart';
 
-const status = [
-  {
-    value: 'today',
-    label: 'Today'
-  },
-  {
-    value: 'month',
-    label: 'This Month'
-  },
-  {
-    value: 'year',
-    label: 'This Year'
-  }
-];
-
 export default function TotalBarChart({ isLoading }) {
   const [value, setValue] = React.useState('today');
   const theme = useTheme();
@@ -76,7 +61,6 @@ export default function TotalBarChart({ isLoading }) {
       legend: { labels: { colors: grey500 } }
     };
 
-    // do not load chart when loading
     if (!isLoading) {
       ApexCharts.exec(`bar-chart`, 'updateOptions', newChartData);
     }
@@ -102,13 +86,7 @@ export default function TotalBarChart({ isLoading }) {
                   </Grid>
                 </Grid>
                 <Grid>
-                  <TextField id="standard-select-currency" select value={value} onChange={(e) => setValue(e.target.value)}>
-                    {status.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
+                 
                 </Grid>
               </Grid>
             </Grid>

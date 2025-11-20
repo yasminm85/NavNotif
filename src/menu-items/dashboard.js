@@ -18,7 +18,15 @@ const dashboard = {
       url: '/dashboard/default',
       icon: icons.IconDashboard,
       breadcrumbs: false
-    }
+    },
+    {
+      id: 'dashboard-pegawai',
+      title: 'Dashboard Pegawai',
+      type: 'item',
+      url: '/dashboard-pegawai',
+      icon: icons.IconDashboard,
+      breadcrumbs: false
+    },
   ]
 };
 
