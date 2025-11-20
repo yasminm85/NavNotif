@@ -73,6 +73,15 @@
   }
 }
 
+.row-berlangsung {
+    background-color: #fff7a6 !important; /* stabilo kuning */
+}
+
+.row-selesai {
+    background-color: #b9f6c9 !important; /* stabilo hijau */
+}
+
+
 // ==============================|| ANIMATION KEYFRAMES ||============================== //
 
 @keyframes wings {
@@ -145,4 +154,6 @@
   75% {
     transform: translateX(10px);
   }
+
+  
 }

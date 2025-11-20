@@ -24,9 +24,14 @@ export default function SuratTugas() {
     const [showForm, setShowForm] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
     const [selectedNote, setSelectedNote] = useState("");
+    const [editMode, setEditMode] = useState(false);
+    const [selectedData, setSelectedData] = useState(null);
+    const [showView, setShowView] = useState(false);
     const [form, setForm] = useState({
-        status:"",
+        id: null,
+        status: "",
         namakegiatan: "",
+        agenda: "",
         tanggal: null,
         jamMulai: "",
         jamSelesai: "",
@@ -44,8 +49,27 @@ export default function SuratTugas() {
         { name: 'Lorem5', code: 'PRS' }
     ]
 
+    const [selecteddirectorat, setSelecteddirectorat] = useState('');
+    const directorat = [
+        { name: 'Lorem1', code: 'YA' },
+        { name: 'Lorem2', code: 'PU' },
+        { name: 'Lorem3', code: 'LDN' },
+        { name: 'Lorem4', code: 'IST' },
+        { name: 'Lorem5', code: 'PRS' }
+    ]
+
+    const [selecteddivisi, setSelecteddivisi] = useState('');
+    const divisi = [
+        { name: 'Lorem1', code: 'YA' },
+        { name: 'Lorem2', code: 'PU' },
+        { name: 'Lorem3', code: 'LDN' },
+        { name: 'Lorem4', code: 'IST' },
+        { name: 'Lorem5', code: 'PRS' }
+    ]
+    
     const [errors, setErrors] = useState({});
 
+    // GET DATA
     useEffect(() => {
         DataSurat.getCustomersMedium().then((data) => {
             setCustomers(data || []);
@@ -66,8 +90,23 @@ export default function SuratTugas() {
         if (!form.jamMulai) newErrors.jamMulai = "Jam mulai wajib diisi.";
         if (!form.jamSelesai) newErrors.jamSelesai = "Jam selesai wajib diisi.";
         if (!form.tempat) newErrors.tempat = "Tempat wajib diisi.";
-
         return newErrors;
+    };
+
+    const statusBodyTemplate = (rowData) => {
+        return (
+                <i
+                    className={
+                        rowData.status
+                            ? "pi pi-check-circle"
+                            : "pi pi-times-circle"
+                    }
+                    style={{
+                        fontSize: "1.3rem",
+                        color: rowData.status ? "green" : "red"
+                    }}
+                ></i>
+        );
     };
 
     const handleSubmit = () => {
@@ -76,25 +115,58 @@ export default function SuratTugas() {
 
         if (Object.keys(validation).length > 0) return;
 
-        const newData = {
+        if (editMode) {
+            // UPDATE DATA
+        const updated = customers.map((item) =>
+            item.id === form.id
+                ? {
+                    ...item,
+                    status: form.status,
+                    namakegiatan: form.namakegiatan,
+                    agenda: form.agenda,
+                    tanggal: form.tanggal?.toLocaleDateString("id-ID"),
+                    tanggalRaw: form.tanggal,
+                    jam: `${form.jamMulai} - ${form.jamSelesai}`,
+                    jamMulai: form.jamMulai,
+                    jamSelesai: form.jamSelesai,
+                    tempat: form.tempat,
+                    file: form.file?.name || item.file,
+                    fileRaw: form.file || item.fileRaw,
+                    pegawai: selectedpegawai,
+                    catatan: form.catatan
+                }
+                : item
 
+
+            );
+            setCustomers(updated);
+        } else {
+
+            // ADD NEW DATA
+        const newData = {
             id: customers.length + 1,
             status: form.status,
             namakegiatan: form.namakegiatan,
             agenda: form.agenda,
             tanggal: form.tanggal?.toLocaleDateString("id-ID"),
+            tanggalRaw: form.tanggal,  // simpan juga Date asli
             jam: `${form.jamMulai} - ${form.jamSelesai}`,
+            jamMulai: form.jamMulai,   // simpan jam asli
+            jamSelesai: form.jamSelesai,
             tempat: form.tempat,
-            file: form.file?.name || "-",
-            fileUrl: "#",
+            file: form.file ? form.file.name : "-",
+            fileRaw: form.file,        // simpan file asli
+            pegawai: selectedpegawai,  // simpan pegawai yang dipilih
             catatan: form.catatan
         };
 
-        setCustomers([...customers, newData]);
+            setCustomers([...customers, newData]);
+        }
 
-        // reset form
+        // reset
         setShowForm(false);
         setForm({
+            id: null,
             namakegiatan: "",
             agenda: "",
             tanggal: null,
@@ -103,65 +175,114 @@ export default function SuratTugas() {
             tempat: "",
             file: null,
             catatan: "",
+            dresscode: "",
         });
         setErrors({});
+        setEditMode(false);
+    };
+    
+
+    // === DELETE === //
+    const handleDelete = (row) => {
+        if (window.confirm(`Yakin hapus data: ${row.namakegiatan}?`)) {
+            setCustomers(customers.filter(item => item.id !== row.id));
+        }
     };
 
-    const fileBodyTemplate = (rowData) => {
+
+    // === ACTION BUTTONS === //
+
+    const actionBodyTemplate = (rowData) => {
         return (
-            <a href={rowData.fileUrl} target="_blank" rel="noopener noreferrer">
-                {rowData.file}
-            </a>
+            <div className="flex gap-2">
+
+                {/* VIEW */}
+                <Button
+                    icon="pi pi-eye"
+                    // style={{ fontSize: '0.7rem', width: '1.8rem', height: '1.8rem' }}
+                    className="p-button-rounded p-button-info p-button-sm"
+                    onClick={() => {
+                        setSelectedData(rowData);
+                        setShowView(true);
+                    }}
+                />
+                
+
+                {/* EDIT */}
+                <Button
+                    icon="pi pi-pencil"
+                    // style={{ fontSize: '0.7rem', width: '1.8rem', height: '1.8rem' }}
+                    className="p-button-rounded p-button-warning p-button-sm"
+                    onClick={() => {
+                        setForm({
+                            ...rowData,
+                            tanggal: new Date(),
+                            jamMulai: rowData.jam?.split(" - ")[0] || "",
+                            jamSelesai: rowData.jam?.split(" - ")[1] || "",
+                        });
+                        setEditMode(true);
+                        setShowForm(true);
+                    }}
+                />
+
+                {/* DELETE */}
+                <Button
+                    icon="pi pi-trash"
+                    // style={{ fontSize: '0.7rem', width: '1.8rem', height: '1.8rem' }}
+                    className="p-button-rounded p-button-danger p-button-sm"
+                    onClick={() => handleDelete(rowData)}
+                />
+            </div>
         );
     };
+
+
+    {/* CATATAN */}
 
     const catatanBodyTemplate = (rowData) => {
         return (
-            <i
-                className="pi pi-eye"
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                    setSelectedNote(rowData.catatan);
-                    setShowDetail(true);
-                }}
-            ></i>
+            <div className="flex gap-2">
+                <Button
+                    icon="pi pi-pen-to-square"
+                    className="p-button-rounded p-button-danger p-button-sm"
+                    onClick={() => {
+                        setSelectedNote(rowData.catatan);
+                        setShowDetail(true);
+                    }}
+                />
+            </div>
         );
-    };
-
-    const statusBodyTemplate = (rowData) => {
-        return <i className={classNames('pi', { 'true-icon pi-check-circle': rowData.status, 'false-icon pi-times-circle': !rowData.status })}></i>;
-    };
-
-    const statusRowFilterTemplate = (options) => {
-        return <TriStateCheckbox value={options.value} onChange={(e) => options.filterApplyCallback(e.value)} />;
     };
 
     const footer = (
         <Button label="Submit" className="w-full" onClick={handleSubmit} />
     );
 
-        return (
-            <div className="card">
-                <MainCard title="Surat Tugas">
+    return (
+        
+        <div className="card">
+            <MainCard title="Surat Tugas">
+                <div className="flex justify-content-end mb-3">
+                    <Button
+                        label="Buat Surat Tugas"
+                        onClick={() => {
+                            setShowForm(true);
+                            setEditMode(false);
+                            setErrors({});
+                        }}
+                    />
+                </div>
 
-                    <div className="flex justify-content-end mb-3">
-                        <Button
-                            label="Buat Surat Tugas"
-                            onClick={() => {
-                                setShowForm(true);
-                                setErrors({});
-                            }}
-                        />
-                    </div>
-
+                {/* FORM */}
                 <Dialog
-                    header="Form Surat Tugas"
+                    header={editMode ? "Edit Surat Tugas" : "Form Surat Tugas"}
                     visible={showForm}
                     modal
                     style={{ width: "30rem" }}
                     onHide={() => setShowForm(false)}
                     footer={footer}
                 >
+
                     {/* Nama Kegiatan */}
                     <div className="mb-3">
                         <InputText
@@ -184,20 +305,46 @@ export default function SuratTugas() {
                         {errors.agenda && <small className="p-error">{errors.agenda}</small>}
                     </div>
 
+                    {/* Nama yang dituju */}
                     <div className="mb-3">
                         <MultiSelect
                             placeholder="Nama yang dituju *"
-                            className={`w-full ${errors.pegawai ? "p-invalid" : ""}`}
+                            className="w-full"
                             value={selectedpegawai}
                             options={pegawai}
                             optionLabel='name'
                             display='chip'
                             onChange={(e) => setSelectedpegawai(e.value)}
                         />
-                        {errors.pegawai && <small className="p-error">{errors.pegawai}</small>}
                     </div>
 
+                    {/* Direktorat */}
+                    <div className="mb-3">
+                        <MultiSelect
+                            placeholder="Direktorat *"
+                            className="w-full"
+                            value={selecteddirectorat}
+                            options={directorat}
+                            optionLabel='name'
+                            display='chip'
+                            onChange={(e) => setSelecteddirectorat(e.value)}
+                        />
+                    </div>
 
+                    {/* Divisi */}
+                    <div className="mb-3">
+                        <MultiSelect
+                            placeholder="Divisi *"
+                            className="w-full"
+                            value={selecteddivisi}
+                            options={divisi}
+                            optionLabel='name'
+                            display='chip'
+                            onChange={(e) => setSelecteddivisi(e.value)}
+                        />
+                    </div>
+
+                    {/* Tanggal */}
                     <div className="mb-3">
                         <Calendar
                             placeholder="Tanggal *"
@@ -209,26 +356,28 @@ export default function SuratTugas() {
                         {errors.tanggal && <small className="p-error">{errors.tanggal}</small>}
                     </div>
 
+                    {/* Jam Mulai */}
                     <div className="flex gap-2 mb-2">
                         <div className="p-inputgroup w-1/2">
-                            <Calendar
+                            <Calendar 
                                 placeholder="Jam Mulai *"
                                 className={errors.jamMulai ? "p-invalid" : ""}
-                                showIcon timeOnly  
-                                icon={() => <i className="pi pi-clock" />} 
+                                icon={() => <i className="pi pi-clock" />}
                                 value={form.jamMulai}
                                 onChange={(e) => handleChange("jamMulai", e.target.value)}
+                                showIcon timeOnly
                             />
                         </div>
 
+                        {/* Jam Selesai */}
                         <div className="p-inputgroup w-1/2">
-                            <Calendar 
+                            <Calendar
                                 placeholder="Jam Selesai *"
                                 className={errors.jamSelesai ? "p-invalid" : ""}
+                                icon={() => <i className="pi pi-clock" />}
                                 value={form.jamSelesai}
                                 onChange={(e) => handleChange("jamSelesai", e.target.value)}
                                 showIcon timeOnly
-                                icon={() => <i className="pi pi-clock" />}
                             />
                         </div>
                     </div>
@@ -236,6 +385,7 @@ export default function SuratTugas() {
                     {errors.jamMulai && <small className="p-error">{errors.jamMulai}</small>}
                     {errors.jamSelesai && <small className="p-error">{errors.jamSelesai}</small>}
 
+                    {/* Tempat */}
                     <div className="mt-3 mb-3">
                         <InputText
                             placeholder="Tempat *"
@@ -251,7 +401,8 @@ export default function SuratTugas() {
                         className="w-full mb-3"
                         onChange={(e) => handleChange("file", e.target.files[0])}
                     />
-
+                    
+                    {/* Catatan */}
                     <InputTextarea
                         placeholder="Catatan"
                         className="w-full"
@@ -260,14 +411,19 @@ export default function SuratTugas() {
                         onChange={(e) => handleChange("catatan", e.target.value)}
                     />
 
+                    {/* Dresscode */}
+                    <div className='mt-3 mb-3'>
                     <InputText
                         placeholder="Dresscode"
                         className="w-full mb-3"
-                        value={form.nama}
-                        // onChange={(e) => handleChange("dresscode", e.target.value)}
+                        rows={3}
+                        value={form.dresscode}
+                        onChange={(e) => handleChange("dresscode", e.target.value)}
                     />
+                    </div>
                 </Dialog>
 
+                {/* DETAIL */}
                 <Dialog
                     header="Catatan Surat Tugas"
                     visible={showDetail}
@@ -277,26 +433,61 @@ export default function SuratTugas() {
                 >
                     <p>{selectedNote}</p>
                 </Dialog>
-                
+
+                {/* VIEW DETAIL LENGKAP */}
+                <Dialog
+                    header="Detail Surat Tugas"
+                    visible={showView}
+                    modal
+                    style={{ width: "30rem" }}
+                    onHide={() => setShowView(false)}
+                >
+                    {selectedData && (
+                        <div className="flex flex-column gap-2">
+
+                            <p><strong>Status:</strong> {selectedData.status || "-"}</p>
+                            <p><strong>Nama Kegiatan:</strong> {selectedData.namakegiatan}</p>
+                            <p><strong>Agenda Kegiatan:</strong> {selectedData.agenda}</p>
+                            <p><strong>Nama Pegawai:</strong></p>
+                            <ul>
+                                {(selectedData.pegawai || []).map((p, i) => (
+                                    <li key={i}>{p.name}</li>
+                                ))}
+                            </ul>
+                            <p><strong>Direktorat:</strong> {selectedData.directorat}</p>
+                            <p><strong>Divisi:</strong> {selectedData.divisi}</p>
+                            <p><strong>Tanggal:</strong> {selectedData.tanggal}</p>
+                            <p><strong>Jam Mulai:</strong> {selectedData.jamMulai}</p>
+                            <p><strong>Jam Selesai:</strong> {selectedData.jamSelesai}</p>
+                            <p><strong>Tempat:</strong> {selectedData.tempat}</p>
+                            <p><strong>File:</strong> {selectedData.file}</p>
+                            <p><strong>Catatan:</strong> {selectedData.catatan || "-"}</p>
+
+                        </div>
+                    )}
+                </Dialog>
+
+
+                {/* TABLE */}
                 <DataTable
                     value={customers}
                     paginator rows={5}
                     loading={loading}
                     dataKey="id"
-                    filterDisplay="row"
-                    emptyMessage="Tidak ada data."
                 >
-                    <Column field="status" header="Status" dataType="boolean" style={{ minWidth: '4rem' }} />
+                    <Column field="status" header="Status" bodyClassName="text-center" style={{ minWidth: '5rem' }} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} body={statusBodyTemplate}/>
                     <Column field="namakegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
                     <Column field="tanggal" header="Tanggal" style={{ minWidth: '10rem' }} />
                     <Column field="jam" header="Jam" style={{ minWidth: '10rem' }} />
-                    {/* <Column header="File" body={fileBodyTemplate} style={{ minWidth: '8rem' }} /> */}
-                    <Column field="tempat" header="Tempat" style={{ minWidth: '12rem' }} />
-                    <Column header="Catatan" body={catatanBodyTemplate} style={{ textAlign: 'center', width: '6rem' }} />
-                    <Column header="Detail" style={{ textAlign: 'center', width: '6rem' }}/>
+                    <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
+                    <Column header="Catatan" body={catatanBodyTemplate} style={{ minWidth: '10rem', textAlign: 'center' }} />
+
+                    {/* === ACTION === */}
+                    <Column header="Action" body={actionBodyTemplate} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} style={{ width: "10rem" }} />
                 </DataTable>
 
             </MainCard>
         </div>
     );
 }
+
