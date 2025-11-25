@@ -6,13 +6,13 @@ export default defineConfig(({ mode }) => {
     // depending on your application, base can also be "/"
     const env = loadEnv(mode, process.cwd(), '');
     const API_URL = `${env.VITE_APP_BASE_NAME}`;
-    const PORT = 3000;
+    const PORT = 3001;
 
     return {
         server: {
             // this ensures that the browser opens upon server start
             open: true,
-            // this sets a default port to 3000
+            // this sets a default port to 3001
             port: PORT,
             host: true
         },

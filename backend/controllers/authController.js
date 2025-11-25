@@ -22,12 +22,12 @@ const login = async (req, res) => {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(404).json({ message: `User dengan ${email} tersebut tidak ditemukan` });
+            return res.status(404).json({ msg: `User dengan ${email} tersebut tidak ditemukan` });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).json({ message: "Invalid credential " })
+            return res.status(400).json({ msg: "Hubungi putri gultom " })
         }
 
         const token = jwt.sign(
@@ -38,7 +38,7 @@ const login = async (req, res) => {
 
         res.status(200).json({ token });
     } catch (error) {
-        res.status(500).json({ message: "Something went wrong" });
+        res.status(500).json({ msg: "Something went wrong" });
     }
 };
 
