@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { LogOut, reset } from '../../../../features/authSlice';
+import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -29,6 +33,8 @@ export default function ProfileSection() {
   const { borderRadius } = useConfig();
   const [selectedIndex] = useState(-1);
   const [open, setOpen] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   /**
    * anchorRef is used on different components and specifying one type leads to other components throwing an error
@@ -46,6 +52,24 @@ export default function ProfileSection() {
 
     setOpen(false);
   };
+
+  const logout = () => {
+          Swal.fire({
+        title: 'Anda Yakin Logout?',
+        text: "Anda Akan Keluar Dari Halaman!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Logout!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          dispatch(LogOut());
+          dispatch(reset());
+          navigate("/pages/login");
+        }
+      })
+  }
 
   const prevOpen = useRef(open);
   useEffect(() => {
@@ -122,7 +146,7 @@ export default function ProfileSection() {
                           '& .MuiListItemButton-root': { mt: 0.5 }
                         }}
                       >
-                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }} selected={selectedIndex === 4}>
+                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }} selected={selectedIndex === 4} onClick={logout}>
                           <ListItemIcon>
                             <IconLogout stroke={1.5} size="20px" />
                           </ListItemIcon>

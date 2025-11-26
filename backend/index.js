@@ -1,6 +1,8 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+
 const authRoutes = require('./routes/authRoutes')
 const userRoutes = require('./routes/userRoutes')
 const app = express()
@@ -18,10 +20,12 @@ app.use(
   })
 );
 
+app.use(cookieParser());
 
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+
 
 // Database Connection
 mongoose.connect('mongodb+srv://node_db:5qcJ1b7MqwFnoGTC@nodedb.xr4shgr.mongodb.net/?appName=NodeDB')

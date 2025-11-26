@@ -1,6 +1,4 @@
 // project imports
-import React, {useState, useEffect} from 'react';
-
 import MainCard from 'ui-component/cards/MainCard';
 import React, { useState, useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
@@ -17,6 +15,7 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './app.css';
+import { Dropdown } from 'primereact/dropdown';
 
 
 export default function Disposisi() {
@@ -36,8 +35,8 @@ export default function Disposisi() {
         namakegiatan: "",
         agenda: "",
         namayangdituju: "",
-        direktorat:"",
-        divisi:"",
+        direktorat: "",
+        divisi: "",
         tanggal: null,
         jamMulai: "",
         jamSelesai: "",
@@ -47,6 +46,9 @@ export default function Disposisi() {
     });
 
     const [selectedpegawai, setSelectedpegawai] = useState('');
+    const [selecteddivisi, setSelecteddivisi] = useState('');
+    const [selecteddirectorat, setSelecteddirectorat] = useState('');
+
     const pegawai = [
         { name: 'Lorem1', code: 'YA' },
         { name: 'Lorem2', code: 'PU' },
@@ -55,23 +57,60 @@ export default function Disposisi() {
         { name: 'Lorem5', code: 'PRS' }
     ]
 
-    const [selecteddirectorat, setSelecteddirectorat] = useState('');
     const directorat = [
-        { name: 'Lorem1', code: 'YA' },
-        { name: 'Lorem2', code: 'PU' },
-        { name: 'Lorem3', code: 'LDN' },
-        { name: 'Lorem4', code: 'IST' },
-        { name: 'Lorem5', code: 'PRS' }
+        { name: 'Direktorat Utama', code: 'DU' },
+        { name: 'Direktorat Keuangan dan Manajemen Risiko', code: 'DK' },
+        { name: 'Direktorat Operasi', code: 'DO' },
+        { name: 'Direktorat Teknik', code: 'DT' },
+        { name: 'Direktorat Keselamatan Keamanan dan Standardisasi', code: 'DS' },
+        { name: 'Direktorat SDM dan Umum', code: 'DM' },
+
     ]
 
-    const [selecteddivisi, setSelecteddivisi] = useState('');
-    const divisi = [
-        { name: 'Lorem1', code: 'YA' },
-        { name: 'Lorem2', code: 'PU' },
-        { name: 'Lorem3', code: 'LDN' },
-        { name: 'Lorem4', code: 'IST' },
-        { name: 'Lorem5', code: 'PRS' }
-    ]
+    const divisi = {
+        DU: [
+            { name: 'Internal Audit', code: 'UI' },
+            { name: 'Corporate Secretary', code: 'CS' },
+            { name: 'Legal Compliance and Sustainability', code: 'LS' },
+            { name: 'Community of Expertise', code: 'CE' },
+        ],
+        DK: [
+            { name: 'Corporate Strategy', code: 'CG' },
+            { name: 'Accounting and Asset Management', code: 'AM' },
+            { name: 'Internal Audit', code: 'UI' },
+            { name: 'Transaction', code: 'TR' },
+            { name: 'Risk Management', code: 'RM' },
+            { name: 'Project Management Office', code: 'PMO' }
+        ],
+        DO: [
+            { name: 'Air Navigation Services Planning', code: 'AN' },
+            { name: 'Air Navigation Control', code: 'ANC' },
+            { name: 'Air Navigation Information Management', code: 'ANI' },
+        ],
+        DT: [
+            { name: 'Technology Solution', code: 'TS' },
+            { name: 'Infrastructure Readiness', code: 'IR' },
+            { name: 'Information Technology', code: 'IT' },
+        ],
+        DS: [
+            { name: 'Standard Security', code: 'SS' },
+            { name: 'Safety Operation', code: 'SO' },
+        ],
+        DM: [
+            { name: 'Human Capital Planning', code: 'HC' },
+            { name: 'Human Capital Services', code: 'HCS' },
+            { name: 'Corporate Services', code: 'CSE' },
+            { name: 'Learning and Knowledge Management', code: 'LKM' },
+        ]
+    }
+
+    const itemOptions = selecteddirectorat ? divisi[selecteddirectorat.code] : [];
+
+    const onDirektoratChange = (e) => {
+        setSelecteddirectorat(e.value);
+        setSelecteddivisi(null);
+    };
+
 
     const [errors, setErrors] = useState({});
 
@@ -173,12 +212,12 @@ export default function Disposisi() {
                 return `${h}.${m}`;
             };
 
-                const jamMulaiFormatted = formatTime(form.jamMulai);
-                const jamSelesaiFormatted = form.jamSelesai ? formatTime(form.jamSelesai) : null;
+            const jamMulaiFormatted = formatTime(form.jamMulai);
+            const jamSelesaiFormatted = form.jamSelesai ? formatTime(form.jamSelesai) : null;
 
-                const jamFinal = jamSelesaiFormatted
-                    ? `${jamMulaiFormatted} - ${jamSelesaiFormatted}`
-                    : `${jamMulaiFormatted} - selesai`;
+            const jamFinal = jamSelesaiFormatted
+                ? `${jamMulaiFormatted} - ${jamSelesaiFormatted}`
+                : `${jamMulaiFormatted} - selesai`;
 
 
             const newData = {
@@ -301,14 +340,14 @@ export default function Disposisi() {
     };
 
     const rowClass = (rowData) => {
-            if (rowData.tempat === "Auditorium") {
-                return 'highlight-row';
-            }
-            if (rowData.tempat === 'Gedung') {
-                return 'out-of-stock-row';
-            }
-            return ''; 
-        };
+        if (rowData.tempat === "Auditorium") {
+            return 'highlight-row';
+        }
+        if (rowData.tempat === 'Gedung') {
+            return 'out-of-stock-row';
+        }
+        return '';
+    };
 
     const footer = (
         <Button label="Submit" className="w-full" onClick={handleSubmit} />
@@ -348,7 +387,7 @@ export default function Disposisi() {
                         }}
                     />
                 </div>
-                
+
                 {/* FORM */}
                 <Dialog
                     header={editMode ? "Edit Disposisi" : "Form Disposisi"}
@@ -397,28 +436,31 @@ export default function Disposisi() {
 
                     {/* Direktorat */}
                     <div className="mb-3">
-                        <MultiSelect
+                        <Dropdown
                             placeholder="Direktorat *"
                             className="w-full"
                             value={selecteddirectorat}
                             options={directorat}
                             optionLabel='name'
                             display='chip'
-                            onChange={(e) => setSelecteddirectorat(e.value)}
+                            onChange={onDirektoratChange}
                         />
                         {errors.direktorat && <small className="p-error">{errors.direktorat}</small>}
                     </div>
 
                     {/* Divisi */}
                     <div className="mb-3">
-                        <MultiSelect
-                            placeholder="Divisi *"
+                        <Dropdown
                             className="w-full"
                             value={selecteddivisi}
-                            options={divisi}
+                            options={itemOptions}
                             optionLabel='name'
                             display='chip'
                             onChange={(e) => setSelecteddivisi(e.value)}
+                            placeholder={
+                                selecteddirectorat ? "Divisi" : "Pilihlah Direktorat Dahulu"
+                            }
+
                         />
                         {errors.divisi && <small className="p-error">{errors.divisi}</small>}
                     </div>
@@ -520,7 +562,7 @@ export default function Disposisi() {
                 >
                     {selectedData && (
                         <div className="flex flex-column gap-2">
-                            
+
                             <p><strong>Status:</strong> {selectedData.status || "-"}</p>
                             <p><strong>Nama Kegiatan:</strong> {selectedData.namakegiatan}</p>
                             <p><strong>Agenda Kegiatan:</strong> {selectedData.agenda}</p>
