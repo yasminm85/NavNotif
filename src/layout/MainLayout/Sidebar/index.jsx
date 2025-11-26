@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Chip from '@mui/material/Chip';
@@ -6,10 +7,8 @@ import Drawer from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 
-// third party
 import PerfectScrollbar from 'react-perfect-scrollbar';
 
-// project imports
 import MenuCard from './MenuCard';
 import MenuList from '../MenuList';
 import LogoSection from '../LogoSection';
@@ -20,15 +19,15 @@ import { drawerWidth } from 'store/constant';
 
 import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
 
-// ==============================|| SIDEBAR DRAWER ||============================== //
-
 function Sidebar() {
   const downMD = useMediaQuery((theme) => theme.breakpoints.down('md'));
-
   const { menuMaster } = useGetMenuMaster();
   const drawerOpen = menuMaster.isDashboardDrawerOpened;
 
   const { miniDrawer, mode } = useConfig();
+  
+  // ⬇️ Tambahkan di sini (BUKAN bikin Sidebar baru)
+  const { user } = useSelector((state) => state.auth);
 
   const logo = useMemo(
     () => (
@@ -56,22 +55,21 @@ function Sidebar() {
       <>
         {downMD ? (
           <Box sx={drawerSX}>
-            <MenuList />
+            <MenuList user={user} />   {/* ⬅️ kirim user ke MenuList */}
             {drawerOpen && drawerContent}
           </Box>
         ) : (
           <PerfectScrollbar style={{ height: 'calc(100vh - 88px)', ...drawerSX }}>
-            <MenuList />
+            <MenuList user={user} />   {/* ⬅️ kirim user */}
             {drawerOpen && drawerContent}
           </PerfectScrollbar>
         )}
       </>
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [downMD, drawerOpen, mode]);
+  }, [downMD, drawerOpen, mode, user]);
 
   return (
-    <Box component="nav" sx={{ flexShrink: { md: 0 }, width: { xs: 'auto', md: drawerWidth } }} aria-label="mailbox folders">
+    <Box component="nav" sx={{ flexShrink: { md: 0 }, width: { xs: 'auto', md: drawerWidth } }}>
       {downMD || (miniDrawer && drawerOpen) ? (
         <Drawer
           variant={downMD ? 'temporary' : 'persistent'}
@@ -89,7 +87,6 @@ function Sidebar() {
             }
           }}
           ModalProps={{ keepMounted: true }}
-          color="inherit"
         >
           {downMD && logo}
           {drawer}

@@ -12,6 +12,20 @@ const DisposisiSchema = mongoose.Schema(
             required: true,
         },
 
+        nama_yang_dituju: {
+            type: String,
+            required: true,
+        },
+        direktorat: {
+            type: String,
+            required: true,
+        },
+
+        divisi: {
+            type: String,
+            required: true,
+        },
+        
         tanggal: {
             type: Date,
             required: true,

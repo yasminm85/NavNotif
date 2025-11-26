@@ -32,8 +32,13 @@ export default function Login() {
   // Redirect after login
   useEffect(() => {
     if (user || isSuccess) {
-      navigate("/dashboard");
+      if (user.role === "admin") {
+        navigate("/disposisi");
+      } else if (user.role === "pegawai") {
+        navigate("/dashboard-pegawai");
+      }
     }
+
     dispatch(reset());
   }, [user, isSuccess, dispatch, navigate]);
 

@@ -35,7 +35,14 @@ const login = async (req, res) => {
             { expiresIn: "1h" }
         );
 
-        res.status(200).json({ token });
+        res.status(200).json({ 
+            msg: "Login Berhasil",
+            token,
+        user: {
+            id: user._id,
+            email: user.email,
+            role: user.role
+        } });
     } catch (error) {
         res.status(500).json({ msg: "Something went wrong" });
     }
@@ -76,7 +83,6 @@ const getUserDetail = async (req, res) => {
 };
 
 
-
 const logout = async (req, res) => {
     try {
         res.cookie("token", "", {
@@ -91,8 +97,6 @@ const logout = async (req, res) => {
 
     }
 }
-
-
 
 module.exports = {
     login,
