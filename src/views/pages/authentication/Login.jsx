@@ -30,17 +30,16 @@ export default function Login() {
   );
 
   // Redirect after login
-  useEffect(() => {
-    if (user || isSuccess) {
-      if (user.role === "admin") {
-        navigate("/disposisi");
-      } else if (user.role === "pegawai") {
-        navigate("/dashboard-pegawai");
-      }
+useEffect(() => {
+  if (user || isSuccess) {
+    if (user.role === "admin") {
+      navigate("/dashboard/default");
+    } else if (user.role === "pegawai") {
+      navigate("/dashboard-pegawai");
     }
+  }
+}, [user, isSuccess]);
 
-    dispatch(reset());
-  }, [user, isSuccess, dispatch, navigate]);
 
   const handleLogin = (e) => {
     e.preventDefault();

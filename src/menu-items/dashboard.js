@@ -1,5 +1,6 @@
 // assets
 import { IconDashboard } from '@tabler/icons-react';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 
 // constant
 const icons = { IconDashboard };
@@ -17,15 +18,19 @@ const dashboard = {
       type: 'item',
       url: '/dashboard/default',
       icon: icons.IconDashboard,
+      allowedRoles: ['admin'],   // <-- role admin
       breadcrumbs: false
+
     },
     {
-      id: 'dashboard-pegawai',
-      title: 'Dashboard Pegawai',
+      id: 'disposisi',
+      title: 'Disposisi',
       type: 'item',
-      url: '/dashboard-pegawai',
-      icon: icons.IconDashboard,
+      url: '/disposisi',
+      icon: AssignmentIcon,
+      allowedRoles: ['admin'],   // <-- hanya admin
       breadcrumbs: false
+
     },
   ]
 };

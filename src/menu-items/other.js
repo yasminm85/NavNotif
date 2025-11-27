@@ -1,32 +1,35 @@
-// assets
-import { IconBrandChrome, IconNotification } from '@tabler/icons-react';
+// src/menu-items/other.js
+import { IconDashboard } from '@tabler/icons-react';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 
-// constant
-const icons = { IconBrandChrome, IconNotification };
-
-// ==============================|| Disposisi & DOCUMENTATION MENU ITEMS ||============================== //
 
 const other = {
-  id: 'sample-docs-roadmap',
+  id: 'other-group',
   type: 'group',
+  title: 'Lainnya',
   children: [
-    {
-      id: 'disposisi',
-      title: 'Disposisi',
-      type: 'item',
-      url: '/disposisi',
-      icon: icons.IconBrandChrome,
-      breadcrumbs: false
-    },
-    {
-      id: 'daftar-notifikasi',
-      title: 'Daftar Notifikasi',
-      type: 'item',
-      url: '/daftar-notifikasi',
-      icon: icons.IconNotification,
-      breadcrumbs: false
-    },
+  {
+    id: 'dashboard-pegawai',
+    title: 'Dashboard Pegawai',
+    type: 'item',
+    url: '/dashboard-pegawai',
+    icon: IconDashboard,
+    breadcrumbs: false,
+    allowedRoles: ['pegawai']
+  },
+  {
+    id: 'notifikasi',
+    title: 'Notifikasi',
+    type: 'item',
+    url: '/daftar-notifikasi',  
+    icon: AssignmentIcon,
+    breadcrumbs: false,
+    allowedRoles: ['pegawai']
+  }
+
   ]
 };
+
 
 export default other;
