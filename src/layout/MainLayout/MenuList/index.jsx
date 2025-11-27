@@ -58,45 +58,40 @@ function MenuList() {
       ...(item.url && { url: item.url })
     }));
   }
-const navItems = filteredMenu.slice(0, lastItemIndex + 1).map((item, index) => {
-  // JIKA group tidak punya children => abaikan (jangan render)
-  if (item.type === 'group' && (!item.children || item.children.length === 0)) {
-    return null;
-  }
 
-  switch (item.type) {
-    case 'group':
-      // single item group (punya url)
-      if (item.url && item.id !== lastItemId) {
+  const navItems = filteredMenu.slice(0, lastItemIndex + 1).map((item, index) => {
+    switch (item.type) {
+      case 'group':
+        // group yang punya url (single item group)
+        if (item.url && item.id !== lastItemId) {
+          return (
+            <List key={item.id}>
+              <NavItem item={item} level={1} isParents setSelectedID={() => setSelectedID('')} />
+              {index !== 0 && <Divider sx={{ py: 0.5 }} />}
+            </List>
+          );
+        }
+
         return (
-          <List key={item.id}>
-            <NavItem item={item} level={1} isParents setSelectedID={() => setSelectedID('')} />
-            {index !== 0 && <Divider sx={{ py: 0.5 }} />}
-          </List>
+          <NavGroup
+            key={item.id}
+            setSelectedID={setSelectedID}
+            selectedID={selectedID}
+            item={item}
+            lastItem={lastItem}
+            remItems={remItems}
+            lastItemId={lastItemId}
+          />
         );
-      }
 
-      return (
-        <NavGroup
-          key={item.id}
-          setSelectedID={setSelectedID}
-          selectedID={selectedID}
-          item={item}
-          lastItem={lastItem}
-          remItems={remItems}
-          lastItemId={lastItemId}
-        />
-      );
-
-    default:
-      return (
-        <Typography key={item.id} variant="h6" color="error" align="center">
-          Menu Items Error
-        </Typography>
-      );
-  }
-});
-
+      default:
+        return (
+          <Typography key={item.id} variant="h6" color="error" align="center">
+            Menu Items Error
+          </Typography>
+        );
+    }
+  });
 
   return <Box {...(drawerOpen && { sx: { mt: 1.5 } })}>{navItems}</Box>;
 }
