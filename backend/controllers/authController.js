@@ -1,4 +1,4 @@
-const User = require('../models/login.model');
+const User = require('../models/user.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -83,6 +83,18 @@ const getUserDetail = async (req, res) => {
 };
 
 
+// dapatin yang pegawai pegawai ajah
+const getEmployees = async (req, res) => {
+  try {
+    const employees = await User.find({ role: 'pegawai' }).select('_id email');
+    res.json(employees);
+  } catch (err) {
+    console.error('Error getEmployees:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 const logout = async (req, res) => {
     try {
         res.cookie("token", "", {
@@ -102,5 +114,6 @@ module.exports = {
     login,
     register,
     logout,
-    getUserDetail
+    getUserDetail,
+    getEmployees
 };

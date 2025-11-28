@@ -42,7 +42,7 @@ const updateDisposisi = async (req, res) => {
             return res.status(404).json({message: "Data tidak ditemukan"});
         }
         const updatedDisposisi = await Disposisi.findById(id);
-        res.status(200).json(updateDisposisi);
+        res.status(200).json(updatedDisposisi);
 
     } catch (error) {
         res.status(500).json({message: error.message});
@@ -59,6 +59,8 @@ const deleteDisposisi = async (req, res) => {
         if(!disposisi) {
             return res.status(404).json({message: "Data not found"});
         }
+
+        res.status(200).json({message: "Data successfully delete"})
 
     } catch (error) {
         res.status(500).json({message: error.message});

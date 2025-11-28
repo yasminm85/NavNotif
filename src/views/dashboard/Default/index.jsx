@@ -8,17 +8,25 @@ import TotalDispo from './TotalDispo';
 import TotalBarChart from './TotalBarChart';
 import TableReport from '../TableReport';
 import { gridSpacing } from 'store/constant';
-
-// assets
+import { getUserDetail } from '../../../features/authSlice';
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 
 // ==============================|| DEFAULT DASHBOARD ||============================== //
 
 export default function Dashboard() {
   const [isLoading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const {isError} = useSelector((state => state.auth));
 
   useEffect(() => {
+    dispatch(getUserDetail());
     setLoading(false);
-  }, []);
+    if(isError){
+            navigate("/pages/login");
+        }
+  }, [dispatch,isError, navigate]);
 
   return (
     <Grid container spacing={gridSpacing}>

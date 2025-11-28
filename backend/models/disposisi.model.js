@@ -7,25 +7,26 @@ const DisposisiSchema = mongoose.Schema(
             required: true,
         },
 
-        agenda_kegitan: {
+        agenda_kegiatan: {
             type: String,
             required: true,
         },
 
-        nama_yang_dituju: {
-            type: String,
+        nama_yang_dituju: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
             required: true,
-        },
+        }],
         direktorat: {
-            type: String,
+            type: [String],
             required: true,
         },
 
         divisi: {
-            type: String,
+            type: [String],
             required: true,
         },
-        
+
         tanggal: {
             type: Date,
             required: true,
@@ -39,7 +40,7 @@ const DisposisiSchema = mongoose.Schema(
         jam_selesai: {
             type: String,
             required: false,
-            default:"selesai"
+            default: "selesai"
         },
 
         tempat: {
@@ -49,7 +50,7 @@ const DisposisiSchema = mongoose.Schema(
 
         file_path: {
             type: String,
-            required: true,
+            required: false,
         },
 
         catatan: {
@@ -61,11 +62,6 @@ const DisposisiSchema = mongoose.Schema(
             type: String,
             required: false,
         },
-
-        status: {
-            type: Boolean,
-            default: false,
-        },
     },
 
     {
@@ -73,6 +69,4 @@ const DisposisiSchema = mongoose.Schema(
     }
 );
 
-const Disposisi = mongoose.model("Disposisi", DisposisiSchema);
-
-module.exports = Disposisi;
+module.exports = mongoose.model("Disposisi", DisposisiSchema);

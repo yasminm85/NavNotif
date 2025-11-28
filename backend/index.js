@@ -5,6 +5,8 @@ const cookieParser = require('cookie-parser');
 
 const authRoutes = require('./routes/authRoutes')
 const userRoutes = require('./routes/userRoutes')
+const disposisiRoutes = require('./routes/disposisiRoutes')
+const notifRoutes = require('./routes/notifRoutes')
 const app = express()
 require('dotenv').config();
 
@@ -25,7 +27,8 @@ app.use(cookieParser());
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-
+app.use("/api/task", disposisiRoutes);
+app.use("/api/notif", notifRoutes);
 
 // Database Connection
 mongoose.connect('mongodb+srv://node_db:5qcJ1b7MqwFnoGTC@nodedb.xr4shgr.mongodb.net/?appName=NodeDB')
@@ -35,8 +38,9 @@ mongoose.connect('mongodb+srv://node_db:5qcJ1b7MqwFnoGTC@nodedb.xr4shgr.mongodb.
             console.log('Server is running on port 3000');
         });
     })
-    .catch(() => {
+    .catch((err) => {
         console.log("Connection failed");
+        console.error(err); 
     });
 
 

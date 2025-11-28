@@ -53,7 +53,7 @@ export default function ProfileSection() {
     setOpen(false);
   };
 
-  const logout = () => {
+  const handlelogout = () => {
           Swal.fire({
         title: 'Anda Yakin Logout?',
         text: "Anda Akan Keluar Dari Halaman!",
@@ -146,7 +146,7 @@ export default function ProfileSection() {
                           '& .MuiListItemButton-root': { mt: 0.5 }
                         }}
                       >
-                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }} selected={selectedIndex === 4} onClick={logout}>
+                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }} selected={selectedIndex === 4} onClick={handlelogout}>
                           <ListItemIcon>
                             <IconLogout stroke={1.5} size="20px" />
                           </ListItemIcon>

@@ -69,7 +69,7 @@ export const getUserDetail = createAsyncThunk(
   "user/getUserDetail",
   async (_, thunkAPI) => {
     try {
-      const response = await axios.get("http://localhost:3000/me");
+      const response = await axios.get("http://localhost:3000/api/auth/me");
       return response.data;
     } catch (error) {
       if (error.response) {

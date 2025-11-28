@@ -15,13 +15,18 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './app.css';
-import { Dropdown } from 'primereact/dropdown';
+import axios from 'axios';
+
 
 
 export default function Disposisi() {
-    const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    const [pegawaisel, setPegawai] = useState([]);
+    const [selectedpegawai, setSelectedpegawai] = useState([]);
+    const [selecteddivisi, setSelecteddivisi] = useState([]);
+    const [selecteddirectorat, setSelecteddirectorat] = useState([]);
+    const [itemOptions, setitemOptions] = useState([]);
+    const token = localStorage.getItem('token');
     // === STATE FORM === //
     const [showForm, setShowForm] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
@@ -29,9 +34,9 @@ export default function Disposisi() {
     const [editMode, setEditMode] = useState(false);
     const [selectedData, setSelectedData] = useState(null);
     const [showView, setShowView] = useState(false);
+    const [showDisposisi, setShowDisposisi] = useState([]);
+    const [selectedDisposisi, setSelectedDisposisi] = useState([]);
     const [form, setForm] = useState({
-        id: null,
-        status: "",
         namakegiatan: "",
         agenda: "",
         namayangdituju: "",
@@ -43,86 +48,99 @@ export default function Disposisi() {
         tempat: "",
         file: null,
         catatan: "",
+        dresscode: ""
     });
+    const fetchPegawai = async () => {
+        try {
+            const res = await axios.get('http://localhost:3000/api/auth/getEmp', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
 
-    const [selectedpegawai, setSelectedpegawai] = useState('');
-    const [selecteddivisi, setSelecteddivisi] = useState('');
-    const [selecteddirectorat, setSelecteddirectorat] = useState('');
+            setPegawai(res.data);
+        } catch (err) {
+            console.error('Gagal ambil data pegawai:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const pegawai = [
-        { name: 'Lorem1', code: 'YA' },
-        { name: 'Lorem2', code: 'PU' },
-        { name: 'Lorem3', code: 'LDN' },
-        { name: 'Lorem4', code: 'IST' },
-        { name: 'Lorem5', code: 'PRS' }
-    ]
+    const getDataDisposisi = async () => {
+        try {
+            setLoading(true);
+            console.log(token);
+            const response = await axios.get('http://localhost:3000/api/task/disposisi', {
+                headers: { Authorization: `Bearer ${token}`}
+            });
+            setShowDisposisi(response.data);
+        } catch (error) {
+            console.error("Error mengambil data disposisi", error)
+        }
+        setLoading(false)
+
+    };
+
+    useEffect(() => {
+        fetchPegawai();
+        getDataDisposisi();
+    }, []);
+
 
     const directorat = [
-        { name: 'Direktorat Utama', code: 'DU' },
-        { name: 'Direktorat Keuangan dan Manajemen Risiko', code: 'DK' },
-        { name: 'Direktorat Operasi', code: 'DO' },
-        { name: 'Direktorat Teknik', code: 'DT' },
-        { name: 'Direktorat Keselamatan Keamanan dan Standardisasi', code: 'DS' },
-        { name: 'Direktorat SDM dan Umum', code: 'DM' },
+        { id: 'DU', name: 'Direktorat Utama' },
+        { id: 'DK', name: 'Direktorat Keuangan dan Manajemen Risiko' },
+        { id: 'DO', name: 'Direktorat Operasi' },
+        { id: 'DT', name: 'Direktorat Teknik' },
+        { id: 'DS', name: 'Direktorat Keselamatan Keamanan dan Standardisasi' },
+        { id: 'DM', name: 'Direktorat SDM dan Umum' },
 
     ]
 
-    const divisi = {
-        DU: [
-            { name: 'Internal Audit', code: 'UI' },
-            { name: 'Corporate Secretary', code: 'CS' },
-            { name: 'Legal Compliance and Sustainability', code: 'LS' },
-            { name: 'Community of Expertise', code: 'CE' },
-        ],
-        DK: [
-            { name: 'Corporate Strategy', code: 'CG' },
-            { name: 'Accounting and Asset Management', code: 'AM' },
-            { name: 'Internal Audit', code: 'UI' },
-            { name: 'Transaction', code: 'TR' },
-            { name: 'Risk Management', code: 'RM' },
-            { name: 'Project Management Office', code: 'PMO' }
-        ],
-        DO: [
-            { name: 'Air Navigation Services Planning', code: 'AN' },
-            { name: 'Air Navigation Control', code: 'ANC' },
-            { name: 'Air Navigation Information Management', code: 'ANI' },
-        ],
-        DT: [
-            { name: 'Technology Solution', code: 'TS' },
-            { name: 'Infrastructure Readiness', code: 'IR' },
-            { name: 'Information Technology', code: 'IT' },
-        ],
-        DS: [
-            { name: 'Standard Security', code: 'SS' },
-            { name: 'Safety Operation', code: 'SO' },
-        ],
-        DM: [
-            { name: 'Human Capital Planning', code: 'HC' },
-            { name: 'Human Capital Services', code: 'HCS' },
-            { name: 'Corporate Services', code: 'CSE' },
-            { name: 'Learning and Knowledge Management', code: 'LKM' },
-        ]
-    }
+    const divisi = [
+        { id: 'UI', name: 'Internal Audit', DirId: 'DU' },
+        { id: 'CS', name: 'Corporate Secretary', DirId: 'DU' },
+        { id: 'LS', name: 'Legal Compliance and Sustainability', DirId: 'DU' },
+        { id: 'CE', name: 'Community of Expertise', DirId: 'DU' },
+        { id: 'CG', name: 'Corporate Strategy', DirId: 'DK' },
+        { id: 'AM', name: 'Accounting and Asset Management', DirId: 'DK' },
+        { id: 'UI', name: 'Internal Audit', DirId: 'DK' },
+        { id: 'TR', name: 'Transaction', DirId: 'DK' },
+        { id: 'RM', name: 'Risk Management', DirId: 'DK' },
+        { id: 'PMO', name: 'Project Management Office', DirId: 'DK' },
+        { id: 'AN', name: 'Air Navigation Services Planning', DirId: 'DO' },
+        { id: 'ANC', name: 'Air Navigation Control', DirId: 'DO' },
+        { id: 'ANI', name: 'Air Navigation Information Management', DirId: 'DO' },
+        { id: 'TS', name: 'Technology Solution', DirId: 'DT' },
+        { id: 'IR', name: 'Infrastructure Readiness', DirId: 'DT' },
+        { id: 'IT', name: 'Information Technology', DirId: 'DT' },
+        { id: 'SS', name: 'Standard Security', DirId: 'DS' },
+        { id: 'SO', name: 'Safety Operation', DirId: 'DS' },
+        { id: 'HC', name: 'Human Capital Planning', DirId: 'DM' },
+        { id: 'HCS', name: 'Human Capital Services', DirId: 'DM' },
+        { id: 'CSE', name: 'Corporate Services', DirId: 'DM' },
+        { id: 'LKM', name: 'Learning and Knowledge Management', DirId: 'DM' },
+    ]
 
-    const itemOptions = selecteddirectorat ? divisi[selecteddirectorat.code] : [];
 
     const onDirektoratChange = (e) => {
-        setSelecteddirectorat(e.value);
-        setSelecteddivisi(null);
+        const selectedDir = e.value;
+        setSelecteddirectorat(selectedDir);
+
+        const selectedDirCode = selectedDir.map((d) => d.id);
+        const filteredDivisis = divisi.filter((div) =>
+            selectedDirCode.includes(div.DirId)
+        );
+
+        setitemOptions(filteredDivisis);
+
+        setSelecteddivisi([]);
     };
 
 
     const [errors, setErrors] = useState({});
 
-    // GET DATA
-    useEffect(() => {
-        DataDisposisi.getCustomersMedium().then((data) => {
-            setCustomers(data || []);
-            setLoading(false);
-        });
-    }, []);
 
-    
     const handleChange = (field, value) => {
         setForm({ ...form, [field]: value });
         setErrors({ ...errors, [field]: "" });
@@ -160,14 +178,22 @@ export default function Disposisi() {
         );
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         const validation = validateForm();
         setErrors(validation);
 
         if (Object.keys(validation).length > 0) return;
 
-        if (editMode) {
-            const formatTime = (date) => {
+        console.log('selectedpegawai:', selectedpegawai);
+        console.log('selecteddirectorat:', selecteddirectorat);
+        console.log('selecteddivisi:', selecteddivisi);
+
+        const pegawaiIds = selectedpegawai.map((p) => p._id);
+
+        const direktoratIds = selecteddirectorat.map((d) => d._id || d.id);
+        const divisiIds = selecteddivisi.map((d) => d._id || d.id);
+        const formatTime = (date) => {
                 if (!date) return "";
                 const h = date.getHours().toString().padStart(2, "0");
                 const m = date.getMinutes().toString().padStart(2, "0");
@@ -181,88 +207,70 @@ export default function Disposisi() {
             const jamFinal = jamSelesaiFormatted
                 ? `${jamMulaiFormatted} - ${jamSelesaiFormatted}`
                 : `${jamMulaiFormatted} - selesai`;
+        const payload = {
+            nama_kegiatan: form.namakegiatan,
+            agenda_kegiatan: form.agenda,
+            nama_yang_dituju: pegawaiIds,
+            direktorat: direktoratIds,
+            divisi: divisiIds,
+            tanggal: form.tanggal,
+            jam_mulai: jamMulaiFormatted,
+            jam_selesai: jamSelesaiFormatted ? jamSelesaiFormatted : "selesai",
+            tempat: form.tempat,
+            catatan: form.catatan,
+            dresscode: form.dresscode
+        };
 
-            const updated = customers.map((item) =>
-                item.id === form.id
-                    ? {
-                        ...item,
-                        status: form.status,
-                        namakegiatan: form.namakegiatan,
-                        agenda: form.agenda,
-                        tanggal: form.tanggal?.toLocaleDateString("id-ID"),
-                        tanggalRaw: form.tanggal,
-                        jam: jamFinal,
-                        jamMulai: jamMulaiFormatted,
-                        jamSelesai: jamSelesaiFormatted ? jamSelesaiFormatted : "selesai",
-                        tempat: form.tempat,
-                        file: form.file?.name || item.file,
-                        fileRaw: form.file || item.fileRaw,
-                        pegawai: selectedpegawai,
-                        catatan: form.catatan
-                    }
-                    : item
+        console.log('payload ke backend:', payload);
+
+        try {
+            const response = await axios.post(
+                'http://localhost:3000/api/task/disposisi',
+                payload,
+            {
+                headers: { Authorization: `Bearer ${token}`}
+            }
             );
-            setCustomers(updated);
-        } else {
 
-            // ADD NEW DATA
-            const formatTime = (date) => {
-                if (!date) return "";
-                const h = date.getHours().toString().padStart(2, "0");
-                const m = date.getMinutes().toString().padStart(2, "0");
-                return `${h}.${m}`;
-            };
-
-            const jamMulaiFormatted = formatTime(form.jamMulai);
-            const jamSelesaiFormatted = form.jamSelesai ? formatTime(form.jamSelesai) : null;
-
-            const jamFinal = jamSelesaiFormatted
-                ? `${jamMulaiFormatted} - ${jamSelesaiFormatted}`
-                : `${jamMulaiFormatted} - selesai`;
-
-
-            const newData = {
-                id: Date.now(),
-                status: form.status,
-                namakegiatan: form.namakegiatan,
-                agenda: form.agenda,
-                tanggal: form.tanggal?.toLocaleDateString("id-ID"),
-                tanggalRaw: form.tanggal,  // simpan juga Date asli
-                jam: jamFinal,
-                jamMulai: jamMulaiFormatted,
-                jamSelesai: jamSelesaiFormatted ? jamSelesaiFormatted : "selesai",
-                tempat: form.tempat,
-                file: form.file ? form.file.name : "-",
-                fileRaw: form.file,        // simpan file asli
-                pegawai: selectedpegawai,  // simpan pegawai yang dipilih
-                catatan: form.catatan
-            };
-
-            setCustomers([...customers, newData]);
+            console.log(response.data);
+            setShowForm(false);
+            setForm({
+                namakegiatan: "",
+                agenda: "",
+                namayangdituju: "",
+                direktorat: "",
+                divisi: "",
+                tanggal: null,
+                jamMulai: "",
+                jamSelesai: "",
+                tempat: "",
+                catatan: "",
+                dresscode: "",
+            });
+            setErrors({});
+            getDataDisposisi();
+        } catch (error) {
+            console.error(
+                'Error disposisi:',
+                error.response?.data || error.message || error
+            );
         }
-
-        // reset
-        setShowForm(false);
-        setForm({
-            id: null,
-            namakegiatan: "",
-            agenda: "",
-            tanggal: null,
-            jamMulai: "",
-            jamSelesai: "",
-            tempat: "",
-            file: null,
-            catatan: "",
-            dresscode: "",
-        });
-        setErrors({});
-        setEditMode(false);
     };
 
+
     // === DELETE === //
-    const handleDelete = (row) => {
-        if (window.confirm(`Yakin hapus data: ${row.namakegiatan}?`)) {
-            setCustomers(customers.filter(item => item.id !== row.id));
+    const handleDelete = async (id) => {
+        const hapusPop = (window.confirm(`Yakin hapus data?`)); 
+        if(!hapusPop) return ;
+
+        try {
+            await axios.delete(`http://localhost:3000/api/task/disposisi/${id}`, {
+                headers: { Authorization: `Bearer ${token}`}
+            })
+
+            setShowDisposisi((prev) => prev.filter((item) => item._id != id));
+        } catch (error) {
+            console.error("Gagal Hapus Disposisi", error.response?.data || error.message)
         }
     };
 
@@ -301,7 +309,7 @@ export default function Disposisi() {
                 <Button
                     icon="pi pi-trash"
                     className="p-button-rounded p-button-danger p-button-sm"
-                    onClick={() => handleDelete(rowData)}
+                    onClick={() => handleDelete(rowData._id)}
                 />
             </div>
         );
@@ -350,6 +358,25 @@ export default function Disposisi() {
         return '';
     };
 
+    const formDate = (date) => {
+        if(!date) return "";
+        
+        return new Date(date).toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        });
+    };
+
+    const formTime = (date) => {
+        if(!date) return "";
+        
+        return new Date(date).toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
+
     const footer = (
         <Button label="Submit" className="w-full" onClick={handleSubmit} />
     );
@@ -372,6 +399,9 @@ export default function Disposisi() {
                                 status: "",
                                 namakegiatan: "",
                                 agenda: "",
+                                namayangdituju: "",
+                                direktorat: "",
+                                divisi: "",
                                 tanggal: null,
                                 jamMulai: "",
                                 jamSelesai: "",
@@ -427,8 +457,8 @@ export default function Disposisi() {
                             placeholder="Nama yang dituju *"
                             className="w-full"
                             value={selectedpegawai}
-                            options={pegawai}
-                            optionLabel='name'
+                            options={pegawaisel}
+                            optionLabel='email'
                             display='chip'
                             onChange={(e) => setSelectedpegawai(e.value)}
                         />
@@ -437,7 +467,7 @@ export default function Disposisi() {
 
                     {/* Direktorat */}
                     <div className="mb-3">
-                        <Dropdown
+                        <MultiSelect
                             placeholder="Direktorat *"
                             className="w-full"
                             value={selecteddirectorat}
@@ -451,7 +481,7 @@ export default function Disposisi() {
 
                     {/* Divisi */}
                     <div className="mb-3">
-                        <Dropdown
+                        <MultiSelect
                             className="w-full"
                             value={selecteddivisi}
                             options={itemOptions}
@@ -548,7 +578,9 @@ export default function Disposisi() {
                     visible={showDetail}
                     modal
                     style={{ width: "25rem" }}
-                    onHide={() => setShowDetail(false)}
+                    onHide={() => { setShowDetail(false)
+                                setSelectedData(null)
+                    }}
                 >
                     <p>{selectedNote}</p>
                 </Dialog>
@@ -564,23 +596,22 @@ export default function Disposisi() {
                     {selectedData && (
                         <div className="flex flex-column gap-2">
 
-                            <p><strong>Status:</strong> {selectedData.status || "-"}</p>
-                            <p><strong>Nama Kegiatan:</strong> {selectedData.namakegiatan}</p>
+                            <p><strong>Nama Kegiatan:</strong> {selectedData.nama_kegiatan}</p>
                             <p><strong>Agenda Kegiatan:</strong> {selectedData.agenda}</p>
                             <p><strong>Nama Pegawai:</strong></p>
                             <ul>
-                                {(selectedData.pegawai || []).map((p, i) => (
-                                    <li key={i}>{p.name}</li>
+                                {(selectedData.nama_yang_dituju || []).map((p, i) => (
+                                    <li key={i}>{p.email}</li>
                                 ))}
                             </ul>
-                            <p><strong>Direktorat:</strong> {selectedData.directorat}</p>
+                            <p><strong>Direktorat:</strong> {selectedData.direktorat}</p>
                             <p><strong>Divisi:</strong> {selectedData.divisi}</p>
                             <p><strong>Tanggal:</strong> {selectedData.tanggal}</p>
-                            <p><strong>Jam Mulai:</strong> {selectedData.jamMulai}</p>
-                            <p><strong>Jam Selesai:</strong> {selectedData.jamSelesai}</p>
+                            <p><strong>Jam Mulai:</strong> {selectedData.jam_mulai}</p>
+                            <p><strong>Jam Selesai:</strong> {selectedData.jam_selesai}</p>
                             <p><strong>Tempat:</strong> {selectedData.tempat}</p>
-                            <p><strong>File:</strong> {selectedData.file}</p>
                             <p><strong>Catatan:</strong> {selectedData.catatan || "-"}</p>
+                            <p><strong>Dresscode:</strong> {selectedData.dresscode || "-"}</p>
 
                         </div>
                     )}
@@ -588,16 +619,16 @@ export default function Disposisi() {
 
                 {/* TABLE */}
                 <DataTable
-                    value={customers}
+                    value={showDisposisi}
                     paginator rows={5}
                     loading={loading}
-                    dataKey="id"
+                    dataKey="_id"
                     rowClassName={rowClass}
                 >
                     <Column field="status" header="Status" bodyClassName="text-center" style={{ minWidth: '5rem' }} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} body={statusBodyTemplate} />
-                    <Column field="namakegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
-                    <Column field="tanggal" header="Tanggal" style={{ minWidth: '10rem' }} />
-                    <Column field="jam" header="Jam" style={{ minWidth: '10rem' }} />
+                    <Column field="nama_kegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
+                    <Column field="tanggal" header="Tanggal" body={(row) => formDate(row.tanggal)} style={{ minWidth: '10rem' }} />
+                    <Column header="Jam" body={(row) => `${formTime(row.jam_mulai)} - ${formTime(row.jam_selesai)}`} style={{ minWidth: '10rem' }} />
                     <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
                     <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
                     <Column header="Catatan" body={catatanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
