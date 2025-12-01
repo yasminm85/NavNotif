@@ -4,7 +4,7 @@ const authorizationRoles = require('../middleware/roleMiddleware');
 const router = express.Router();
 const upload = require('../middleware/uploadMiddleware')
 
-const { getDisposisi, getDisposisiCount, getDisposisis, createDisposisi, deleteDisposisi, getMyTasks } = require('../controllers/disposisiController');
+const { getDisposisi, getDisposisiCount, getDisposisis, createDisposisi, deleteDisposisi, getMyTasks, updateDisposisi } = require('../controllers/disposisiController');
 
 // route all disposisi
 router.get('/disposisi', verifyToken, authorizationRoles("admin"), getDisposisi);
@@ -23,6 +23,8 @@ router.delete('/disposisi/:id', verifyToken, authorizationRoles("admin"), delete
 
 router.get('/disposisi/my', verifyToken, authorizationRoles('pegawai', 'admin'),  getMyTasks);
 
+// update 
+router.put('/disposisi/:id', verifyToken, authorizationRoles("admin"), updateDisposisi);
 
 
 module.exports = router;
