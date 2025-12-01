@@ -287,7 +287,7 @@ export default function Disposisi() {
                     onClick={() => {
                         setForm({
                             ...rowData,
-                            tanggal: new Date(),
+                            tanggal: rowData.tanggal ? new Date(rowData.tanggal) : null,
                             jamMulai: rowData.jam?.split(" - ")[0] || "",
                             jamSelesai: rowData.jam?.split(" - ")[1] || "",
                         });
