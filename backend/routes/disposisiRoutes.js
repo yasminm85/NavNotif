@@ -4,10 +4,13 @@ const authorizationRoles = require('../middleware/roleMiddleware');
 const router = express.Router();
 const upload = require('../middleware/uploadMiddleware')
 
-const { getDisposisi, getDisposisis, createDisposisi, deleteDisposisi, getMyTasks } = require('../controllers/disposisiController');
+const { getDisposisi, getDisposisiCount, getDisposisis, createDisposisi, deleteDisposisi, getMyTasks } = require('../controllers/disposisiController');
 
 // route all disposisi
 router.get('/disposisi', verifyToken, authorizationRoles("admin"), getDisposisi);
+
+// hitung total disposisi
+router.get('/disposisi/count', verifyToken, authorizationRoles("admin"), getDisposisiCount);
 
 // route disposisi specific
 router.get('/disposisi/:id', verifyToken, authorizationRoles("admin"), getDisposisis);
@@ -23,3 +26,4 @@ router.get('/disposisi/my', verifyToken, authorizationRoles('pegawai', 'admin'),
 
 
 module.exports = router;
+

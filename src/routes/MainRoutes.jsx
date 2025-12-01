@@ -28,7 +28,8 @@ const MainRoutes = {
   children: [
     {
       path: '/',
-      element: <DashboardDefault />
+      element: 
+        <DashboardDefault />
     },
     {
       path: 'dashboard',
@@ -41,15 +42,27 @@ const MainRoutes = {
     },
     {
       path: '/disposisi',
-      element: <Disposisi />
+      element: (
+            <ProtectedRoute allowedRoles={['admin']} > 
+            <Disposisi />
+            </ProtectedRoute>
+      )
     },
     {
       path: '/dashboard-pegawai',
-      element: <DashboardPegawai />
+      element: (
+            <ProtectedRoute allowedRoles={['pegawai']} > 
+            <DashboardPegawai />
+            </ProtectedRoute>
+      )
     },
     {
       path: '/daftar-notifikasi',
-      element: <DaftarNotifikasi />
+      element: (
+            <ProtectedRoute allowedRoles={['pegawai']} > 
+            <DaftarNotifikasi />
+            </ProtectedRoute>
+      )
     }
   ]
 };

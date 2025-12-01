@@ -65,19 +65,46 @@ export const RegisterUser = createAsyncThunk(
 // ===============================
 //  GET USER DETAIL
 // ===============================
+// export const getUserDetail = createAsyncThunk(
+//   "user/getUserDetail",
+//   async (_, thunkAPI) => {
+//     try {
+//       const response = await axios.get("http://localhost:3000/api/auth/me");
+//       return response.data;
+//     } catch (error) {
+//       if (error.response) {
+//         return thunkAPI.rejectWithValue(error.response.data.msg);
+//       }
+//     }
+//   }
+// );
 export const getUserDetail = createAsyncThunk(
   "user/getUserDetail",
   async (_, thunkAPI) => {
     try {
-      const response = await axios.get("http://localhost:3000/api/auth/me");
+      const token = localStorage.getItem("token");
+
+      const response = await axios.get(
+        "http://localhost:3000/api/auth/me",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
       return response.data;
+
     } catch (error) {
       if (error.response) {
-        return thunkAPI.rejectWithValue(error.response.data.msg);
+        return thunkAPI.rejectWithValue(error.response.data.message);
       }
+
+      return thunkAPI.rejectWithValue("Network Error");
     }
   }
 );
+
 
 // ===============================
 //  LOGOUT

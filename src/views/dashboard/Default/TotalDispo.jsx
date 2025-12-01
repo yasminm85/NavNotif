@@ -1,85 +1,103 @@
-import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid2';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-
-// third party
-import Chart from 'react-apexcharts';
+import { useTheme } from "@mui/material/styles";
+import Avatar from "@mui/material/Avatar";
+import Grid from "@mui/material/Grid2";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard';
-import SkeletonTotalOrderCard from 'ui-component/cards/Skeleton/EarningCard';
+import MainCard from "ui-component/cards/MainCard";
+import SkeletonTotalOrderCard from "ui-component/cards/Skeleton/EarningCard";
 
 // assets
-import AssignmentIcon from '@mui/icons-material/Assignment';
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import axios from "axios";
 
-export default function TotalDispo({ isLoading }) {
+export default function TotalDispo() {
   const theme = useTheme();
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [timeValue, setTimeValue] = React.useState(false);
-  const handleChangeTime = (event, newValue) => {
-    setTimeValue(newValue);
+  const token = localStorage.getItem("token"); // ambil token dari localStorage
+
+  const fetchTotalDispo = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axios.get("http://localhost:3000/api/task/disposisi/count", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTotal(res.data.total || 0);
+    } catch (err) {
+      console.error("Gagal memuat total disposisi:", err.response?.data || err.message);
+      setError("Gagal memuat total disposisi");
+      setTotal(0);
+    }
+    setLoading(false);
   };
+
+  useEffect(() => {
+    fetchTotalDispo();
+
+    // Optional: refresh setiap 30 detik
+    const interval = setInterval(fetchTotalDispo, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>
-      {isLoading ? (
+      {loading ? (
         <SkeletonTotalOrderCard />
       ) : (
         <MainCard
           border={false}
           content={false}
           sx={{
-            bgcolor: 'primary.dark',
-            color: '#fff',
-            overflow: 'hidden',
-            position: 'relative',
-            '&>div': {
-              position: 'relative',
-              zIndex: 5
-            },
-            '&:after': {
+            bgcolor: "primary.dark",
+            color: "#fff",
+            overflow: "hidden",
+            position: "relative",
+            "&>div": { position: "relative", zIndex: 5 },
+            "&:after": {
               content: '""',
-              position: 'absolute',
+              position: "absolute",
               width: 210,
               height: 210,
               background: theme.palette.primary[800],
-              borderRadius: '50%',
+              borderRadius: "50%",
               top: { xs: -85 },
-              right: { xs: -95 }
+              right: { xs: -95 },
             },
-            '&:before': {
+            "&:before": {
               content: '""',
-              position: 'absolute',
+              position: "absolute",
               width: 210,
               height: 210,
               background: theme.palette.primary[800],
-              borderRadius: '50%',
+              borderRadius: "50%",
               top: { xs: -125 },
               right: { xs: -15 },
-              opacity: 0.5
-            }
+              opacity: 0.5,
+            },
           }}
         >
           <Box sx={{ p: 2.25 }}>
             <Grid container direction="column">
               <Grid>
-                <Grid container sx={{ justifyContent: 'space-between' }}>
+                <Grid container sx={{ justifyContent: "space-between" }}>
                   <Grid>
                     <Avatar
                       variant="rounded"
                       sx={{
                         ...theme.typography.commonAvatar,
                         ...theme.typography.largeAvatar,
-                        bgcolor: 'primary.800',
-                        color: '#fff',
-                        mt: 1
+                        bgcolor: "primary.800",
+                        color: "#fff",
+                        mt: 1,
                       }}
                     >
                       <AssignmentIcon fontSize="inherit" />
@@ -90,21 +108,31 @@ export default function TotalDispo({ isLoading }) {
             </Grid>
             <Grid container direction="column">
               <Grid>
-                <Grid container sx={{ alignItems: 'center' }}>
+                <Grid container sx={{ alignItems: "center" }}>
                   <Grid>
-                    <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>2 Dispo Dibuat</Typography>
+                    <Typography
+                      sx={{
+                        fontSize: "2.125rem",
+                        fontWeight: 500,
+                        mr: 1,
+                        mt: 1.75,
+                        mb: 0.75,
+                      }}
+                    >
+                      {error ? "-" : `${total} Dispo Dibuat`}
+                    </Typography>
                   </Grid>
                 </Grid>
               </Grid>
               <Grid sx={{ mb: 1.25 }}>
                 <Typography
                   sx={{
-                    fontSize: '1rem',
+                    fontSize: "1rem",
                     fontWeight: 500,
-                    color: 'primary.200'
+                    color: "primary.200",
                   }}
                 >
-                  Total Dispo Yang Telah Dibuat
+                  {error || "Total Dispo Yang Telah Dibuat"}
                 </Typography>
               </Grid>
             </Grid>
@@ -115,4 +143,6 @@ export default function TotalDispo({ isLoading }) {
   );
 }
 
-TotalDispo.propTypes = { isLoading: PropTypes.bool };
+TotalDispo.propTypes = {
+  isLoading: PropTypes.bool,
+};

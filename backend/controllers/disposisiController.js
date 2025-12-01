@@ -10,6 +10,19 @@ const getDisposisi = async (req, res) => {
     }
 }
 
+const getDisposisiCount = async (req, res) => {
+  console.log("User from token:", req.user); // ← harus ada user
+  try {
+    const total = await Disposisi.countDocuments();
+    res.status(200).json({ total });
+  } catch (error) {
+    console.error("ERROR getDisposisiCount:", error);
+    res.status(500).json({ message: "Gagal menghitung disposisi", error: error.message });
+  }
+};
+
+
+
 //get disposisi specific
 const getDisposisis = async (req, res) => {
     try {
@@ -110,6 +123,7 @@ const getMyTasks = async (req, res) => {
 
 module.exports = {
     getDisposisi,
+    getDisposisiCount,
     getDisposisis,
     createDisposisi,
     updateDisposisi,

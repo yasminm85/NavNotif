@@ -18,7 +18,7 @@ const dashboard = {
       type: 'item',
       url: '/dashboard/default',
       icon: icons.IconDashboard,
-      allowedRoles: ['admin'],   // <-- role admin
+      allowedRoles: ['admin'],   
       breadcrumbs: false
 
     },
@@ -28,7 +28,7 @@ const dashboard = {
       type: 'item',
       url: '/disposisi',
       icon: AssignmentIcon,
-      allowedRoles: ['admin'],   // <-- hanya admin
+      allowedRoles: ['admin'],  
       breadcrumbs: false
 
     },
