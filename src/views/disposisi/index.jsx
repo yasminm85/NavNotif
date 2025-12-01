@@ -99,6 +99,15 @@ export default function Disposisi() {
 
     };
 
+    const getDataPegawai = async (id) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/api/auth/getUser/${id}`)
+
+        } catch (error) {
+            console.error("Error saat mengambil data pegawai", error);
+        }
+    }
+
     useEffect(() => {
         fetchPegawai();
         getDataDisposisi();
@@ -172,7 +181,7 @@ export default function Disposisi() {
 
         if (Object.keys(validation).length > 0) return;
 
-        const pegawaiIds = selectedpegawai.map((p) => p.email);
+        const pegawaiIds = selectedpegawai.map((p) => p._id);
         const direktoratIds = selecteddirectorat.map((d) => d.name);
         const divisiIds = selecteddivisi.map((d) => d.name);
         const formData = new FormData();
