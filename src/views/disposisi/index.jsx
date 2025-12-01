@@ -71,7 +71,7 @@ export default function Disposisi() {
             setLoading(true);
             console.log(token);
             const response = await axios.get('http://localhost:3000/api/task/disposisi', {
-                headers: { Authorization: `Bearer ${token}`}
+                headers: { Authorization: `Bearer ${token}` }
             });
             setShowDisposisi(response.data);
         } catch (error) {
@@ -193,43 +193,33 @@ export default function Disposisi() {
 
         const direktoratIds = selecteddirectorat.map((d) => d._id || d.id);
         const divisiIds = selecteddivisi.map((d) => d._id || d.id);
-        const formatTime = (date) => {
-                if (!date) return "";
-                const h = date.getHours().toString().padStart(2, "0");
-                const m = date.getMinutes().toString().padStart(2, "0");
-                return `${h}.${m}`;
-            };
+        const formData = new FormData();
 
-            // UPDATE DATA
-            const jamMulaiFormatted = formatTime(form.jamMulai);
-            const jamSelesaiFormatted = form.jamSelesai ? formatTime(form.jamSelesai) : null;
+        formData.append("nama_kegiatan", form.namakegiatan);
+        formData.append("agenda_kegiatan", form.agenda);
+        formData.append("nama_yang_dituju", JSON.stringify(pegawaiIds));
+        formData.append("direktorat", JSON.stringify(direktoratIds));
+        formData.append("divisi", JSON.stringify(divisiIds));
+        formData.append("tanggal", form.tanggal);
+        formData.append("jam_mulai", formatTime(form.jamMulai));
+        formData.append("jam_selesai", jamSelesaiFormatted);
+        formData.append("tempat", form.tempat);
+        formData.append("catatan", form.catatan);
+        formData.append("dresscode", form.dresscode);
 
-            const jamFinal = jamSelesaiFormatted
-                ? `${jamMulaiFormatted} - ${jamSelesaiFormatted}`
-                : `${jamMulaiFormatted} - selesai`;
-        const payload = {
-            nama_kegiatan: form.namakegiatan,
-            agenda_kegiatan: form.agenda,
-            nama_yang_dituju: pegawaiIds,
-            direktorat: direktoratIds,
-            divisi: divisiIds,
-            tanggal: form.tanggal,
-            jam_mulai: jamMulaiFormatted,
-            jam_selesai: jamSelesaiFormatted ? jamSelesaiFormatted : "selesai",
-            tempat: form.tempat,
-            catatan: form.catatan,
-            dresscode: form.dresscode
-        };
 
-        console.log('payload ke backend:', payload);
+        if (form.file) {
+            formData.append("file", form.file);
+        }
 
         try {
             const response = await axios.post(
                 'http://localhost:3000/api/task/disposisi',
-                payload,
-            {
-                headers: { Authorization: `Bearer ${token}`}
-            }
+                formData,
+                {
+                    "Content-Type": "multipart/form-data",
+                    headers: { Authorization: `Bearer ${token}` }
+                }
             );
 
             console.log(response.data);
@@ -244,6 +234,7 @@ export default function Disposisi() {
                 jamMulai: "",
                 jamSelesai: "",
                 tempat: "",
+                file: "",
                 catatan: "",
                 dresscode: "",
             });
@@ -260,12 +251,12 @@ export default function Disposisi() {
 
     // === DELETE === //
     const handleDelete = async (id) => {
-        const hapusPop = (window.confirm(`Yakin hapus data?`)); 
-        if(!hapusPop) return ;
+        const hapusPop = (window.confirm(`Yakin hapus data?`));
+        if (!hapusPop) return;
 
         try {
             await axios.delete(`http://localhost:3000/api/task/disposisi/${id}`, {
-                headers: { Authorization: `Bearer ${token}`}
+                headers: { Authorization: `Bearer ${token}` }
             })
 
             setShowDisposisi((prev) => prev.filter((item) => item._id != id));
@@ -348,6 +339,22 @@ export default function Disposisi() {
         );
     };
 
+    const fileBodyTemplate = (rowData) => {
+        if (!rowData.file_path) return <span>-</span>;
+
+        const url = `http://localhost:3000/${rowData.file_path}`;
+
+        return (
+            <Button
+                label="Lihat"
+                icon="pi pi-file"
+                className="p-button-text p-button-sm"
+                onClick={() => window.open(url, "_blank")}
+            />
+        );
+    };
+
+
     const rowClass = (rowData) => {
         if (rowData.tempat === "Auditorium") {
             return 'highlight-row';
@@ -359,8 +366,8 @@ export default function Disposisi() {
     };
 
     const formDate = (date) => {
-        if(!date) return "";
-        
+        if (!date) return "";
+
         return new Date(date).toLocaleDateString("id-ID", {
             day: "2-digit",
             month: "short",
@@ -369,13 +376,14 @@ export default function Disposisi() {
     };
 
     const formTime = (date) => {
-        if(!date) return "";
-        
+        if (!date) return "Selesai";
+
         return new Date(date).toLocaleTimeString("id-ID", {
             hour: "2-digit",
             minute: "2-digit",
         });
     };
+
 
     const footer = (
         <Button label="Submit" className="w-full" onClick={handleSubmit} />
@@ -578,8 +586,9 @@ export default function Disposisi() {
                     visible={showDetail}
                     modal
                     style={{ width: "25rem" }}
-                    onHide={() => { setShowDetail(false)
-                                setSelectedData(null)
+                    onHide={() => {
+                        setShowDetail(false)
+                        setSelectedData(null)
                     }}
                 >
                     <p>{selectedNote}</p>
@@ -632,6 +641,7 @@ export default function Disposisi() {
                     <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
                     <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
                     <Column header="Catatan" body={catatanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
+                    <Column header="File" body={fileBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
 
                     {/* === ACTION === */}
                     <Column header="Action" body={actionBodyTemplate} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} style={{ width: "10rem" }} />

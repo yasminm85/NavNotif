@@ -25,6 +25,28 @@ export default function DaftarNotifikasi() {
     });
     const [selectedRow, setSelectedRow] = useState(null);
     const [errors, setErrors] = useState({});
+    const [tasks, setTasks] = useState([]);
+
+    const token = localStorage.getItem('token');
+
+    useEffect(() => {
+        const fetchTasks = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get('http://localhost:3000/api/task/disposisi/my', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setTasks(res.data);
+            } catch (err) {
+                console.error('Error get tasks:', err.response?.data || err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTasks();
+    }, []);
+
 
     useEffect(() => {
         DataNotifikasi.getNotifikasiMedium().then((data) => {
@@ -150,14 +172,14 @@ export default function DaftarNotifikasi() {
                 </Dialog>
 
                 <DataTable
-                    value={notifikasi}
+                    value={tasks}
                     paginator
                     rows={5}
                     loading={loading}
                     dataKey="id"
                     emptyMessage="Tidak ada data."
                 >
-                    <Column field="namakegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
+                    <Column field="nama_kegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
                     <Column field="tanggal" header="Tanggal" style={{ minWidth: '10rem' }} />
                     <Column field="jam" header="Jam" style={{ minWidth: '10rem' }} />
                     <Column field="tempat" header="Tempat" style={{ minWidth: '12rem' }} />
