@@ -172,12 +172,12 @@ export default function Disposisi() {
 
         if (Object.keys(validation).length > 0) return;
 
-        const pegawaiIds = selectedpegawai.map((p) => p._id);
+        const pegawaiIds = selectedpegawai.map((p) => p.email);
         const direktoratIds = selecteddirectorat.map((d) => d.name);
         const divisiIds = selecteddivisi.map((d) => d.name);
         const formData = new FormData();
 
-        console.log('pegawai ID:', pegawaiIds);
+        console.log('pegawai ID:', selectedpegawai);
         console.log('direktorat ID:', direktoratIds);
         console.log('divisi ID:', divisiIds);
 
@@ -345,10 +345,10 @@ export default function Disposisi() {
     };
 
     // file body template for data table
-    const fileBodyTemplate = (rowData) => {
-        if (!rowData.file_path) return <span>-</span>;
+    const fileBodyTemplate = (data) => {
+        if (!data) return <span>-</span>;
 
-        const url = `http://localhost:3000/${rowData.file_path}`;
+        const url = `http://localhost:3000/${data}`;
 
         return (
             <Button
@@ -474,7 +474,7 @@ export default function Disposisi() {
                             className="w-full"
                             value={selectedpegawai}
                             options={pegawaisel}
-                            optionLabel='email'
+                            optionLabel='name'
                             display='chip'
                             onChange={(e) => setSelectedpegawai(e.value)}
                         />
@@ -612,24 +612,19 @@ export default function Disposisi() {
                 >
                     {selectedData && (
                         <div className="flex flex-column gap-2">
-                            
+
                             <p><strong>Nama Kegiatan:</strong> {selectedData.nama_kegiatan}</p>
                             <p><strong>Agenda Kegiatan:</strong> {selectedData.agenda_kegiatan}</p>
-                            <p><strong>Nama Pegawai:</strong></p>
-                            <ul>
-                                {(selectedData.nama_yang_dituju || []).map((p, i) => (
-                                    <li key={i}>{p.email}</li>
-                                ))}
-                            </ul>
-                            <p><strong>Direktorat:</strong> {selectedData.direktorat}</p>
-                            <p><strong>Divisi:</strong> {selectedData.divisi}</p>
-                            <p><strong>Tanggal:</strong> {selectedData.tanggal}</p>
-                            <p><strong>Jam Mulai:</strong> {selectedData.jam_mulai}</p>
-                            <p><strong>Jam Selesai:</strong> {selectedData.jam_selesai}</p>
+                            <p><strong>Nama Pegawai:</strong> {selectedData.nama_yang_dituju.join(', ')}</p>
+                            <p><strong>Direktorat:</strong> {selectedData.direktorat.join(', ')}</p>
+                            <p><strong>Divisi:</strong> {selectedData.divisi.join(', ')}</p>
+                            <p><strong>Tanggal:</strong> {formDate(selectedData.tanggal)}</p>
+                            <p><strong>Jam Mulai:</strong> {formTime(selectedData.jam_mulai)}</p>
+                            <p><strong>Jam Selesai:</strong> {formTime(selectedData.jam_selesai)}</p>
                             <p><strong>Tempat:</strong> {selectedData.tempat}</p>
                             <p><strong>Catatan:</strong> {selectedData.catatan || "-"}</p>
+                            <p><strong>File:</strong>{fileBodyTemplate(selectedData.file_path)}</p>
                             <p><strong>Dresscode:</strong> {selectedData.dresscode || "-"}</p>
-
                         </div>
                     )}
                 </Dialog>
@@ -649,7 +644,7 @@ export default function Disposisi() {
                     <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
                     <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
                     <Column header="Catatan" body={catatanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
-                    <Column header="File" body={fileBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
+                    {/* <Column header="File" body={fileBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} /> */}
 
                     {/* === ACTION === */}
                     <Column header="Action" body={actionBodyTemplate} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} style={{ width: "10rem" }} />

@@ -4,10 +4,10 @@ const jwt = require('jsonwebtoken');
 
 const register = async (req, res) => {
     try {
-        const { email, password, role } = req.body;
+        const { name, email, password, role } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = new User({ email, password: hashedPassword, role });
+        const newUser = new User({ name, email, password: hashedPassword, role });
         await newUser.save();
         res.status(201).json({ message: "User berhasil ditambahkan" });
     } catch (error) {
@@ -48,6 +48,23 @@ const login = async (req, res) => {
     }
 };
 
+const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const user = await User.findByIdAndDelete(id);
+
+        if(!user) {
+            return res.status(404).json({message: "Data not found"});
+        }
+
+        res.status(200).json({message: "Data successfully delete"})
+
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+}
+
 const getUserDetail = async (req, res) => {
     try {
         let token;
@@ -86,7 +103,7 @@ const getUserDetail = async (req, res) => {
 // dapatin yang pegawai pegawai ajah
 const getEmployees = async (req, res) => {
   try {
-    const employees = await User.find({ role: 'pegawai' }).select('_id email');
+    const employees = await User.find({ role: 'pegawai' }).select('_id email name');
     res.json(employees);
   } catch (err) {
     // console.error('Error getEmployees:', err);
@@ -127,5 +144,6 @@ module.exports = {
     logout,
     getUserDetail,
     getEmployees,
-    getUserById
+    getUserById,
+    deleteUser
 };
