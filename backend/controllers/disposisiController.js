@@ -38,12 +38,13 @@ const getDisposisis = async (req, res) => {
 const createDisposisi = async (req, res) => {
     try {
         const filePath = req.file ? req.file.path : null;
+        console.log(req.body.file);
         
         const nama_yang_dituju = req.body.nama_yang_dituju ? JSON.parse(req.body.nama_yang_dituju) : [];
 
-        const direktorat = req.body.direktorat ? JSON.parse(req.body.nama_yang_dituju) : [];
+        const direktorat = req.body.direktorat ? JSON.parse(req.body.direktorat) : [];
 
-        const divisi = req.body.divisi ? JSON.parse(req.body.nama_yang_dituju) : [];
+        const divisi = req.body.divisi ? JSON.parse(req.body.divisi) : [];
 
         const disposisi = await Disposisi.create({
             nama_kegiatan: req.body.nama_kegiatan,
@@ -104,12 +105,12 @@ const deleteDisposisi = async (req, res) => {
 
 const getMyTasks = async (req, res) => {
   try {
-    const userId = req.user.id || req.user._id; // dari verifyToken
+    const userId = req.user.id || req.user._id; 
 
     const disposisiList = await Disposisi.find({
-      nama_yang_dituju: userId   // cari yang array-nya berisi user ini
+      nama_yang_dituju: userId   
     })
-      .sort({ tanggal: -1 }); // optional: urutkan
+      .sort({ tanggal: -1 }); 
 
     res.json(disposisiList);
   } catch (error) {

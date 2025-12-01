@@ -27,7 +27,6 @@ export default function Disposisi() {
     const [selecteddirectorat, setSelecteddirectorat] = useState([]);
     const [itemOptions, setitemOptions] = useState([]);
     const token = localStorage.getItem('token');
-    // === STATE FORM === //
     const [showForm, setShowForm] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
     const [selectedNote, setSelectedNote] = useState("");
@@ -35,7 +34,7 @@ export default function Disposisi() {
     const [selectedData, setSelectedData] = useState(null);
     const [showView, setShowView] = useState(false);
     const [showDisposisi, setShowDisposisi] = useState([]);
-    const [selectedDisposisi, setSelectedDisposisi] = useState([]);
+    const [errors, setErrors] = useState({});
     const [form, setForm] = useState({
         namakegiatan: "",
         agenda: "",
@@ -50,6 +49,24 @@ export default function Disposisi() {
         catatan: "",
         dresscode: ""
     });
+    const validateForm = () => {
+        let newErrors = {};
+        if (!form.namakegiatan) newErrors.namakegiatan = "Nama kegiatan wajib diisi.";
+        if (!form.agenda) newErrors.agenda = "Agenda wajib diisi.";
+        if (!selectedpegawai || selectedpegawai.length === 0)
+            newErrors.namayangdituju = "Nama yang dituju wajib diisi.";
+        if (!selecteddirectorat || selecteddirectorat.length === 0)
+            newErrors.direktorat = "Direktorat wajib diisi.";
+        if (!selecteddivisi || selecteddivisi.length === 0)
+            newErrors.divisi = "Divisi wajib diisi.";
+        if (!form.tanggal) newErrors.tanggal = "Tanggal wajib diisi.";
+        if (!form.jamMulai) newErrors.jamMulai = "Jam mulai wajib diisi.";
+        if (!form.tempat) newErrors.tempat = "Tempat wajib diisi.";
+        return newErrors;
+    };
+
+
+    // get data pegawai
     const fetchPegawai = async () => {
         try {
             const res = await axios.get('http://localhost:3000/api/auth/getEmp', {
@@ -66,10 +83,11 @@ export default function Disposisi() {
         }
     };
 
+    //get all data disposisi
     const getDataDisposisi = async () => {
         try {
             setLoading(true);
-            console.log(token);
+            // console.log(token);
             const response = await axios.get('http://localhost:3000/api/task/disposisi', {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -87,6 +105,7 @@ export default function Disposisi() {
     }, []);
 
 
+    // inisialisasi direktorat dan divisi
     const directorat = [
         { id: 'DU', name: 'Direktorat Utama' },
         { id: 'DK', name: 'Direktorat Keuangan dan Manajemen Risiko' },
@@ -123,6 +142,7 @@ export default function Disposisi() {
     ]
 
 
+    // handle direktorat dropdown
     const onDirektoratChange = (e) => {
         const selectedDir = e.value;
         setSelecteddirectorat(selectedDir);
@@ -138,46 +158,13 @@ export default function Disposisi() {
     };
 
 
-    const [errors, setErrors] = useState({});
-
-
+    // handle form and error
     const handleChange = (field, value) => {
         setForm({ ...form, [field]: value });
         setErrors({ ...errors, [field]: "" });
     };
 
-    const validateForm = () => {
-        let newErrors = {};
-        if (!form.namakegiatan) newErrors.namakegiatan = "Nama kegiatan wajib diisi.";
-        if (!form.agenda) newErrors.agenda = "Agenda wajib diisi.";
-        if (!selectedpegawai || selectedpegawai.length === 0)
-            newErrors.namayangdituju = "Nama yang dituju wajib diisi.";
-        if (!selecteddirectorat || selecteddirectorat.length === 0)
-            newErrors.direktorat = "Direktorat wajib diisi.";
-        if (!selecteddivisi || selecteddivisi.length === 0)
-            newErrors.divisi = "Divisi wajib diisi.";
-        if (!form.tanggal) newErrors.tanggal = "Tanggal wajib diisi.";
-        if (!form.jamMulai) newErrors.jamMulai = "Jam mulai wajib diisi.";
-        if (!form.tempat) newErrors.tempat = "Tempat wajib diisi.";
-        return newErrors;
-    };
-
-    const statusBodyTemplate = (rowData) => {
-        return (
-            <i
-                className={
-                    rowData.status
-                        ? "pi pi-check-circle"
-                        : "pi pi-times-circle"
-                }
-                style={{
-                    fontSize: "1.3rem",
-                    color: rowData.status ? "green" : "red"
-                }}
-            ></i>
-        );
-    };
-
+    // handle submit form
     const handleSubmit = async (e) => {
         e.preventDefault();
         const validation = validateForm();
@@ -185,15 +172,14 @@ export default function Disposisi() {
 
         if (Object.keys(validation).length > 0) return;
 
-        console.log('selectedpegawai:', selectedpegawai);
-        console.log('selecteddirectorat:', selecteddirectorat);
-        console.log('selecteddivisi:', selecteddivisi);
-
         const pegawaiIds = selectedpegawai.map((p) => p._id);
-
-        const direktoratIds = selecteddirectorat.map((d) => d._id || d.id);
-        const divisiIds = selecteddivisi.map((d) => d._id || d.id);
+        const direktoratIds = selecteddirectorat.map((d) => d.name);
+        const divisiIds = selecteddivisi.map((d) => d.name);
         const formData = new FormData();
+
+        console.log('pegawai ID:', pegawaiIds);
+        console.log('direktorat ID:', direktoratIds);
+        console.log('divisi ID:', divisiIds);
 
         formData.append("nama_kegiatan", form.namakegiatan);
         formData.append("agenda_kegiatan", form.agenda);
@@ -211,6 +197,8 @@ export default function Disposisi() {
         if (form.file) {
             formData.append("file", form.file);
         }
+
+        console.log(formData);
 
         try {
             const response = await axios.post(
@@ -248,8 +236,7 @@ export default function Disposisi() {
         }
     };
 
-
-    // === DELETE === //
+    // handle delete button
     const handleDelete = async (id) => {
         const hapusPop = (window.confirm(`Yakin hapus data?`));
         if (!hapusPop) return;
@@ -265,7 +252,7 @@ export default function Disposisi() {
         }
     };
 
-    // === ACTION BUTTONS === //
+    // action view, edit, and delete
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="flex gap-2">
@@ -306,6 +293,7 @@ export default function Disposisi() {
         );
     };
 
+    // laporan body template for data table
     const laporanBodyTemplate = (rowData) => {
         return (
             <div className="flex gap-2">
@@ -323,7 +311,7 @@ export default function Disposisi() {
         );
     };
 
-    {/* CATATAN */ }
+    // catatan body template for data table
     const catatanBodyTemplate = (rowData) => {
         return (
             <div className="flex gap-2">
@@ -339,6 +327,40 @@ export default function Disposisi() {
         );
     };
 
+    // status body template for data table
+    const statusBodyTemplate = (rowData) => {
+        return (
+            <i
+                className={
+                    rowData.status
+                        ? "pi pi-check-circle"
+                        : "pi pi-times-circle"
+                }
+                style={{
+                    fontSize: "1.3rem",
+                    color: rowData.status ? "green" : "red"
+                }}
+            ></i>
+        );
+    };
+
+    // file body template for data table
+    const fileBodyTemplate = (rowData) => {
+        if (!rowData.file_path) return <span>-</span>;
+
+        const url = `http://localhost:3000/${rowData.file_path}`;
+
+        return (
+            <Button
+                label="Lihat"
+                icon="pi pi-file"
+                className="p-button-text p-button-sm"
+                onClick={() => window.open(url, "_blank")}
+            />
+        );
+    };
+
+    // highlight rows
     const rowClass = (rowData) => {
         if (rowData.tempat === "Auditorium") {
             return 'highlight-row';
@@ -349,6 +371,7 @@ export default function Disposisi() {
         return '';
     };
 
+    // setting date 
     const formDate = (date) => {
         if (!date) return "";
 
@@ -359,6 +382,7 @@ export default function Disposisi() {
         });
     };
 
+    // setting time
     const formTime = (date) => {
         if (!date) return "Selesai";
 
@@ -588,9 +612,9 @@ export default function Disposisi() {
                 >
                     {selectedData && (
                         <div className="flex flex-column gap-2">
-
+                            
                             <p><strong>Nama Kegiatan:</strong> {selectedData.nama_kegiatan}</p>
-                            <p><strong>Agenda Kegiatan:</strong> {selectedData.agenda}</p>
+                            <p><strong>Agenda Kegiatan:</strong> {selectedData.agenda_kegiatan}</p>
                             <p><strong>Nama Pegawai:</strong></p>
                             <ul>
                                 {(selectedData.nama_yang_dituju || []).map((p, i) => (
@@ -625,6 +649,7 @@ export default function Disposisi() {
                     <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
                     <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
                     <Column header="Catatan" body={catatanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
+                    <Column header="File" body={fileBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
 
                     {/* === ACTION === */}
                     <Column header="Action" body={actionBodyTemplate} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} style={{ width: "10rem" }} />

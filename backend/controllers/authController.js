@@ -73,7 +73,7 @@ const getUserDetail = async (req, res) => {
 
         return res.status(200).json(user);
     } catch (error) {
-        console.error("ERROR:", error);
+        // console.error("ERROR:", error);
         return res.status(500).json({
             message: "Something went wrong",
             errorName: error.name,
@@ -89,10 +89,21 @@ const getEmployees = async (req, res) => {
     const employees = await User.find({ role: 'pegawai' }).select('_id email');
     res.json(employees);
   } catch (err) {
-    console.error('Error getEmployees:', err);
+    // console.error('Error getEmployees:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// get user specific
+const getUserById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id);
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+}
 
 
 const logout = async (req, res) => {
@@ -115,5 +126,6 @@ module.exports = {
     register,
     logout,
     getUserDetail,
-    getEmployees
+    getEmployees,
+    getUserById
 };
