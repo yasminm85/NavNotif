@@ -201,8 +201,8 @@ export default function Disposisi() {
         formData.append("direktorat", JSON.stringify(direktoratIds));
         formData.append("divisi", JSON.stringify(divisiIds));
         formData.append("tanggal", form.tanggal);
-        formData.append("jam_mulai", formatTime(form.jamMulai));
-        formData.append("jam_selesai", jamSelesaiFormatted);
+        formData.append("jam_mulai", form.jamMulai);
+        formData.append("jam_selesai", form.jamSelesai);
         formData.append("tempat", form.tempat);
         formData.append("catatan", form.catatan);
         formData.append("dresscode", form.dresscode);
@@ -287,7 +287,7 @@ export default function Disposisi() {
                     onClick={() => {
                         setForm({
                             ...rowData,
-                            tanggal: rowData.tanggal ? new Date(rowData.tanggal) : null,
+                            tanggal: new Date(),
                             jamMulai: rowData.jam?.split(" - ")[0] || "",
                             jamSelesai: rowData.jam?.split(" - ")[1] || "",
                         });
@@ -338,22 +338,6 @@ export default function Disposisi() {
             </div>
         );
     };
-
-    const fileBodyTemplate = (rowData) => {
-        if (!rowData.file_path) return <span>-</span>;
-
-        const url = `http://localhost:3000/${rowData.file_path}`;
-
-        return (
-            <Button
-                label="Lihat"
-                icon="pi pi-file"
-                className="p-button-text p-button-sm"
-                onClick={() => window.open(url, "_blank")}
-            />
-        );
-    };
-
 
     const rowClass = (rowData) => {
         if (rowData.tempat === "Auditorium") {
@@ -641,7 +625,6 @@ export default function Disposisi() {
                     <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
                     <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
                     <Column header="Catatan" body={catatanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
-                    <Column header="File" body={fileBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
 
                     {/* === ACTION === */}
                     <Column header="Action" body={actionBodyTemplate} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} style={{ width: "10rem" }} />
