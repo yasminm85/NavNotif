@@ -17,6 +17,7 @@ const DisposisiSchema = mongoose.Schema(
             ref: 'User',
             required: true,
         }],
+
         direktorat: {
             type: [String],
             required: true,
@@ -62,6 +63,12 @@ const DisposisiSchema = mongoose.Schema(
             type: String,
             required: false,
         },
+
+        laporan_sudah_dibuat: {
+            type: Boolean,
+            required: false,
+            default: false
+        }
     },
 
     {

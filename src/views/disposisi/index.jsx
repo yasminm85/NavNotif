@@ -8,7 +8,6 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { DataDisposisi } from './DataDisposisi';
 import { MultiSelect } from 'primereact/multiselect';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -16,8 +15,7 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './app.css';
 import axios from 'axios';
-
-
+import { Form } from 'react-router';
 
 export default function Disposisi() {
     const [loading, setLoading] = useState(true);
@@ -176,11 +174,11 @@ export default function Disposisi() {
 
     // handle submit form
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        const validation = validateForm();
-        setErrors(validation);
+    e.preventDefault();
 
-        if (Object.keys(validation).length > 0) return;
+    const validation = validateForm();
+    setErrors(validation);
+    if (Object.keys(validation).length > 0) return;
 
         const pegawaiIds = selectedpegawai.map((p) => p._id);
         const direktoratIds = selecteddirectorat.map((d) => d.name);
@@ -203,48 +201,82 @@ export default function Disposisi() {
         formData.append("catatan", form.catatan);
         formData.append("dresscode", form.dresscode);
 
-
-        if (form.file) {
-            formData.append("file", form.file);
+    // Kalau ada file baru → kirim
+    if (form.file) {
+        formData.append("file", form.file);
+    } else {
+        // Kalau tidak ada file baru saat edit → kirim info file lama
+        if (editMode && selectedData?.file_path) {
+            formData.append("file_path", selectedData.file_path);
         }
+    }
 
-        console.log(formData);
+    try {
+        let response;
 
-        try {
-            const response = await axios.post(
-                'http://localhost:3000/api/task/disposisi',
+        if (editMode && selectedData?._id) {
+            
+            // ==========================
+            //        UPDATE DATA
+            // ==========================
+            response = await axios.put(
+                `http://localhost:3000/api/task/disposisi/${selectedData._id}`,
                 formData,
                 {
-                    "Content-Type": "multipart/form-data",
                     headers: { Authorization: `Bearer ${token}` }
                 }
             );
 
-            console.log(response.data);
-            setShowForm(false);
-            setForm({
-                namakegiatan: "",
-                agenda: "",
-                namayangdituju: "",
-                direktorat: "",
-                divisi: "",
-                tanggal: null,
-                jamMulai: "",
-                jamSelesai: "",
-                tempat: "",
-                file: "",
-                catatan: "",
-                dresscode: "",
-            });
-            setErrors({});
-            getDataDisposisi();
-        } catch (error) {
-            console.error(
-                'Error disposisi:',
-                error.response?.data || error.message || error
+            // Replace row yang lama di state
+            setShowDisposisi(prev =>
+                prev.map(item =>
+                    item._id === selectedData._id ? response.data : item
+                )
             );
+
+        } else {
+            // ==========================
+            //        CREATE DATA
+            // ==========================
+            response = await axios.post(
+                'http://localhost:3000/api/task/disposisi',
+                formData,
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+
+            setShowDisposisi(prev => [...prev, response.data]);
         }
-    };
+
+        // Reset form setelah submit
+        setShowForm(false);
+        setEditMode(false);
+        setSelectedData(null);
+        setForm({
+            namakegiatan: "",
+            agenda: "",
+            namayangdituju: "",
+            direktorat: "",
+            divisi: "",
+            tanggal: null,
+            jamMulai: "",
+            jamSelesai: "",
+            tempat: "",
+            file: null,
+            catatan: "",
+            dresscode: "",
+        });
+        setSelectedpegawai([]);
+        setSelecteddirectorat([]);
+        setSelecteddivisi([]);
+        setErrors({});
+
+    } catch (error) {
+        console.error("Error disposisi:", error.response?.data || error.message);
+    }
+};
+
 
     // handle delete button
     const handleDelete = async (id) => {
@@ -282,12 +314,50 @@ export default function Disposisi() {
                     icon="pi pi-pencil"
                     className="p-button-rounded p-button-warning p-button-sm"
                     onClick={() => {
+                        if (!rowData) return;
+
+                        // ====== FIX PEMILIHAN PEGAWAI SAAT EDIT ======
+                        const pegawaiSelected = pegawaisel.filter(p =>
+                            (rowData.nama_yang_dituju || []).some(id =>
+                                id === p._id || id?._id === p._id
+                            )
+                        );
+
+                        // ====== FIX PEMILIHAN DIREKTORAT ======
+                        const direktoratSelected = directorat.filter(d =>
+                            (rowData.direktorat || []).includes(d.name)
+                        );
+
+                        // ====== FIX PEMILIHAN DIVISI ======
+                        const divisiSelected = divisi.filter(d =>
+                            (rowData.divisi || []).includes(d.name)
+                        );
+
+                        const selectedDirIds = direktoratSelected.map(d => d.id);
+                        const filteredDivisiOptions = divisi.filter(div =>
+                            selectedDirIds.includes(div.DirId)
+                        );
+
+                        // ======= SET FORM =======
                         setForm({
                             ...rowData,
-                            tanggal: new Date(),
-                            jamMulai: rowData.jam?.split(" - ")[0] || "",
-                            jamSelesai: rowData.jam?.split(" - ")[1] || "",
+                            namakegiatan: rowData.nama_kegiatan || "",
+                            agenda: rowData.agenda_kegiatan || "",
+                            tempat: rowData.tempat || "",
+                            catatan: rowData.catatan || "",
+                            dresscode: rowData.dresscode || "",
+                            file_path: rowData.file_path || null,
+                            tanggal: rowData.tanggal ? new Date(rowData.tanggal) : null,
+                            jamMulai: rowData.jam_mulai ? new Date(rowData.jam_mulai) : null,
+                            jamSelesai: rowData.jam_selesai ? new Date(rowData.jam_selesai) : null,
                         });
+
+                        setSelectedpegawai(pegawaiSelected);
+                        setSelecteddirectorat(direktoratSelected);
+                        setSelecteddivisi(divisiSelected);
+                        setitemOptions(filteredDivisiOptions);
+
+                        setSelectedData(rowData);
                         setEditMode(true);
                         setShowForm(true);
                     }}
@@ -370,15 +440,28 @@ export default function Disposisi() {
         );
     };
 
-    // highlight rows
     const rowClass = (rowData) => {
-        if (rowData.tempat === "Auditorium") {
-            return 'highlight-row';
+        const now = new Date();
+        const tanggalMulai = new Date(`${rowData.tanggal} ${rowData.jam_mulai || '00:00'}`);
+
+        let tanggalSelesai;
+        if (rowData.jam_selesai && rowData.jam_selesai !== "selesai") {
+            tanggalSelesai = new Date(`${rowData.tanggal} ${rowData.jam_selesai}`);
+        } else {
+            tanggalSelesai = new Date(`${rowData.tanggal} 23:59`); // satu hari penuh
         }
-        if (rowData.tempat === 'Gedung') {
-            return 'out-of-stock-row';
+
+        // Sedang berlangsung → kuning
+        if (now >= tanggalMulai && now <= tanggalSelesai) {
+            return "highlight-row";
         }
-        return '';
+
+        // Sudah selesai dan laporan dibuat → hijau
+        if (now > tanggalSelesai && rowData.laporan_sudah_dibuat) {
+            return "completed-row";
+        }
+
+        return "";
     };
 
     // setting date 
@@ -571,11 +654,13 @@ export default function Disposisi() {
                         {errors.tempat && <small className="p-error">{errors.tempat}</small>}
                     </div>
 
+        
                     <input
                         type="file"
                         className="w-full mb-3"
                         onChange={(e) => handleChange("file", e.target.files[0])}
                     />
+
 
                     {/* Catatan */}
                     <InputTextarea

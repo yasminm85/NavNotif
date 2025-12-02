@@ -1,10 +1,9 @@
-/* App.css */
 .p-datatable .p-datatable-tbody .highlight-row {
-    background-color: #ffdd57 !important; 
+    background-color: #ffdd57 !important; /* kuning */
     color: #333 !important;
 }
 
-.p-datatable .p-datatable-tbody .out-of-stock-row {
-    background-color: #ff4d4d !important;
+.p-datatable .p-datatable-tbody .completed-row {
+    background-color: #4CAF50 !important; /* hijau */
     color: white !important;
 }

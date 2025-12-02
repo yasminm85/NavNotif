@@ -3,9 +3,7 @@ const Disposisi = require('../models/disposisi.model')
 //get all disposisi
 const getDisposisi = async (req, res) => {
     try {
-        const disposisi = await Disposisi.find()
-        .populate("nama_yang_dituju", "name")
-        .sort({ createdAt: -1});
+        const disposisi = await Disposisi.find({});
         res.status(200).json(disposisi);
     } catch (error) {
         res.status(500).json({message: error.message});
@@ -13,7 +11,7 @@ const getDisposisi = async (req, res) => {
 }
 
 const getDisposisiCount = async (req, res) => {
-  console.log("User from token:", req.user); 
+  console.log("User from token:", req.user); // ← harus ada user
   try {
     const total = await Disposisi.countDocuments();
     res.status(200).json({ total });
@@ -22,7 +20,6 @@ const getDisposisiCount = async (req, res) => {
     res.status(500).json({ message: "Gagal menghitung disposisi", error: error.message });
   }
 };
-
 
 //get disposisi specific
 const getDisposisis = async (req, res) => {
@@ -39,7 +36,6 @@ const getDisposisis = async (req, res) => {
 const createDisposisi = async (req, res) => {
     try {
         const filePath = req.file ? req.file.path : null;
-        console.log(req.body.file);
         
         const nama_yang_dituju = req.body.nama_yang_dituju ? JSON.parse(req.body.nama_yang_dituju) : [];
 
@@ -86,6 +82,7 @@ const updateDisposisi = async (req, res) => {
     }
 }
 
+
 //delete disposisi
 const deleteDisposisi = async (req, res) => {
     try {
@@ -106,12 +103,12 @@ const deleteDisposisi = async (req, res) => {
 
 const getMyTasks = async (req, res) => {
   try {
-    const userId = req.user.id || req.user._id; 
+    const userId = req.user.id || req.user._id; // dari verifyToken
 
     const disposisiList = await Disposisi.find({
-      nama_yang_dituju: userId   
+      nama_yang_dituju: userId   // cari yang array-nya berisi user ini
     })
-      .sort({ tanggal: -1 }); 
+      .sort({ tanggal: -1 }); // optional: urutkan
 
     res.json(disposisiList);
   } catch (error) {
@@ -132,3 +129,5 @@ module.exports = {
     deleteDisposisi,
     getMyTasks
 };
+
+

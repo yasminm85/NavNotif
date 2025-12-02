@@ -3,9 +3,9 @@ export const DataDisposisi = {
         return [
             {
                 id: 1,
-                namakegiatan: "Perkumpulan...",
-                tanggal: "12-11-2025",
-                jam: "13.30 - 15.30",
+                namakegiatan: "Berdiskusi",
+                tanggal: "02-12-2025",
+                jam: "14.45 - 15.45",
                 file: "file_1",
                 fileUrl: "#",
                 tempat: "Auditorium",
