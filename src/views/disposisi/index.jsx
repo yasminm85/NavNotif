@@ -18,6 +18,7 @@ import axios from 'axios';
 import { Form } from 'react-router';
 
 export default function Disposisi() {
+    const [editMode, setEditMode] = useState(false);
     const [loading, setLoading] = useState(true);
     const [pegawaisel, setPegawai] = useState([]);
     const [selectedpegawai, setSelectedpegawai] = useState([]);
@@ -28,9 +29,10 @@ export default function Disposisi() {
     const [showForm, setShowForm] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
     const [selectedNote, setSelectedNote] = useState("");
-    const [editMode, setEditMode] = useState(false);
+    const [selectedLaporan, setSelectedLaporan] = useState("");
     const [selectedData, setSelectedData] = useState(null);
     const [showView, setShowView] = useState(false);
+    const [showLaporan, setShowLaporan] = useState(false);
     const [showDisposisi, setShowDisposisi] = useState([]);
     const [errors, setErrors] = useState({});
     const [form, setForm] = useState({
@@ -383,8 +385,8 @@ export default function Disposisi() {
                     icon="pi pi-book"
                     className="p-button-rounded p-button-info p-button-sm"
                     onClick={() => {
-                        setSelectedData(rowData);  //belum diganti by view laporan
-                        setShowView(true);
+                        setSelectedLaporan(rowData.laporan);  
+                        setShowLaporan(true);
                     }}
                 />
             </div>
@@ -440,6 +442,15 @@ export default function Disposisi() {
         );
     };
 
+    const laporanStatus = (row) => {
+        if (row.laporan_status === 'SUDAH') {
+            return <Tag value="Sudah laporan" severity="success" />;
+        }
+        return <Tag value="Belum laporan" severity="warning" />;
+    };
+
+
+    // highlight rows
     const rowClass = (rowData) => {
         const now = new Date();
         const tanggalMulai = new Date(`${rowData.tanggal} ${rowData.jam_mulai || '00:00'}`);
@@ -695,6 +706,20 @@ export default function Disposisi() {
                     }}
                 >
                     <p>{selectedNote}</p>
+                </Dialog>
+
+                {/* Laporan */}
+                <Dialog
+                    header="Laporan Disposisi"
+                    visible={showLaporan}
+                    modal
+                    style={{ width: "25rem" }}
+                    onHide={() => {
+                        setShowLaporan(false)
+                        setSelectedLaporan(null)
+                    }}
+                >
+                    <p>{selectedLaporan}</p>
                 </Dialog>
 
                 {/* VIEW DETAIL LENGKAP */}

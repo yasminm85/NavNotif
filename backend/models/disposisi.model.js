@@ -63,13 +63,25 @@ const DisposisiSchema = mongoose.Schema(
             type: String,
             required: false,
         },
-
-        laporan_sudah_dibuat: {
-            type: Boolean,
-            required: false,
-            default: false
+        laporan: {
+            type: String,
+            default: null
+        },
+        laporan_status: {
+            type: String,
+            enum: ['BELUM', 'SUDAH'],
+            default: 'BELUM'
+        },
+        laporan_by: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            default: null
+        },
+        laporan_at: {
+            type: Date
         }
     },
+
 
     {
         timestamps: true

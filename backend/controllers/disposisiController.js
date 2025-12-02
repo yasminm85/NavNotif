@@ -3,22 +3,25 @@ const Disposisi = require('../models/disposisi.model')
 //get all disposisi
 const getDisposisi = async (req, res) => {
     try {
-        const disposisi = await Disposisi.find({});
+        const disposisi = await Disposisi.find()
+            .populate("nama_yang_dituju", "name")
+            .populate("laporan_by", "name email")
+            .sort({ createdAt: -1 });
         res.status(200).json(disposisi);
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 }
 
 const getDisposisiCount = async (req, res) => {
-  console.log("User from token:", req.user); // ← harus ada user
-  try {
-    const total = await Disposisi.countDocuments();
-    res.status(200).json({ total });
-  } catch (error) {
-    console.error("ERROR getDisposisiCount:", error);
-    res.status(500).json({ message: "Gagal menghitung disposisi", error: error.message });
-  }
+    console.log("User from token:", req.user);
+    try {
+        const total = await Disposisi.countDocuments();
+        res.status(200).json({ total });
+    } catch (error) {
+        console.error("ERROR getDisposisiCount:", error);
+        res.status(500).json({ message: "Gagal menghitung disposisi", error: error.message });
+    }
 };
 
 //get disposisi specific
@@ -28,7 +31,7 @@ const getDisposisis = async (req, res) => {
         const disposisi = await Disposisi.findById(id);
         res.status(200).json(disposisi);
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 }
 
@@ -36,7 +39,8 @@ const getDisposisis = async (req, res) => {
 const createDisposisi = async (req, res) => {
     try {
         const filePath = req.file ? req.file.path : null;
-        
+        console.log(req.body.file);
+
         const nama_yang_dituju = req.body.nama_yang_dituju ? JSON.parse(req.body.nama_yang_dituju) : [];
 
         const direktorat = req.body.direktorat ? JSON.parse(req.body.direktorat) : [];
@@ -60,7 +64,7 @@ const createDisposisi = async (req, res) => {
         });
         res.status(200).json(disposisi);
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 }
 
@@ -71,14 +75,14 @@ const updateDisposisi = async (req, res) => {
 
         const disposisi = await Disposisi.findByIdAndUpdate(id, req.body);
 
-        if(!disposisi) {
-            return res.status(404).json({message: "Data tidak ditemukan"});
+        if (!disposisi) {
+            return res.status(404).json({ message: "Data tidak ditemukan" });
         }
         const updatedDisposisi = await Disposisi.findById(id);
         res.status(200).json(updatedDisposisi);
 
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 }
 
@@ -90,32 +94,82 @@ const deleteDisposisi = async (req, res) => {
 
         const disposisi = await Disposisi.findByIdAndDelete(id);
 
-        if(!disposisi) {
-            return res.status(404).json({message: "Data not found"});
+        if (!disposisi) {
+            return res.status(404).json({ message: "Data not found" });
         }
 
-        res.status(200).json({message: "Data successfully delete"})
+        res.status(200).json({ message: "Data successfully delete" })
 
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 }
 
 const getMyTasks = async (req, res) => {
-  try {
-    const userId = req.user.id || req.user._id; // dari verifyToken
+    try {
+        const userId = req.user.id || req.user._id;
 
-    const disposisiList = await Disposisi.find({
-      nama_yang_dituju: userId   // cari yang array-nya berisi user ini
-    })
-      .sort({ tanggal: -1 }); // optional: urutkan
+        const disposisiList = await Disposisi.find({
+            nama_yang_dituju: userId
+        })
+            .populate("nama_yang_dituju", "name email")
+            .populate("laporan_by", "name email")
+            .sort({ tanggal: -1 });
 
-    res.json(disposisiList);
-  } catch (error) {
-    console.error('Error getMyTasks:', error);
-    res.status(500).json({ message: error.message });
-  }
+        res.json(disposisiList);
+    } catch (error) {
+        console.error('Error getMyTasks:', error);
+        res.status(500).json({ message: error.message });
+    }
 };
+
+const updateLaporan = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { laporan } = req.body;
+        const userId = req.user.id || req.user._id;
+        const userRole = req.user.role;
+
+        if (!laporan || !laporan.trim()) {
+            return res.status(400).json({ message: 'Laporan tidak boleh kosong' });
+        }
+
+        let query = { _id: id, nama_yang_dituju: userId };
+
+        if (userRole === 'admin') {
+            query = { _id: id };
+        }
+
+        const disposisi = await Disposisi.findOne(query);
+
+        if (!disposisi) {
+            return res.status(404).json({
+                message:
+                    'Disposisi tidak ditemukan atau Anda tidak berhak mengisi laporan untuk surat ini'
+            });
+        }
+
+        disposisi.laporan = laporan;
+        disposisi.laporan_status = 'SUDAH';
+        disposisi.laporan_by = userId;
+        disposisi.laporan_at = new Date();
+
+        await disposisi.save();
+
+        const populated = await Disposisi.findById(disposisi._id)
+            .populate('nama_yang_dituju', 'name email')
+            .populate('laporan_by', 'name email');
+
+        res.json({
+            message: 'Laporan berhasil disimpan',
+            disposisi: populated
+        });
+    } catch (error) {
+        console.error('updateLaporan error:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 
 
 
@@ -127,7 +181,8 @@ module.exports = {
     createDisposisi,
     updateDisposisi,
     deleteDisposisi,
-    getMyTasks
+    getMyTasks,
+    updateLaporan
 };
 
 

@@ -27,34 +27,30 @@ export default function DaftarNotifikasi() {
     const [selectedRow, setSelectedRow] = useState(null);
     const [errors, setErrors] = useState({});
     const [tasks, setTasks] = useState([]);
-
+    const [currentTask, setCurrentTask] = useState(null);
+    const [showDialog, setShowDialog] = useState(false);
+    const [laporanText, setLaporanText] = useState('');
     const token = localStorage.getItem('token');
 
-    useEffect(() => {
-        const fetchTasks = async () => {
-            try {
-                setLoading(true);
-                const res = await axios.get('http://localhost:3000/api/task/disposisi/my', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setTasks(res.data);
-            } catch (err) {
-                console.error('Error get tasks:', err.response?.data || err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
 
+    const fetchTasks = async () => {
+        try {
+            setLoading(true);
+            const res = await axios.get('http://localhost:3000/api/task/disposisi/my', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setTasks(res.data);
+        } catch (err) {
+            console.error('Error get tasks:', err.response?.data || err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchTasks();
     }, []);
 
-
-    useEffect(() => {
-        DataNotifikasi.getNotifikasiMedium().then((data) => {
-            setNotifikasi(data || []);
-            setLoading(false);
-        });
-    }, []);
 
     const handleChange = (field, value) => {
         setForm({ ...form, [field]: value });
@@ -90,23 +86,23 @@ export default function DaftarNotifikasi() {
 
     };
 
-    const laporanBodyTemplate = (rowData) => {
-        return (
-            <div className="flex justify-content-end mb-3">
-                <Button
-                    label={rowData.isSubmitted ? "Sudah Melaporkan" : "Buat Laporan"}
-                    severity={rowData.isSubmitted ? "success" : "primary"}
-                    onClick={() => {
-                        setSelectedRow(rowData);
-                        setShowForm(true);
-                        setErrors({});
-                    }}
-                    disabled={rowData.isSubmitted}
-                />
+    // const laporanBodyTemplate = (rowData) => {
+    //     return (
+    //         <div className="flex justify-content-end mb-3">
+    //             <Button
+    //                 label={rowData.isSubmitted ? "Sudah Melaporkan" : "Buat Laporan"}
+    //                 severity={rowData.isSubmitted ? "success" : "primary"}
+    //                 onClick={() => {
+    //                     setSelectedRow(rowData);
+    //                     setShowForm(true);
+    //                     setErrors({});
+    //                 }}
+    //                 disabled={rowData.isSubmitted}
+    //             />
 
-            </div>
-        );
-    };
+    //         </div>
+    //     );
+    // };
 
     const detailBodyTemplate = (rowData) => {
         return (
@@ -122,16 +118,100 @@ export default function DaftarNotifikasi() {
         );
     };
 
+    // file body template for data table
+    const fileBodyTemplate = (data) => {
+        if (!data) return <span>-</span>;
 
-    const footer = (
-        <Button label="Submit" className="w-full" onClick={handleSubmit} />
-    );
+        const url = `http://localhost:3000/${data}`;
+
+        return (
+            <Button
+                label="Lihat"
+                icon="pi pi-file"
+                className="p-button-text p-button-sm"
+                onClick={() => window.open(url, "_blank")}
+            />
+        );
+    };
+
+    // setting date 
+    const formDate = (date) => {
+        if (!date) return "";
+
+        return new Date(date).toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        });
+    };
+
+    // setting time
+    const formTime = (date) => {
+        if (!date) return "Selesai";
+
+        return new Date(date).toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
+
+    const laporanActionTemplate = (row) => {
+        const label = row.laporan ? 'Sudah Melaporkan' : 'Isi Laporan';
+        return (
+            <Button
+                label={label}
+                severity={row.laporan_status == "SUDAH" ? "success" : "primary"}
+                onClick={() => {
+                    setCurrentTask(row);
+                    setLaporanText(row.laporan || '');
+                    setShowDialog(true);
+                }}
+                disabled={row.laporan_status == "SUDAH"}
+            />
+        );
+    };
+
+
+    const handleSaveLaporan = async () => {
+        if (!currentTask) return;
+        try {
+            const res = await axios.patch(
+                `http://localhost:3000/api/task/disposisi/${currentTask._id}/laporan`,
+                { laporan: laporanText },
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+
+            const updated = res.data.disposisi;
+
+            setTasks((prev) =>
+                prev.map((t) => (t._id === updated._id ? updated : t))
+            );
+
+            setShowDialog(false);
+            setCurrentTask(null);
+            setLaporanText('');
+        } catch (err) {
+            console.error(
+                'Error update laporan:',
+                err.response?.data || err.message
+            );
+        }
+    };
+
+
+
+
+    // const footer = (
+    //     <Button label="Submit" className="w-full" onClick={handleSubmit} />
+    // );
 
     return (
         <div className="card">
             <MainCard title="Daftar Notifikasi">
 
-                <Dialog
+                {/* <Dialog
                     header="Form Laporan"
                     visible={showForm}
                     modal
@@ -150,6 +230,48 @@ export default function DaftarNotifikasi() {
                         {errors.laporan && <small className="p-error">{errors.laporan}</small>}
                     </div>
 
+                </Dialog> */}
+
+
+                <Dialog
+                    header="Laporan Tugas"
+                    visible={showDialog}
+                    style={{ width: '30rem' }}
+                    modal
+                    onHide={() => setShowDialog(false)}
+                >
+                    {currentTask && (
+                        <div className="flex flex-column gap-3">
+                            <div>
+                                <p>
+                                    <strong>Nama Kegiatan:</strong> {currentTask.nama_kegiatan}
+                                </p>
+                                <p>
+                                    <strong>Agenda:</strong> {currentTask.agenda_kegiatan}
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block mb-2 font-semibold">Isi Laporan</label>
+                                <InputTextarea
+                                    rows={5}
+                                    className="w-full"
+                                    value={laporanText}
+                                    onChange={(e) => setLaporanText(e.target.value)}
+                                    placeholder="Tuliskan laporan kegiatan di sini..."
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-2 mt-3">
+                                <Button
+                                    label="Batal"
+                                    className="p-button-text"
+                                    onClick={() => setShowDialog(false)}
+                                />
+                                <Button label="Simpan" onClick={handleSaveLaporan} />
+                            </div>
+                        </div>
+                    )}
                 </Dialog>
 
                 <Dialog
@@ -162,11 +284,12 @@ export default function DaftarNotifikasi() {
                     {selectedNotif && (
                         <div className="flex flex-column gap-2">
 
-                            <p><strong>Nama Kegiatan:</strong> {selectedNotif.namakegiatan}</p>
-                            <p><strong>Tanggal:</strong> {selectedNotif.tanggal}</p>
-                            <p><strong>Jam:</strong> {selectedNotif.jam}</p>
+                            <p><strong>Nama Kegiatan:</strong> {selectedNotif.nama_kegiatan}</p>
+                            <p><strong>Tanggal:</strong> {formDate(selectedNotif.tanggal)}</p>
+                            <p><strong>Jam Mulai:</strong> {formTime(selectedNotif.jam_mulai)}</p>
+                            <p><strong>Jam Selesai:</strong> {formTime(selectedNotif.jam_selesai)}</p>
                             <p><strong>Tempat:</strong> {selectedNotif.tempat}</p>
-                            <p><strong>File:</strong> {selectedNotif.file}</p>
+                            <p><strong>File:</strong>{fileBodyTemplate(selectedNotif.file_path)}</p>
                             <p><strong>Catatan:</strong> {selectedNotif.catatan || "-"}</p>
                         </div>
                     )}
@@ -181,11 +304,11 @@ export default function DaftarNotifikasi() {
                     emptyMessage="Tidak ada data."
                 >
                     <Column field="nama_kegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
-                    <Column field="tanggal" header="Tanggal" style={{ minWidth: '10rem' }} />
-                    <Column field="jam" header="Jam" style={{ minWidth: '10rem' }} />
+                    <Column field="tanggal" header="Tanggal" body={(row) => formDate(row.tanggal)} style={{ minWidth: '10rem' }} />
+                    <Column header="Jam" body={(row) => `${formTime(row.jam_mulai)} - ${formTime(row.jam_selesai)}`} style={{ minWidth: '10rem' }} />
                     <Column field="tempat" header="Tempat" style={{ minWidth: '12rem' }} />
                     <Column header="Detail" body={detailBodyTemplate} style={{ textAlign: 'left', width: '6rem' }} />
-                    <Column header="Laporan" body={laporanBodyTemplate} style={{ textAlign: 'center', width: '6rem' }} />
+                    <Column header="Laporan" body={laporanActionTemplate} style={{ textAlign: 'center', width: '6rem' }} />
                 </DataTable>
 
             </MainCard>
