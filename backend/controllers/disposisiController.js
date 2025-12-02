@@ -3,7 +3,9 @@ const Disposisi = require('../models/disposisi.model')
 //get all disposisi
 const getDisposisi = async (req, res) => {
     try {
-        const disposisi = await Disposisi.find({});
+        const disposisi = await Disposisi.find()
+        .populate("nama_yang_dituju", "name")
+        .sort({ createdAt: -1});
         res.status(200).json(disposisi);
     } catch (error) {
         res.status(500).json({message: error.message});
@@ -11,7 +13,7 @@ const getDisposisi = async (req, res) => {
 }
 
 const getDisposisiCount = async (req, res) => {
-  console.log("User from token:", req.user); // ← harus ada user
+  console.log("User from token:", req.user); 
   try {
     const total = await Disposisi.countDocuments();
     res.status(200).json({ total });
@@ -20,7 +22,6 @@ const getDisposisiCount = async (req, res) => {
     res.status(500).json({ message: "Gagal menghitung disposisi", error: error.message });
   }
 };
-
 
 
 //get disposisi specific

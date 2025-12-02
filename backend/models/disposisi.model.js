@@ -13,7 +13,7 @@ const DisposisiSchema = mongoose.Schema(
         },
 
         nama_yang_dituju: [{
-            type: [String],
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: true,
         }],

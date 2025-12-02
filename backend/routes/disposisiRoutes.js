@@ -9,6 +9,8 @@ const { getDisposisi, getDisposisiCount, getDisposisis, createDisposisi, deleteD
 // route all disposisi
 router.get('/disposisi', verifyToken, authorizationRoles("admin"), getDisposisi);
 
+router.get('/disposisi/my', verifyToken, authorizationRoles('pegawai', 'admin'),  getMyTasks);
+
 // hitung total disposisi
 router.get('/disposisi/count', verifyToken, authorizationRoles("admin"), getDisposisiCount);
 
@@ -21,7 +23,6 @@ router.post('/disposisi', verifyToken, authorizationRoles("admin"), upload.singl
 // delete disposisi
 router.delete('/disposisi/:id', verifyToken, authorizationRoles("admin"), deleteDisposisi);
 
-router.get('/disposisi/my', verifyToken, authorizationRoles('pegawai', 'admin'),  getMyTasks);
 
 // update 
 router.put('/disposisi/:id', verifyToken, authorizationRoles("admin"), updateDisposisi);

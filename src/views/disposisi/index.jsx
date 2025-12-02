@@ -99,14 +99,15 @@ export default function Disposisi() {
 
     };
 
-    const getDataPegawai = async (id) => {
-        try {
-            const response = await axios.get(`http://localhost:3000/api/auth/getUser/${id}`)
-
-        } catch (error) {
-            console.error("Error saat mengambil data pegawai", error);
-        }
-    }
+    // const getDataPegawai = async (id) => {
+    //     try {
+    //         console.log(id);
+    //         const response = await axios.get(`http://localhost:3000/api/auth/getUser/${id}`);
+    //         return response.data.name;
+    //     } catch (error) {
+    //         console.error("Error saat mengambil data pegawai", error);
+    //     }
+    // }
 
     useEffect(() => {
         fetchPegawai();
@@ -621,10 +622,15 @@ export default function Disposisi() {
                 >
                     {selectedData && (
                         <div className="flex flex-column gap-2">
-
                             <p><strong>Nama Kegiatan:</strong> {selectedData.nama_kegiatan}</p>
                             <p><strong>Agenda Kegiatan:</strong> {selectedData.agenda_kegiatan}</p>
-                            <p><strong>Nama Pegawai:</strong> {selectedData.nama_yang_dituju.join(', ')}</p>
+                            <p>
+                                <strong>Nama Pegawai:</strong>{" "}
+                                {Array.isArray(selectedData.nama_yang_dituju)
+                                    ? selectedData.nama_yang_dituju.map((u) => u.name).join(", ")
+                                    : "-"}
+                            </p>
+
                             <p><strong>Direktorat:</strong> {selectedData.direktorat.join(', ')}</p>
                             <p><strong>Divisi:</strong> {selectedData.divisi.join(', ')}</p>
                             <p><strong>Tanggal:</strong> {formDate(selectedData.tanggal)}</p>
