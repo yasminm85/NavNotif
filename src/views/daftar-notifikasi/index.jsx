@@ -177,7 +177,7 @@ export default function DaftarNotifikasi() {
                     paginator
                     rows={5}
                     loading={loading}
-                    dataKey="id"
+                    dataKey="_id"
                     emptyMessage="Tidak ada data."
                 >
                     <Column field="nama_kegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
