@@ -1,4 +1,5 @@
 const Disposisi = require('../models/disposisi.model')
+const Notification = require('../models/notif.model')
 
 //get all disposisi
 const getDisposisi = async (req, res) => {
@@ -59,9 +60,18 @@ const createDisposisi = async (req, res) => {
             tempat: req.body.tempat,
             catatan: req.body.catatan,
             dresscode: req.body.dresscode,
-            file_path: filePath
-
+            file_path: filePath,
         });
+
+        if (Array.isArray(nama_yang_dituju) && nama_yang_dituju.length > 0) {
+            const notifDocs = nama_yang_dituju.map((userId) => ({
+                disposisi: disposisi._id,
+                user: userId,
+            }));
+
+            await Notification.insertMany(notifDocs);
+        }
+
         res.status(200).json(disposisi);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -72,19 +82,60 @@ const createDisposisi = async (req, res) => {
 const updateDisposisi = async (req, res) => {
     try {
         const { id } = req.params;
+        const {
+            nama_kegiatan,
+            agenda_kegiatan,
+            nama_yang_dituju,
+            direktorat,
+            divisi,
+            tanggal,
+            jam_mulai,
+            jam_selesai,
+            tempat,
+            catatan,
+            dresscode,
+            file_path
+        } = req.body;
 
-        const disposisi = await Disposisi.findByIdAndUpdate(id, req.body);
+        const updateData = {};
 
-        if (!disposisi) {
+        if (nama_kegiatan !== undefined) updateData.nama_kegiatan = nama_kegiatan;
+        if (agenda_kegiatan !== undefined) updateData.agenda_kegiatan = agenda_kegiatan;
+        if (nama_yang_dituju) updateData.nama_yang_dituju = JSON.parse(nama_yang_dituju);
+        if (direktorat) updateData.direktorat = JSON.parse(direktorat);
+        if (divisi) updateData.divisi = JSON.parse(divisi);
+
+        if (tanggal) updateData.tanggal = tanggal;
+        if (jam_mulai) updateData.jam_mulai = jam_mulai;
+        if (jam_selesai) updateData.jam_selesai = jam_selesai;
+        if (tempat !== undefined) updateData.tempat = tempat;
+        if (catatan !== undefined) updateData.catatan = catatan;
+        if (dresscode !== undefined) updateData.dresscode = dresscode;
+
+        if (req.file) {
+            updateData.file_path = req.file.path;
+        } else if (file_path) {
+            updateData.file_path = file_path;
+        }
+
+        const updatedDisposisi = await Disposisi.findByIdAndUpdate(
+            id,
+            updateData,
+            { new: true }
+        );
+
+        if (!updatedDisposisi) {
             return res.status(404).json({ message: "Data tidak ditemukan" });
         }
-        const updatedDisposisi = await Disposisi.findById(id);
+
         res.status(200).json(updatedDisposisi);
 
     } catch (error) {
+        console.error('Error updateDisposisi:', error);
         res.status(500).json({ message: error.message });
     }
-}
+};
+
 
 
 //delete disposisi

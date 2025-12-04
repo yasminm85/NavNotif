@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -7,7 +7,7 @@ import Avatar from '@mui/material/Avatar';
 import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-
+import axios from 'axios';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import SkeletonTotalOrderCard from 'ui-component/cards/Skeleton/EarningCard';
@@ -17,15 +17,38 @@ import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 
 export default function TotalSelesai({ isLoading }) {
   const theme = useTheme();
-
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const token = localStorage.getItem('token');
   const [timeValue, setTimeValue] = React.useState(false);
   const handleChangeTime = (event, newValue) => {
     setTimeValue(newValue);
   };
 
-  return (
-    <>
-      {isLoading ? (
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(
+        'http://localhost:3000/api/notif/notification/my',
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setNotifications(res.data);
+    } catch (err) {
+      console.error('Error get notifications:', err.response?.data || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const countDone = notifications.countDone;
+
+  return loading ? (
         <SkeletonTotalOrderCard />
       ) : (
         <MainCard
@@ -88,7 +111,7 @@ export default function TotalSelesai({ isLoading }) {
               <Grid>
                 <Grid container sx={{ alignItems: 'center' }}>
                   <Grid>
-                    <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>1 Notifikasi Selesai</Typography>
+                    <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>{countDone} Notifikasi Terbaca</Typography>
                   </Grid>
                 </Grid>
               </Grid>
@@ -100,15 +123,13 @@ export default function TotalSelesai({ isLoading }) {
                     color: 'success.light'
                   }}
                 >
-                  Total Notifikasi Sudah Selesai
+                  Total Notifikasi Sudah Dibaca
                 </Typography>
               </Grid>
             </Grid>
           </Box>
         </MainCard>
-      )}
-    </>
-  );
+      );
 }
 
 TotalSelesai.propTypes = { isLoading: PropTypes.bool };

@@ -79,6 +79,10 @@ const DisposisiSchema = mongoose.Schema(
         },
         laporan_at: {
             type: Date
+        },
+        status_notif: {
+            type: Boolean,
+            default: false
         }
     },
 

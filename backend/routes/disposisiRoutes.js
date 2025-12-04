@@ -25,7 +25,7 @@ router.delete('/disposisi/:id', verifyToken, authorizationRoles("admin"), delete
 
 
 // update 
-router.put('/disposisi/:id', verifyToken, authorizationRoles("admin"), updateDisposisi);
+router.patch('/disposisi/:id', verifyToken, authorizationRoles("admin"), upload.single("file"),updateDisposisi);
 
 // update laporan
 router.patch('/disposisi/:id/laporan', verifyToken, authorizationRoles('pegawai', 'admin'), updateLaporan);

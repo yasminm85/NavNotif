@@ -99,16 +99,6 @@ export default function Disposisi() {
 
     };
 
-    // const getDataPegawai = async (id) => {
-    //     try {
-    //         console.log(id);
-    //         const response = await axios.get(`http://localhost:3000/api/auth/getUser/${id}`);
-    //         return response.data.name;
-    //     } catch (error) {
-    //         console.error("Error saat mengambil data pegawai", error);
-    //     }
-    // }
-
     useEffect(() => {
         fetchPegawai();
         getDataDisposisi();
@@ -187,9 +177,9 @@ export default function Disposisi() {
         const divisiIds = selecteddivisi.map((d) => d.name);
         const formData = new FormData();
 
-        console.log('pegawai ID:', selectedpegawai);
-        console.log('direktorat ID:', direktoratIds);
-        console.log('divisi ID:', divisiIds);
+        // console.log('pegawai ID:', selectedpegawai);
+        // console.log('direktorat ID:', direktoratIds);
+        // console.log('divisi ID:', divisiIds);
 
         formData.append("nama_kegiatan", form.namakegiatan);
         formData.append("agenda_kegiatan", form.agenda);
@@ -203,11 +193,9 @@ export default function Disposisi() {
         formData.append("catatan", form.catatan);
         formData.append("dresscode", form.dresscode);
 
-    // Kalau ada file baru → kirim
     if (form.file) {
         formData.append("file", form.file);
     } else {
-        // Kalau tidak ada file baru saat edit → kirim info file lama
         if (editMode && selectedData?.file_path) {
             formData.append("file_path", selectedData.file_path);
         }
@@ -215,13 +203,8 @@ export default function Disposisi() {
 
     try {
         let response;
-
         if (editMode && selectedData?._id) {
-            
-            // ==========================
-            //        UPDATE DATA
-            // ==========================
-            response = await axios.put(
+            response = await axios.patch(
                 `http://localhost:3000/api/task/disposisi/${selectedData._id}`,
                 formData,
                 {
@@ -229,7 +212,6 @@ export default function Disposisi() {
                 }
             );
 
-            // Replace row yang lama di state
             setShowDisposisi(prev =>
                 prev.map(item =>
                     item._id === selectedData._id ? response.data : item
@@ -237,9 +219,6 @@ export default function Disposisi() {
             );
 
         } else {
-            // ==========================
-            //        CREATE DATA
-            // ==========================
             response = await axios.post(
                 'http://localhost:3000/api/task/disposisi',
                 formData,
@@ -351,7 +330,7 @@ export default function Disposisi() {
                             file_path: rowData.file_path || null,
                             tanggal: rowData.tanggal ? new Date(rowData.tanggal) : null,
                             jamMulai: rowData.jam_mulai ? new Date(rowData.jam_mulai) : null,
-                            jamSelesai: rowData.jam_selesai ? new Date(rowData.jam_selesai) : null,
+                            jamSelesai: rowData.jam_selesai && rowData.jam_selesai !== 'Selesai' ? new Date(rowData.jam_selesai) : null,
                         });
 
                         setSelectedpegawai(pegawaiSelected);
@@ -379,8 +358,6 @@ export default function Disposisi() {
     const laporanBodyTemplate = (rowData) => {
         return (
             <div className="flex gap-2">
-
-                {/* LAPORAN */}
                 <Button
                     icon="pi pi-book"
                     className="p-button-rounded p-button-info p-button-sm"
@@ -414,7 +391,7 @@ export default function Disposisi() {
         return (
             <i
                 className={
-                    rowData.status
+                    rowData.status_notif
                         ? "pi pi-check-circle"
                         : "pi pi-times-circle"
                 }
@@ -502,7 +479,6 @@ export default function Disposisi() {
     );
 
     return (
-
         <div className="card">
             <MainCard title="Disposisi">
                 <div className="flex justify-content-end mb-3">
@@ -769,8 +745,6 @@ export default function Disposisi() {
                     <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
                     <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
                     <Column header="Catatan" body={catatanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
-                    {/* <Column header="File" body={fileBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} /> */}
-
                     {/* === ACTION === */}
                     <Column header="Action" body={actionBodyTemplate} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} style={{ width: "10rem" }} />
                 </DataTable>

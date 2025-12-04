@@ -1,4 +1,5 @@
 const Notification = require('../models/notif.model')
+const Disposisi = require('../models/disposisi.model')
 
 // membuat notif
 const createNotification = async ({ disposisiId, userId }) => {
@@ -19,14 +20,14 @@ const createNotification = async ({ disposisiId, userId }) => {
 
 const getMyNotifications = async (req, res) => {
   try {
-    const userId = req.user.id || req.user._id; 
+    const userId = req.user.id || req.user._id;
 
     const [notifications, countActive, countDone] = await Promise.all([
       Notification.find({
         user: userId,
         isDone: false
       })
-        .populate('surat')
+        .populate('disposisi')
         .sort({ createdAt: -1 }),
 
       Notification.countDocuments({
@@ -53,33 +54,36 @@ const getMyNotifications = async (req, res) => {
 
 const markNotificationDone = async (req, res) => {
   try {
+    const { id } = req.params;         
     const userId = req.user.id || req.user._id;
-    const { id } = req.params; 
 
-    const notif = await Notification.findOne({
-      _id: id,
-      user: userId
-    });
+    const notif = await Notification.findOne({ _id: id, user: userId });
 
     if (!notif) {
-      return res.status(404).json({ message: 'Notification not found' });
+      return res.status(404).json({ message: 'Notifikasi tidak ditemukan' });
     }
 
+    notif.status = 'Terbaca';
     notif.isDone = true;
     notif.doneAt = new Date();
-    notif.status = 'Terbaca';
-
     await notif.save();
 
+    await Disposisi.findByIdAndUpdate(
+      notif.disposisi,
+      { status_notif: true }, 
+      { new: true }
+    );
+
     res.json({
-      message: 'Notification marked as done',
+      message: 'Notifikasi selesai & status surat sudah terbaca',
       notification: notif
     });
-  } catch (err) {
-    console.error('Error markNotificationDone:', err);
-    res.status(500).json({ message: 'Server error' });
+  } catch (error) {
+    console.error('markNotificationDone error:', error);
+    res.status(500).json({ message: error.message });
   }
 };
+
 
 const getNotificationsAdmin = async (req, res) => {
   try {
