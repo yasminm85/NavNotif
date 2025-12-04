@@ -107,7 +107,13 @@ const updateDisposisi = async (req, res) => {
 
         if (tanggal) updateData.tanggal = tanggal;
         if (jam_mulai) updateData.jam_mulai = jam_mulai;
-        if (jam_selesai) updateData.jam_selesai = jam_selesai;
+        // if (jam_selesai) updateData.jam_selesai = jam_selesai;
+        if (jam_selesai === "") {
+            updateData.jam_selesai = "";     // reset jadi kosong
+        } else if (jam_selesai !== undefined) {
+            updateData.jam_selesai = jam_selesai; // update normal
+        }
+
         if (tempat !== undefined) updateData.tempat = tempat;
         if (catatan !== undefined) updateData.catatan = catatan;
         if (dresscode !== undefined) updateData.dresscode = dresscode;

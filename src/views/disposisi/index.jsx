@@ -159,7 +159,20 @@ export default function Disposisi() {
 
 
     // handle form and error
+    // const handleChange = (field, value) => {
+    //     setForm({ ...form, [field]: value });
+    //     setErrors({ ...errors, [field]: "" });
+    // };
     const handleChange = (field, value) => {
+
+        // Jika user hapus jam selesai → jadikan string kosong
+        if (field === "jamSelesai") {
+            if (!value) {
+                setForm({ ...form, jamSelesai: "" });
+                return;
+            }
+        }
+
         setForm({ ...form, [field]: value });
         setErrors({ ...errors, [field]: "" });
     };
@@ -190,7 +203,6 @@ export default function Disposisi() {
         formData.append("jam_selesai", form.jamSelesai || "");
 
         formData.append("jam_mulai", form.jamMulai);
-        // formData.append("jam_selesai", form.jamSelesai);
         formData.append("tempat", form.tempat);
         formData.append("catatan", form.catatan);
         formData.append("dresscode", form.dresscode);
@@ -332,7 +344,11 @@ export default function Disposisi() {
                             file_path: rowData.file_path || null,
                             tanggal: rowData.tanggal ? new Date(rowData.tanggal) : null,
                             jamMulai: rowData.jam_mulai ? new Date(rowData.jam_mulai) : null,
-                            jamSelesai: rowData.jam_selesai && rowData.jam_selesai !== 'Selesai' ? new Date(rowData.jam_selesai) : null,
+                            // jamSelesai: rowData.jam_selesai && rowData.jam_selesai !== 'Selesai' ? new Date(rowData.jam_selesai) : null,
+                            jamSelesai: rowData.jam_selesai && rowData.jam_selesai !== "" 
+                            ? new Date(rowData.jam_selesai) 
+                            : "",
+
                         });
 
                         setSelectedpegawai(pegawaiSelected);
