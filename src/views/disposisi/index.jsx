@@ -397,7 +397,7 @@ export default function Disposisi() {
                 }
                 style={{
                     fontSize: "1.3rem",
-                    color: rowData.status ? "green" : "red"
+                    color: rowData.status_notif ? "green" : "red"
                 }}
             ></i>
         );
