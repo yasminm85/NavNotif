@@ -187,8 +187,10 @@ export default function Disposisi() {
         formData.append("direktorat", JSON.stringify(direktoratIds));
         formData.append("divisi", JSON.stringify(divisiIds));
         formData.append("tanggal", form.tanggal);
+        formData.append("jam_selesai", form.jamSelesai || "");
+
         formData.append("jam_mulai", form.jamMulai);
-        formData.append("jam_selesai", form.jamSelesai);
+        // formData.append("jam_selesai", form.jamSelesai);
         formData.append("tempat", form.tempat);
         formData.append("catatan", form.catatan);
         formData.append("dresscode", form.dresscode);
@@ -419,38 +421,52 @@ export default function Disposisi() {
         );
     };
 
-    const laporanStatus = (row) => {
-        if (row.laporan_status === 'SUDAH') {
-            return <Tag value="Sudah laporan" severity="success" />;
-        }
-        return <Tag value="Belum laporan" severity="warning" />;
-    };
+    // Highlight row logic
+   const rowClass = (rowData) => {
+    if (!rowData) return "";
 
+    const now = new Date();
+    const mulai = rowData.jam_mulai ? new Date(rowData.jam_mulai) : null;
 
-    // highlight rows
-    const rowClass = (rowData) => {
-        const now = new Date();
-        const tanggalMulai = new Date(`${rowData.tanggal} ${rowData.jam_mulai || '00:00'}`);
+    // Jika jam selesai kosong → null
+    const selesai = rowData.jam_selesai && rowData.jam_selesai.trim() !== ""
+        ? new Date(rowData.jam_selesai)
+        : null;
 
-        let tanggalSelesai;
-        if (rowData.jam_selesai && rowData.jam_selesai !== "selesai") {
-            tanggalSelesai = new Date(`${rowData.tanggal} ${rowData.jam_selesai}`);
-        } else {
-            tanggalSelesai = new Date(`${rowData.tanggal} 23:59`); // satu hari penuh
-        }
+    // Jika laporan SUDAH dibuat → SELALU hijau
+    if (rowData.laporan_status === "SUDAH") {
+        return "completed-row";
+    }
 
-        // Sedang berlangsung → kuning
-        if (now >= tanggalMulai && now <= tanggalSelesai) {
+    // Normalisasi tanggal untuk highlight hari ini
+    const tanggalHariIni = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tanggalKegiatan = new Date(
+        new Date(rowData.tanggal).getFullYear(),
+        new Date(rowData.tanggal).getMonth(),
+        new Date(rowData.tanggal).getDate()
+    );
+
+    // Hanya highlight kalau tanggalnya hari ini
+    if (tanggalKegiatan.getTime() === tanggalHariIni.getTime()) {
+        if (mulai && now < mulai) return ""; // belum mulai
+
+        // Sedang berlangsung
+        if (mulai && now >= mulai && (!selesai || now <= selesai)) {
             return "highlight-row";
         }
 
-        // Sudah selesai dan laporan dibuat → hijau
-        if (now > tanggalSelesai && rowData.laporan_sudah_dibuat) {
-            return "completed-row";
+        // Selesai tapi laporan belum dibuat
+        if (selesai && now > selesai) {
+            return "highlight-row";
         }
+    }
 
-        return "";
-    };
+    return "";
+};
+
+
+
+
 
     // setting date 
     const formDate = (date) => {
