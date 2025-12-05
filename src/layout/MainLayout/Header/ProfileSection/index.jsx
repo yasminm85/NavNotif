@@ -82,24 +82,6 @@ export default function ProfileSection() {
 
   return (
     <>
-      <Chip
-        sx={{
-          ml: 2,
-          height: '48px',
-          alignItems: 'center',
-          borderRadius: '27px',
-          '& .MuiChip-label': {
-            lineHeight: 0
-          }
-        }}
-        label={<IconLogout stroke={1.5} size="24px" />}
-        ref={anchorRef}
-        aria-controls={open ? 'menu-list-grow' : undefined}
-        aria-haspopup="true"
-        onClick={handleToggle}
-        color="primary"
-        aria-label="user-account"
-      />
       <Popper
         placement="bottom"
         open={open}

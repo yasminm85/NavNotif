@@ -15,7 +15,6 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './app.css';
 import axios from 'axios';
-import { Form } from 'react-router';
 
 export default function Disposisi() {
     const [editMode, setEditMode] = useState(false);
@@ -176,6 +175,21 @@ export default function Disposisi() {
         setForm({ ...form, [field]: value });
         setErrors({ ...errors, [field]: "" });
     };
+
+    const handleFileChange = (e) => {
+    const file = e.target.files[0];
+
+    // Validasi PDF
+    if (file && file.type !== "application/pdf") {
+        alert("File harus berupa PDF!");
+        e.target.value = ""; // reset input file
+        return;
+    }
+
+    // Jika valid
+    handleChange("file", file);
+};
+
 
     // handle submit form
     const handleSubmit = async (e) => {
@@ -344,7 +358,6 @@ export default function Disposisi() {
                             file_path: rowData.file_path || null,
                             tanggal: rowData.tanggal ? new Date(rowData.tanggal) : null,
                             jamMulai: rowData.jam_mulai ? new Date(rowData.jam_mulai) : null,
-                            // jamSelesai: rowData.jam_selesai && rowData.jam_selesai !== 'Selesai' ? new Date(rowData.jam_selesai) : null,
                             jamSelesai: rowData.jam_selesai && rowData.jam_selesai !== "" 
                             ? new Date(rowData.jam_selesai) 
                             : "",
@@ -479,10 +492,6 @@ export default function Disposisi() {
 
     return "";
 };
-
-
-
-
 
     // setting date 
     const formDate = (date) => {
@@ -674,10 +683,17 @@ export default function Disposisi() {
                     </div>
 
         
-                    <input
+                    {/* <input
                         type="file"
                         className="w-full mb-3"
                         onChange={(e) => handleChange("file", e.target.files[0])}
+                    /> */}
+
+                    <input
+                        type="file"
+                        className="w-full mb-3"
+                        accept="application/pdf"
+                        onChange={(e) => handleFileChange(e)}
                     />
 
 
