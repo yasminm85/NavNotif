@@ -19,38 +19,10 @@ import SkeletonTotalOrderCard from 'ui-component/cards/Skeleton/EarningCard';
 // assets
 import AssignmentIcon from '@mui/icons-material/Assignment';
 
-export default function TotalNotifikasi() {
+export default function TotalNotifikasi({count = 0}) {
   const theme = useTheme();
-  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
-  const token = localStorage.getItem('token');
-  const [timeValue, setTimeValue] = React.useState(false);
-  const handleChangeTime = (event, newValue) => {
-    setTimeValue(newValue);
-  };
 
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(
-        'http://localhost:3000/api/notif/notification/my',
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      setNotifications(res.data);
-    } catch (err) {
-      console.error('Error get notifications:', err.response?.data || err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  const count = notifications.countActive;
 
   return loading ? (
         <SkeletonTotalOrderCard />

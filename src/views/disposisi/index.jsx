@@ -33,7 +33,6 @@ export default function Disposisi() {
     const [showView, setShowView] = useState(false);
     const [showLaporan, setShowLaporan] = useState(false);
     const [showDisposisi, setShowDisposisi] = useState([]);
-    const [reminder, setReminder] = useState(false);
     const [selectedNotifOptions, setSelectedNotifOptions] = useState([]);
     const [errors, setErrors] = useState({});
     const [form, setForm] = useState({
@@ -106,7 +105,7 @@ export default function Disposisi() {
     }, []);
 
 
-
+    // reminder notif
     const notifOptions = [
         { label: '1 jam sebelum kegiatan', value: 'REMINDER_1H' },
         { label: '30 menit sebelum kegiatan', value: 'REMINDER_30M' },
@@ -165,15 +164,9 @@ export default function Disposisi() {
         setSelecteddivisi([]);
     };
 
-
-    // handle form and error
-    // const handleChange = (field, value) => {
-    //     setForm({ ...form, [field]: value });
-    //     setErrors({ ...errors, [field]: "" });
-    // };
     const handleChange = (field, value) => {
 
-        // Jika user hapus jam selesai → jadikan string kosong
+        // Kosyong kalau user hapus jam nya
         if (field === "jamSelesai") {
             if (!value) {
                 setForm({ ...form, jamSelesai: "" });
@@ -191,7 +184,7 @@ export default function Disposisi() {
     // Validasi PDF
     if (file && file.type !== "application/pdf") {
         alert("File harus berupa PDF!");
-        e.target.value = ""; // reset input file
+        e.target.value = ""; 
         return;
     }
 
@@ -341,19 +334,16 @@ export default function Disposisi() {
                     onClick={() => {
                         if (!rowData) return;
 
-                        // ====== FIX PEMILIHAN PEGAWAI SAAT EDIT ======
                         const pegawaiSelected = pegawaisel.filter(p =>
                             (rowData.nama_yang_dituju || []).some(id =>
                                 id === p._id || id?._id === p._id
                             )
                         );
 
-                        // ====== FIX PEMILIHAN DIREKTORAT ======
                         const direktoratSelected = directorat.filter(d =>
                             (rowData.direktorat || []).includes(d.name)
                         );
 
-                        // ====== FIX PEMILIHAN DIVISI ======
                         const divisiSelected = divisi.filter(d =>
                             (rowData.divisi || []).includes(d.name)
                         );
@@ -363,7 +353,7 @@ export default function Disposisi() {
                             selectedDirIds.includes(div.DirId)
                         );
 
-                        // ======= SET FORM =======
+                        // form set
                         setForm({
                             ...rowData,
                             namakegiatan: rowData.nama_kegiatan || "",
@@ -473,12 +463,12 @@ export default function Disposisi() {
         const now = new Date();
         const mulai = rowData.jam_mulai ? new Date(rowData.jam_mulai) : null;
 
-        // Jika jam selesai kosong → null
+        // jam selese kosong jadi null
         const selesai = rowData.jam_selesai && rowData.jam_selesai.trim() !== ""
             ? new Date(rowData.jam_selesai)
             : null;
 
-        // Jika laporan SUDAH dibuat → SELALU hijau
+        // Laporan dah dibuat jadi Hijau
         if (rowData.laporan_status === "SUDAH") {
             return "completed-row";
         }
@@ -493,7 +483,7 @@ export default function Disposisi() {
 
         // Hanya highlight kalau tanggalnya hari ini
         if (tanggalKegiatan.getTime() === tanggalHariIni.getTime()) {
-            if (mulai && now < mulai) return ""; // belum mulai
+            if (mulai && now < mulai) return ""; 
 
             // Sedang berlangsung
             if (mulai && now >= mulai && (!selesai || now <= selesai)) {
@@ -697,14 +687,8 @@ export default function Disposisi() {
                         />
                         {errors.tempat && <small className="p-error">{errors.tempat}</small>}
                     </div>
-
-        
-                    {/* <input
-                        type="file"
-                        className="w-full mb-3"
-                        onChange={(e) => handleChange("file", e.target.files[0])}
-                    /> */}
-
+                    
+                    {/* File */}
                     <input
                         type="file"
                         className="w-full mb-3"
@@ -827,7 +811,7 @@ export default function Disposisi() {
                     <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
                     <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
                     <Column header="Catatan" body={catatanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
-                    {/* === ACTION === */}
+                    {/*  Action */}
                     <Column header="Action" body={actionBodyTemplate} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} style={{ width: "10rem" }} />
                 </DataTable>
 
