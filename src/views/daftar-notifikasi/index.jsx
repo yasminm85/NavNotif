@@ -5,7 +5,6 @@ import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { DataNotifikasi } from './DataNotifikasi';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -86,24 +85,6 @@ export default function DaftarNotifikasi() {
 
     };
 
-    // const laporanBodyTemplate = (rowData) => {
-    //     return (
-    //         <div className="flex justify-content-end mb-3">
-    //             <Button
-    //                 label={rowData.isSubmitted ? "Sudah Melaporkan" : "Buat Laporan"}
-    //                 severity={rowData.isSubmitted ? "success" : "primary"}
-    //                 onClick={() => {
-    //                     setSelectedRow(rowData);
-    //                     setShowForm(true);
-    //                     setErrors({});
-    //                 }}
-    //                 disabled={rowData.isSubmitted}
-    //             />
-
-    //         </div>
-    //     );
-    // };
-
     const detailBodyTemplate = (rowData) => {
         return (
             <Button
@@ -155,22 +136,48 @@ export default function DaftarNotifikasi() {
         });
     };
 
+    const getLocalDateOnly = (isoString) => {
+        const d = new Date(isoString);
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate()); // jam 00:00 WIB
+    };
+
+    const isLaporanAllowed = (row) => {
+        const now = new Date();
+
+        // Pakai tanggal lokal & jam_mulai lokal
+        const localDate = getLocalDateOnly(row.tanggal);
+        const startTime = new Date(row.jam_mulai);
+
+        const start = new Date(
+            localDate.getFullYear(),
+            localDate.getMonth(),
+            localDate.getDate(),
+            startTime.getHours(),
+            startTime.getMinutes(),
+            startTime.getSeconds()
+        );
+
+        return now >= start;
+    };
+
     const laporanActionTemplate = (row) => {
-        const label = row.laporan ? 'Sudah Melaporkan' : 'Isi Laporan';
+        console.log(row);
+
+        const bolehLapor = isLaporanAllowed(row);
+
         return (
             <Button
-                label={label}
-                severity={row.laporan_status == "SUDAH" ? "success" : "primary"}
+                label={row.laporan ? 'Sudah Melaporkan' : 'Isi Laporan'}
+                severity={row.laporan ? "success" : "primary"}
                 onClick={() => {
                     setCurrentTask(row);
                     setLaporanText(row.laporan || '');
                     setShowDialog(true);
                 }}
-                disabled={row.laporan_status == "SUDAH"}
+                disabled={!bolehLapor}   // HANYA disable kalau BELUM mulai
             />
         );
     };
-
 
     const handleSaveLaporan = async () => {
         if (!currentTask) return;
@@ -200,37 +207,9 @@ export default function DaftarNotifikasi() {
         }
     };
 
-
-
-
-    // const footer = (
-    //     <Button label="Submit" className="w-full" onClick={handleSubmit} />
-    // );
-
     return (
         <div className="card">
             <MainCard title="Daftar Notifikasi">
-
-                {/* <Dialog
-                    header="Form Laporan"
-                    visible={showForm}
-                    modal
-                    style={{ width: "30rem" }}
-                    onHide={() => setShowForm(false)}
-                    footer={footer}
-                >
-                    <div className="mb-3">
-                        <InputTextarea
-                            placeholder="Tulis Laporan *"
-                            className="w-full"
-                            rows={3}
-                            value={form.laporan}
-                            onChange={(e) => handleChange("laporan", e.target.value)}
-                        />
-                        {errors.laporan && <small className="p-error">{errors.laporan}</small>}
-                    </div>
-
-                </Dialog> */}
 
 
                 <Dialog
