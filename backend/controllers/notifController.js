@@ -21,23 +21,36 @@ const createNotification = async ({ disposisiId, userId }) => {
 const getMyNotifications = async (req, res) => {
   try {
     const userId = req.user.id || req.user._id;
+    const now = new Date();
+    const reminderWindow = new Date(now.getTime() - 10 * 60000); 
 
     const [notifications, countActive, countDone] = await Promise.all([
       Notification.find({
         user: userId,
-        isDone: false
+        isDone: false,
+        $or: [
+          { notifType: 'ON_CREATE' },
+          {
+            notifType: { $ne: 'ON_CREATE' },
+            sendAt: { $gte: reminderWindow, $lte: now }
+          }
+        ]
+
       })
         .populate('disposisi')
         .sort({ createdAt: -1 }),
 
       Notification.countDocuments({
         user: userId,
-        isDone: false
+        isDone: false,
+        notifType: 'ON_CREATE',
+        sendAt: { $lte: now }
       }),
 
       Notification.countDocuments({
         user: userId,
-        isDone: true
+        isDone: true,
+        notifType: 'ON_CREATE'
       })
     ]);
 
@@ -54,7 +67,7 @@ const getMyNotifications = async (req, res) => {
 
 const markNotificationDone = async (req, res) => {
   try {
-    const { id } = req.params;         
+    const { id } = req.params;
     const userId = req.user.id || req.user._id;
 
     const notif = await Notification.findOne({ _id: id, user: userId });
@@ -68,14 +81,16 @@ const markNotificationDone = async (req, res) => {
     notif.doneAt = new Date();
     await notif.save();
 
-    await Disposisi.findByIdAndUpdate(
-      notif.disposisi,
-      { status_notif: true }, 
-      { new: true }
-    );
+    if (notif.notifType === 'ON_CREATE') {
+      await Disposisi.findByIdAndUpdate(
+        notif.disposisi,
+        { status_notif: true },
+        { new: true }
+      );
+    }
 
     res.json({
-      message: 'Notifikasi selesai & status surat sudah terbaca',
+      message: 'Notifikasi sudah terbaca',
       notification: notif
     });
   } catch (error) {

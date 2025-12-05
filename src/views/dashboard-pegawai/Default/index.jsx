@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Grid from '@mui/material/Grid2';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -13,6 +13,8 @@ import axios from 'axios';
 export default function DashboardPegawai() {
   const [notifications, setNotifications] = useState([]);
   const token = localStorage.getItem('token');
+  const shownToastIds = useRef(new Set());
+
 
   useEffect(() => {
   const fetchNotifications = async () => {
@@ -50,20 +52,56 @@ export default function DashboardPegawai() {
   </div>
 );
 
-
 useEffect(() => {
+  if (!Array.isArray(notifications)) return;
+
   notifications
-    .filter(n => !n.isDone)  
-    .forEach(n => {
-      toast.info(
-        <NotifToast
-          message={`Surat baru: ${n.disposisi?.nama_kegiatan}`}
-          onOke={() => handleOke(n._id)}
-        />,
-        { autoClose: false }   
-      );
+    .filter((n) => !n.isDone)
+    .forEach((n) => {
+      if (shownToastIds.current.has(n._id)) return;
+      shownToastIds.current.add(n._id);
+
+      const kegiatan = n.disposisi?.nama_kegiatan || 'Surat tugas';
+
+      if (n.notifType === 'ON_CREATE') {
+        // notifikasi utama
+        toast.info(
+          <NotifToast
+            message={`Surat baru: ${kegiatan}`}
+            onOke={() => handleOke(n._id)}
+          />,
+          { autoClose: false }
+        );
+      } else if (n.notifType === 'REMINDER_1H') {
+        toast.info(`Pengingat: ${kegiatan} dimulai 1 jam lagi`, {
+          autoClose: 5000
+        });
+      } else if (n.notifType === 'REMINDER_30M') {
+        toast.info(`Pengingat: ${kegiatan} dimulai 30 menit lagi`, {
+          autoClose: 5000
+        });
+      } else if (n.notifType === 'REMINDER_2M') {
+        toast.info(`Pengingat: ${kegiatan} dimulai 2 menit lagi`, {
+          autoClose: 5000
+        });
+      }
     });
 }, [notifications]);
+
+
+// useEffect(() => {
+//   notifications
+//     .filter(n => !n.isDone)  
+//     .forEach(n => {
+//       toast.info(
+//         <NotifToast
+//           message={`Dispo Baru Masuk: ${n.disposisi?.nama_kegiatan}`}
+//           onOke={() => handleOke(n._id)}
+//         />,
+//         { autoClose: false }   
+//       );
+//     });
+// }, [notifications]);
 
 const handleOke = async (notifId) => {
   try {

@@ -17,6 +17,7 @@ import './app.css';
 import axios from 'axios';
 
 export default function Disposisi() {
+    const token = localStorage.getItem('token');
     const [editMode, setEditMode] = useState(false);
     const [loading, setLoading] = useState(true);
     const [pegawaisel, setPegawai] = useState([]);
@@ -24,7 +25,6 @@ export default function Disposisi() {
     const [selecteddivisi, setSelecteddivisi] = useState([]);
     const [selecteddirectorat, setSelecteddirectorat] = useState([]);
     const [itemOptions, setitemOptions] = useState([]);
-    const token = localStorage.getItem('token');
     const [showForm, setShowForm] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
     const [selectedNote, setSelectedNote] = useState("");
@@ -33,6 +33,8 @@ export default function Disposisi() {
     const [showView, setShowView] = useState(false);
     const [showLaporan, setShowLaporan] = useState(false);
     const [showDisposisi, setShowDisposisi] = useState([]);
+    const [reminder, setReminder] = useState(false);
+    const [selectedNotifOptions, setSelectedNotifOptions] = useState([]);
     const [errors, setErrors] = useState({});
     const [form, setForm] = useState({
         namakegiatan: "",
@@ -103,6 +105,13 @@ export default function Disposisi() {
         getDataDisposisi();
     }, []);
 
+
+
+    const notifOptions = [
+        { label: '1 jam sebelum kegiatan', value: 'REMINDER_1H' },
+        { label: '30 menit sebelum kegiatan', value: 'REMINDER_30M' },
+        { label: '2 menit sebelum kegiatan', value: 'REMINDER_2M' }
+    ];
 
     // inisialisasi direktorat dan divisi
     const directorat = [
@@ -193,11 +202,11 @@ export default function Disposisi() {
 
     // handle submit form
     const handleSubmit = async (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    const validation = validateForm();
-    setErrors(validation);
-    if (Object.keys(validation).length > 0) return;
+        const validation = validateForm();
+        setErrors(validation);
+        if (Object.keys(validation).length > 0) return;
 
         const pegawaiIds = selectedpegawai.map((p) => p._id);
         const direktoratIds = selecteddirectorat.map((d) => d.name);
@@ -220,71 +229,78 @@ export default function Disposisi() {
         formData.append("tempat", form.tempat);
         formData.append("catatan", form.catatan);
         formData.append("dresscode", form.dresscode);
+        formData.append("reminder", form.reminder);
 
-    if (form.file) {
-        formData.append("file", form.file);
-    } else {
-        if (editMode && selectedData?.file_path) {
-            formData.append("file_path", selectedData.file_path);
-        }
-    }
-
-    try {
-        let response;
-        if (editMode && selectedData?._id) {
-            response = await axios.patch(
-                `http://localhost:3000/api/task/disposisi/${selectedData._id}`,
-                formData,
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-            );
-
-            setShowDisposisi(prev =>
-                prev.map(item =>
-                    item._id === selectedData._id ? response.data : item
-                )
-            );
-
+        if (form.file) {
+            formData.append("file", form.file);
         } else {
-            response = await axios.post(
-                'http://localhost:3000/api/task/disposisi',
-                formData,
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-            );
-
-            setShowDisposisi(prev => [...prev, response.data]);
+            if (editMode && selectedData?.file_path) {
+                formData.append("file_path", selectedData.file_path);
+            }
         }
 
-        // Reset form setelah submit
-        setShowForm(false);
-        setEditMode(false);
-        setSelectedData(null);
-        setForm({
-            namakegiatan: "",
-            agenda: "",
-            namayangdituju: "",
-            direktorat: "",
-            divisi: "",
-            tanggal: null,
-            jamMulai: "",
-            jamSelesai: "",
-            tempat: "",
-            file: null,
-            catatan: "",
-            dresscode: "",
-        });
-        setSelectedpegawai([]);
-        setSelecteddirectorat([]);
-        setSelecteddivisi([]);
-        setErrors({});
+        formData.append(
+            "notificationOptions",
+            JSON.stringify(selectedNotifOptions) 
+        );
 
-    } catch (error) {
-        console.error("Error disposisi:", error.response?.data || error.message);
-    }
-};
+
+        try {
+            let response;
+            if (editMode && selectedData?._id) {
+                response = await axios.patch(
+                    `http://localhost:3000/api/task/disposisi/${selectedData._id}`,
+                    formData,
+                    {
+                        headers: { Authorization: `Bearer ${token}` }
+                    }
+                );
+
+                setShowDisposisi(prev =>
+                    prev.map(item =>
+                        item._id === selectedData._id ? response.data : item
+                    )
+                );
+
+            } else {
+                response = await axios.post(
+                    'http://localhost:3000/api/task/disposisi',
+                    formData,
+                    {
+                        headers: { Authorization: `Bearer ${token}` }
+                    }
+                );
+
+                setShowDisposisi(prev => [...prev, response.data]);
+            }
+
+            // Reset form setelah submit
+            setShowForm(false);
+            setEditMode(false);
+            setSelectedData(null);
+            setForm({
+                namakegiatan: "",
+                agenda: "",
+                namayangdituju: "",
+                direktorat: "",
+                divisi: "",
+                tanggal: null,
+                jamMulai: "",
+                jamSelesai: "",
+                tempat: "",
+                file: null,
+                catatan: "",
+                dresscode: "",
+            });
+            setSelectedpegawai([]);
+            setSelecteddirectorat([]);
+            setSelecteddivisi([]);
+            setErrors({});
+
+        } catch (error) {
+            console.error("Error disposisi:", error.response?.data || error.message);
+        }
+    };
 
 
     // handle delete button
@@ -393,7 +409,7 @@ export default function Disposisi() {
                     icon="pi pi-book"
                     className="p-button-rounded p-button-info p-button-sm"
                     onClick={() => {
-                        setSelectedLaporan(rowData.laporan);  
+                        setSelectedLaporan(rowData.laporan);
                         setShowLaporan(true);
                     }}
                 />
@@ -451,44 +467,44 @@ export default function Disposisi() {
     };
 
     // Highlight row logic
-   const rowClass = (rowData) => {
-    if (!rowData) return "";
+    const rowClass = (rowData) => {
+        if (!rowData) return "";
 
-    const now = new Date();
-    const mulai = rowData.jam_mulai ? new Date(rowData.jam_mulai) : null;
+        const now = new Date();
+        const mulai = rowData.jam_mulai ? new Date(rowData.jam_mulai) : null;
 
-    // Jika jam selesai kosong → null
-    const selesai = rowData.jam_selesai && rowData.jam_selesai.trim() !== ""
-        ? new Date(rowData.jam_selesai)
-        : null;
+        // Jika jam selesai kosong → null
+        const selesai = rowData.jam_selesai && rowData.jam_selesai.trim() !== ""
+            ? new Date(rowData.jam_selesai)
+            : null;
 
-    // Jika laporan SUDAH dibuat → SELALU hijau
-    if (rowData.laporan_status === "SUDAH") {
-        return "completed-row";
-    }
-
-    // Normalisasi tanggal untuk highlight hari ini
-    const tanggalHariIni = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const tanggalKegiatan = new Date(
-        new Date(rowData.tanggal).getFullYear(),
-        new Date(rowData.tanggal).getMonth(),
-        new Date(rowData.tanggal).getDate()
-    );
-
-    // Hanya highlight kalau tanggalnya hari ini
-    if (tanggalKegiatan.getTime() === tanggalHariIni.getTime()) {
-        if (mulai && now < mulai) return ""; // belum mulai
-
-        // Sedang berlangsung
-        if (mulai && now >= mulai && (!selesai || now <= selesai)) {
-            return "highlight-row";
+        // Jika laporan SUDAH dibuat → SELALU hijau
+        if (rowData.laporan_status === "SUDAH") {
+            return "completed-row";
         }
 
-        // Selesai tapi laporan belum dibuat
-        if (selesai && now > selesai) {
-            return "highlight-row";
+        // Normalisasi tanggal untuk highlight hari ini
+        const tanggalHariIni = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const tanggalKegiatan = new Date(
+            new Date(rowData.tanggal).getFullYear(),
+            new Date(rowData.tanggal).getMonth(),
+            new Date(rowData.tanggal).getDate()
+        );
+
+        // Hanya highlight kalau tanggalnya hari ini
+        if (tanggalKegiatan.getTime() === tanggalHariIni.getTime()) {
+            if (mulai && now < mulai) return ""; // belum mulai
+
+            // Sedang berlangsung
+            if (mulai && now >= mulai && (!selesai || now <= selesai)) {
+                return "highlight-row";
+            }
+
+            // Selesai tapi laporan belum dibuat
+            if (selesai && now > selesai) {
+                return "highlight-row";
+            }
         }
-    }
 
     return "";
 };
@@ -716,6 +732,24 @@ export default function Disposisi() {
                             onChange={(e) => handleChange("dresscode", e.target.value)}
                         />
                     </div>
+
+                    {/* Pengingat Notifikasi */}
+                    <div className="mb-3">
+                        <label className="block mb-1 font-semibold">
+                            Atur Pengingat Notifikasi
+                        </label>
+                        <MultiSelect
+                            placeholder="Pilih pengingat"
+                            className="w-full"
+                            value={selectedNotifOptions}
+                            options={notifOptions}
+                            display="chip"
+                            onChange={(e) => setSelectedNotifOptions(e.value)}
+                        />
+                    </div>
+
+
+
                 </Dialog>
 
                 {/* DETAIL */}

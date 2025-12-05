@@ -37,16 +37,31 @@ const getDisposisis = async (req, res) => {
 }
 
 //create new disposisi
+const REMINDER_OFFSET_MINUTES = {
+    REMINDER_1H: -60,
+    REMINDER_30M: -30,
+    REMINDER_2M: -2
+};
+
 const createDisposisi = async (req, res) => {
     try {
         const filePath = req.file ? req.file.path : null;
-        console.log(req.body.file);
 
-        const nama_yang_dituju = req.body.nama_yang_dituju ? JSON.parse(req.body.nama_yang_dituju) : [];
+        const nama_yang_dituju = req.body.nama_yang_dituju
+            ? JSON.parse(req.body.nama_yang_dituju)
+            : [];
 
-        const direktorat = req.body.direktorat ? JSON.parse(req.body.direktorat) : [];
+        const direktorat = req.body.direktorat
+            ? JSON.parse(req.body.direktorat)
+            : [];
 
-        const divisi = req.body.divisi ? JSON.parse(req.body.divisi) : [];
+        const divisi = req.body.divisi
+            ? JSON.parse(req.body.divisi)
+            : [];
+
+        const notificationOptions = req.body.notificationOptions
+            ? JSON.parse(req.body.notificationOptions)
+            : [];
 
         const disposisi = await Disposisi.create({
             nama_kegiatan: req.body.nama_kegiatan,
@@ -60,23 +75,90 @@ const createDisposisi = async (req, res) => {
             tempat: req.body.tempat,
             catatan: req.body.catatan,
             dresscode: req.body.dresscode,
-            file_path: filePath,
+            file_path: filePath
         });
 
+
+        let notifDocs = [];
+
         if (Array.isArray(nama_yang_dituju) && nama_yang_dituju.length > 0) {
-            const notifDocs = nama_yang_dituju.map((userId) => ({
+            const now = new Date();
+
+            notifDocs = nama_yang_dituju.map((userId) => ({
                 disposisi: disposisi._id,
                 user: userId,
+                notifType: 'ON_CREATE',
+                sendAt: now
             }));
 
-            await Notification.insertMany(notifDocs);
+            if (notificationOptions.length > 0) {
+                const now = new Date();
+
+                let eventDate = null;
+
+                if (disposisi.tanggal) {
+                    eventDate = new Date(disposisi.tanggal);
+                }
+
+                if (
+                    eventDate &&
+                    !isNaN(eventDate.getTime()) &&                 
+                    typeof disposisi.jam_mulai === 'string' &&
+                    /^\d{2}:\d{2}$/.test(disposisi.jam_mulai)      
+                ) {
+                    const [hh, mm] = disposisi.jam_mulai.split(':');
+                    eventDate.setHours(parseInt(hh, 10));
+                    eventDate.setMinutes(parseInt(mm, 10));
+                    eventDate.setSeconds(0);
+                    eventDate.setMilliseconds(0);
+                }
+
+                const reminderDocs = [];
+
+                notificationOptions.forEach((optKey) => {
+                    const offset = REMINDER_OFFSET_MINUTES[optKey];
+                    if (offset === undefined) return; 
+
+                    let reminderTime;
+
+                    if (eventDate && !isNaN(eventDate.getTime())) {
+                        reminderTime = new Date(eventDate.getTime() + offset * 60000);
+                    } else {
+                        reminderTime = new Date();
+                    }
+
+                    // 4. Kalau reminderTime sudah lewat → paksa sekarang
+                    if (reminderTime < now) {
+                        reminderTime = now;
+                    }
+
+                    nama_yang_dituju.forEach((userId) => {
+                        reminderDocs.push({
+                            disposisi: disposisi._id,
+                            user: userId,
+                            notifType: optKey, // REMINDER_1H / REMINDER_30M / REMINDER_2M
+                            sendAt: reminderTime
+                        });
+                    });
+                });
+
+                notifDocs = notifDocs.concat(reminderDocs);
+            }
+
+
+            if (notifDocs.length > 0) {
+                await Notification.insertMany(notifDocs);
+            }
         }
 
         res.status(200).json(disposisi);
     } catch (error) {
+        console.error('createDisposisi error:', error);
         res.status(500).json({ message: error.message });
     }
-}
+};
+
+
 
 //upate disposisi
 const updateDisposisi = async (req, res) => {
@@ -107,11 +189,10 @@ const updateDisposisi = async (req, res) => {
 
         if (tanggal) updateData.tanggal = tanggal;
         if (jam_mulai) updateData.jam_mulai = jam_mulai;
-        // if (jam_selesai) updateData.jam_selesai = jam_selesai;
         if (jam_selesai === "") {
-            updateData.jam_selesai = "";     // reset jadi kosong
+            updateData.jam_selesai = "";
         } else if (jam_selesai !== undefined) {
-            updateData.jam_selesai = jam_selesai; // update normal
+            updateData.jam_selesai = jam_selesai;
         }
 
         if (tempat !== undefined) updateData.tempat = tempat;
