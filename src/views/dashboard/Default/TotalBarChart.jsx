@@ -4,8 +4,6 @@ import React from 'react';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Grid2';
-import MenuItem from '@mui/material/MenuItem';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 // third party
@@ -22,7 +20,6 @@ import { gridSpacing } from 'store/constant';
 import chartData from './chart-data/total-bar-chart';
 
 export default function TotalBarChart({ isLoading }) {
-  const [value, setValue] = React.useState('today');
   const theme = useTheme();
   const { mode } = useConfig();
 
@@ -31,10 +28,6 @@ export default function TotalBarChart({ isLoading }) {
   const divider = theme.palette.divider;
   const grey500 = theme.palette.grey[500];
 
-  const primary200 = theme.palette.primary[200];
-  const primaryDark = theme.palette.primary.dark;
-  const secondaryMain = theme.palette.secondary.main;
-  const secondaryLight = theme.palette.secondary.light;
   const errorMain = theme.palette.error.main;
   const successDark = theme.palette.success.dark;
 

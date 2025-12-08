@@ -457,47 +457,59 @@ export default function Disposisi() {
     };
 
     // Highlight row logic
-    const rowClass = (rowData) => {
-        if (!rowData) return "";
+const rowClass = (rowData) => {
+    console.log("row data:", rowData);
+    if (!rowData) return "";
 
-        const now = new Date();
-        const mulai = rowData.jam_mulai ? new Date(rowData.jam_mulai) : null;
+    const now = new Date();
+    const mulai = rowData.jam_mulai ? new Date(rowData.jam_mulai) : null;
 
-        // jam selese kosong jadi null
-        const selesai = rowData.jam_selesai && rowData.jam_selesai.trim() !== ""
-            ? new Date(rowData.jam_selesai)
-            : null;
+    const selesai = rowData.jam_selesai && rowData.jam_selesai.trim() !== ""
+        ? new Date(rowData.jam_selesai)
+        : null;
 
-        // Laporan dah dibuat jadi Hijau
-        if (rowData.laporan_status === "SUDAH") {
-            return "completed-row";
+    // Jika laporan sudah dibuat → hijau
+    if (rowData.laporan_status === "SUDAH") {
+        return "completed-row";
+    }
+
+    // Normalisasi tanggal kegiatan
+    const tanggalKegiatan = new Date(
+        new Date(rowData.tanggal).getFullYear(),
+        new Date(rowData.tanggal).getMonth(),
+        new Date(rowData.tanggal).getDate()
+    );
+
+    const today = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    );
+
+    // === KONDISI 1: Tanggal sudah lewat & BELUM isi laporan → kuning
+    if (tanggalKegiatan < today) {
+        return "highlight-row";
+    }
+
+    // === KONDISI 2: Hari ini
+    if (tanggalKegiatan.getTime() === today.getTime()) {
+        // Belum mulai → tidak highlight
+        if (mulai && now < mulai) return "";
+
+        // Sedang berlangsung
+        if (mulai && now >= mulai && (!selesai || now <= selesai)) {
+            return "highlight-row";
         }
 
-        // Normalisasi tanggal untuk highlight hari ini
-        const tanggalHariIni = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const tanggalKegiatan = new Date(
-            new Date(rowData.tanggal).getFullYear(),
-            new Date(rowData.tanggal).getMonth(),
-            new Date(rowData.tanggal).getDate()
-        );
-
-        // Hanya highlight kalau tanggalnya hari ini
-        if (tanggalKegiatan.getTime() === tanggalHariIni.getTime()) {
-            if (mulai && now < mulai) return ""; 
-
-            // Sedang berlangsung
-            if (mulai && now >= mulai && (!selesai || now <= selesai)) {
-                return "highlight-row";
-            }
-
-            // Selesai tapi laporan belum dibuat
-            if (selesai && now > selesai) {
-                return "highlight-row";
-            }
+        // Sudah lewat jam selesai & belum isi laporan
+        if (selesai && now > selesai) {
+            return "highlight-row";
         }
+    }
 
     return "";
 };
+
 
     // setting date 
     const formDate = (date) => {
