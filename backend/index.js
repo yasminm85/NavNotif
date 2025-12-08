@@ -9,6 +9,8 @@ const disposisiRoutes = require('./routes/disposisiRoutes')
 const notifRoutes = require('./routes/notifRoutes')
 const app = express()
 require('dotenv').config();
+const mongoURI = process.env.DB_CONNECTION;
+
 
 
 // Middleware
@@ -32,7 +34,7 @@ app.use("/api/notif", notifRoutes);
 app.use('/uploads', express.static('uploads'));
 
 // Database Connection
-mongoose.connect('mongodb+srv://node_db:5qcJ1b7MqwFnoGTC@nodedb.xr4shgr.mongodb.net/?appName=NodeDB')
+mongoose.connect(mongoURI)
     .then(() => {
         console.log("Connected to database!");
         app.listen(3000, () => {
