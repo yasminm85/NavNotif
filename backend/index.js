@@ -20,8 +20,8 @@ app.use(express.urlencoded({extended: false}));
 
 
 const allowedOrigins = [
-  'http://localhost:3001/',                
-  'https://nav-notif.vercel.app/'       
+  'http://localhost:3001',                
+  'https://nav-notif.vercel.app'       
 ];
 
 app.use(cors({
