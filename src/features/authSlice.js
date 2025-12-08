@@ -15,11 +15,9 @@ const initialState = {
 };
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL,
+  baseURL: 'https://navnotif.up.railway.app',
   withCredentials: true
 });
-
-console.log(import.meta.env.VITE_BACKEND_URL);
 
 
 export const LoginUser = createAsyncThunk(
