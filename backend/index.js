@@ -9,7 +9,8 @@ const disposisiRoutes = require('./routes/disposisiRoutes')
 const notifRoutes = require('./routes/notifRoutes')
 const app = express()
 require('dotenv').config();
-const mongoURI = process.env.DB_CONNECTION;
+const db_connection = process.env.DB_CONNECTION;
+const PORT = process.env.PORT || 3000;
 
 
 
@@ -17,12 +18,22 @@ const mongoURI = process.env.DB_CONNECTION;
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
-app.use(
-  cors({
-    origin: 'http://localhost:3001',
-    credentials: true
-  })
-);
+
+const allowedOrigins = [
+  'http://localhost:3001/',                
+  'https://nav-notif.vercel.app/'       
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
+
 
 app.use(cookieParser());
 
@@ -33,12 +44,14 @@ app.use("/api/task", disposisiRoutes);
 app.use("/api/notif", notifRoutes);
 app.use('/uploads', express.static('uploads'));
 
+
+
 // Database Connection
-mongoose.connect(mongoURI)
+mongoose.connect(db_connection)
     .then(() => {
         console.log("Connected to database!");
-        app.listen(3000, () => {
-            console.log('Server is running on port 3000');
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
         });
     })
     .catch((err) => {
