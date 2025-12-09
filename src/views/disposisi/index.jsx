@@ -65,11 +65,15 @@ export default function Disposisi() {
         return newErrors;
     };
 
+    const api = axios.create({
+        baseURL: 'https://navnotif.up.railway.app',
+        withCredentials: true
+    });
 
     // get data pegawai
     const fetchPegawai = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/auth/getEmp', {
+            const res = await api.get('/api/auth/getEmp', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -88,7 +92,7 @@ export default function Disposisi() {
         try {
             setLoading(true);
             // console.log(token);
-            const response = await axios.get('http://localhost:3000/api/task/disposisi', {
+            const response = await api.get('/api/task/disposisi', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setShowDisposisi(response.data);
@@ -179,18 +183,18 @@ export default function Disposisi() {
     };
 
     const handleFileChange = (e) => {
-    const file = e.target.files[0];
+        const file = e.target.files[0];
 
-    // Validasi PDF
-    if (file && file.type !== "application/pdf") {
-        alert("File harus berupa PDF!");
-        e.target.value = ""; 
-        return;
-    }
+        // Validasi PDF
+        if (file && file.type !== "application/pdf") {
+            alert("File harus berupa PDF!");
+            e.target.value = "";
+            return;
+        }
 
-    // Jika valid
-    handleChange("file", file);
-};
+        // Jika valid
+        handleChange("file", file);
+    };
 
 
     // handle submit form
@@ -234,15 +238,15 @@ export default function Disposisi() {
 
         formData.append(
             "notificationOptions",
-            JSON.stringify(selectedNotifOptions) 
+            JSON.stringify(selectedNotifOptions)
         );
 
 
         try {
             let response;
             if (editMode && selectedData?._id) {
-                response = await axios.patch(
-                    `http://localhost:3000/api/task/disposisi/${selectedData._id}`,
+                response = await api.patch(
+                    `/api/task/disposisi/${selectedData._id}`,
                     formData,
                     {
                         headers: { Authorization: `Bearer ${token}` }
@@ -256,8 +260,8 @@ export default function Disposisi() {
                 );
 
             } else {
-                response = await axios.post(
-                    'http://localhost:3000/api/task/disposisi',
+                response = await api.post(
+                    '/api/task/disposisi',
                     formData,
                     {
                         headers: { Authorization: `Bearer ${token}` }
@@ -302,7 +306,7 @@ export default function Disposisi() {
         if (!hapusPop) return;
 
         try {
-            await axios.delete(`http://localhost:3000/api/task/disposisi/${id}`, {
+            await api.delete(`/api/task/disposisi/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
 
@@ -364,9 +368,9 @@ export default function Disposisi() {
                             file_path: rowData.file_path || null,
                             tanggal: rowData.tanggal ? new Date(rowData.tanggal) : null,
                             jamMulai: rowData.jam_mulai ? new Date(rowData.jam_mulai) : null,
-                            jamSelesai: rowData.jam_selesai && rowData.jam_selesai !== "" 
-                            ? new Date(rowData.jam_selesai) 
-                            : "",
+                            jamSelesai: rowData.jam_selesai && rowData.jam_selesai !== ""
+                                ? new Date(rowData.jam_selesai)
+                                : "",
 
                         });
 
@@ -457,58 +461,58 @@ export default function Disposisi() {
     };
 
     // Highlight row logic
-const rowClass = (rowData) => {
-    console.log("row data:", rowData);
-    if (!rowData) return "";
+    const rowClass = (rowData) => {
+        console.log("row data:", rowData);
+        if (!rowData) return "";
 
-    const now = new Date();
-    const mulai = rowData.jam_mulai ? new Date(rowData.jam_mulai) : null;
+        const now = new Date();
+        const mulai = rowData.jam_mulai ? new Date(rowData.jam_mulai) : null;
 
-    const selesai = rowData.jam_selesai && rowData.jam_selesai.trim() !== ""
-        ? new Date(rowData.jam_selesai)
-        : null;
+        const selesai = rowData.jam_selesai && rowData.jam_selesai.trim() !== ""
+            ? new Date(rowData.jam_selesai)
+            : null;
 
-    // Jika laporan sudah dibuat → hijau
-    if (rowData.laporan_status === "SUDAH") {
-        return "completed-row";
-    }
+        // Jika laporan sudah dibuat → hijau
+        if (rowData.laporan_status === "SUDAH") {
+            return "completed-row";
+        }
 
-    // Normalisasi tanggal kegiatan
-    const tanggalKegiatan = new Date(
-        new Date(rowData.tanggal).getFullYear(),
-        new Date(rowData.tanggal).getMonth(),
-        new Date(rowData.tanggal).getDate()
-    );
+        // Normalisasi tanggal kegiatan
+        const tanggalKegiatan = new Date(
+            new Date(rowData.tanggal).getFullYear(),
+            new Date(rowData.tanggal).getMonth(),
+            new Date(rowData.tanggal).getDate()
+        );
 
-    const today = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate()
-    );
+        const today = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+        );
 
-    // === KONDISI 1: Tanggal sudah lewat & BELUM isi laporan → kuning
-    if (tanggalKegiatan < today) {
-        return "highlight-row";
-    }
-
-    // === KONDISI 2: Hari ini
-    if (tanggalKegiatan.getTime() === today.getTime()) {
-        // Belum mulai → tidak highlight
-        if (mulai && now < mulai) return "";
-
-        // Sedang berlangsung
-        if (mulai && now >= mulai && (!selesai || now <= selesai)) {
+        // === KONDISI 1: Tanggal sudah lewat & BELUM isi laporan → kuning
+        if (tanggalKegiatan < today) {
             return "highlight-row";
         }
 
-        // Sudah lewat jam selesai & belum isi laporan
-        if (selesai && now > selesai) {
-            return "highlight-row";
-        }
-    }
+        // === KONDISI 2: Hari ini
+        if (tanggalKegiatan.getTime() === today.getTime()) {
+            // Belum mulai → tidak highlight
+            if (mulai && now < mulai) return "";
 
-    return "";
-};
+            // Sedang berlangsung
+            if (mulai && now >= mulai && (!selesai || now <= selesai)) {
+                return "highlight-row";
+            }
+
+            // Sudah lewat jam selesai & belum isi laporan
+            if (selesai && now > selesai) {
+                return "highlight-row";
+            }
+        }
+
+        return "";
+    };
 
 
     // setting date 
@@ -699,7 +703,7 @@ const rowClass = (rowData) => {
                         />
                         {errors.tempat && <small className="p-error">{errors.tempat}</small>}
                     </div>
-                    
+
                     {/* File */}
                     <input
                         type="file"

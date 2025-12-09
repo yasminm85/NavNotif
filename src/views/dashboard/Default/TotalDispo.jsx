@@ -22,13 +22,18 @@ export default function TotalDispo() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const token = localStorage.getItem("token"); // ambil token dari localStorage
+  const token = localStorage.getItem("token"); 
+
+  const api = axios.create({
+  baseURL: 'https://navnotif.up.railway.app',
+  withCredentials: true
+});
 
   const fetchTotalDispo = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get("http://localhost:3000/api/task/disposisi/count", {
+      const res = await api.get("api/task/disposisi/count", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTotal(res.data.total || 0);
@@ -42,8 +47,6 @@ export default function TotalDispo() {
 
   useEffect(() => {
     fetchTotalDispo();
-
-    // Optional: refresh setiap 30 detik
     const interval = setInterval(fetchTotalDispo, 30000);
     return () => clearInterval(interval);
   }, []);
