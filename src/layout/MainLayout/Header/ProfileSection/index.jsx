@@ -6,7 +6,6 @@ import Swal from 'sweetalert2';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import Chip from '@mui/material/Chip';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';

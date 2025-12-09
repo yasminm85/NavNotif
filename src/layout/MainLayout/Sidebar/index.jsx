@@ -1,32 +1,24 @@
 import { memo, useMemo } from 'react';
+import { ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { IconLogout } from '@tabler/icons-react';
+import { useDispatch } from 'react-redux';
+import { LogOut, reset } from '../../../features/authSlice';
+import { useNavigate } from 'react-router-dom';
+import { drawerWidth } from 'store/constant';
+import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
 
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Chip from '@mui/material/Chip';
 import Drawer from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
-
-import { ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import { IconLogout } from '@tabler/icons-react';
 import Swal from 'sweetalert2';
-import { useDispatch } from 'react-redux';
-import { LogOut, reset } from '../../../features/authSlice';
-import { useNavigate } from 'react-router-dom';
-
-
-// third party
 import PerfectScrollbar from 'react-perfect-scrollbar';
-
-// project imports
 import MenuCard from './MenuCard';
 import MenuList from '../MenuList';
 import LogoSection from '../LogoSection';
 import MiniDrawerStyled from './MiniDrawerStyled';
-
 import useConfig from 'hooks/useConfig';
-import { drawerWidth } from 'store/constant';
-
-import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
 
 // ==============================|| SIDEBAR DRAWER ||============================== //
 
@@ -58,7 +50,6 @@ function Sidebar() {
       }
     });
   };
-
 
   const logo = useMemo(
     () => (

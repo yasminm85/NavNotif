@@ -1,5 +1,4 @@
 // project imports
-import MainCard from 'ui-component/cards/MainCard';
 import React, { useState, useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -9,12 +8,13 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { MultiSelect } from 'primereact/multiselect';
+import MainCard from 'ui-component/cards/MainCard';
+import axios from 'axios';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
+import 'primeicons/primeicons.css'; 
 import 'primeflex/primeflex.css';
 import './app.css';
-import axios from 'axios';
 
 export default function Disposisi() {
     const token = localStorage.getItem('token');
@@ -205,10 +205,6 @@ export default function Disposisi() {
         const direktoratIds = selecteddirectorat.map((d) => d.name);
         const divisiIds = selecteddivisi.map((d) => d.name);
         const formData = new FormData();
-
-        // console.log('pegawai ID:', selectedpegawai);
-        // console.log('direktorat ID:', direktoratIds);
-        // console.log('divisi ID:', divisiIds);
 
         formData.append("nama_kegiatan", form.namakegiatan);
         formData.append("agenda_kegiatan", form.agenda);
@@ -457,8 +453,7 @@ export default function Disposisi() {
     };
 
     // Highlight row logic
-const rowClass = (rowData) => {
-    console.log("row data:", rowData);
+    const rowClass = (rowData) => {
     if (!rowData) return "";
 
     const now = new Date();
@@ -510,7 +505,6 @@ const rowClass = (rowData) => {
     return "";
 };
 
-
     // setting date 
     const formDate = (date) => {
         if (!date) return "";
@@ -531,7 +525,6 @@ const rowClass = (rowData) => {
             minute: "2-digit",
         });
     };
-
 
     const footer = (
         <Button label="Submit" className="w-full" onClick={handleSubmit} />
@@ -744,8 +737,6 @@ const rowClass = (rowData) => {
                         />
                     </div>
 
-
-
                 </Dialog>
 
                 {/* DETAIL */}
@@ -831,4 +822,3 @@ const rowClass = (rowData) => {
         </div>
     );
 }
-
