@@ -13,17 +13,15 @@ import axios from 'axios';
 
 export default function DaftarNotifikasi() {
 
-    const [notifikasi, setNotifikasi] = useState([]);
+    // const [notifikasi, setNotifikasi] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    // === STATE FORM === //
-    const [showForm, setShowForm] = useState(false);
+    // const [showForm, setShowForm] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
     const [selectedNotif, setSelectedNotif] = useState("");
     const [form, setForm] = useState({
         laporan: "",
     });
-    const [selectedRow, setSelectedRow] = useState(null);
+    // const [selectedRow, setSelectedRow] = useState(null);
     const [errors, setErrors] = useState({});
     const [tasks, setTasks] = useState([]);
     const [currentTask, setCurrentTask] = useState(null);
@@ -31,11 +29,17 @@ export default function DaftarNotifikasi() {
     const [laporanText, setLaporanText] = useState('');
     const token = localStorage.getItem('token');
 
+    //api public
+    const api = axios.create({
+        baseURL: 'https://navnotif.up.railway.app',
+        withCredentials: true
+    });
 
+    // fetch data disposisi
     const fetchTasks = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('http://localhost:3000/api/task/disposisi/my', {
+            const res = await api.get('/api/task/disposisi/my', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setTasks(res.data);
@@ -51,10 +55,10 @@ export default function DaftarNotifikasi() {
     }, []);
 
 
-    const handleChange = (field, value) => {
-        setForm({ ...form, [field]: value });
-        setErrors({ ...errors, [field]: "" });
-    };
+    // const handleChange = (field, value) => {
+    //     setForm({ ...form, [field]: value });
+    //     setErrors({ ...errors, [field]: "" });
+    // };
 
     const validateForm = () => {
         let newErrors = {};
@@ -64,26 +68,26 @@ export default function DaftarNotifikasi() {
         return newErrors;
     };
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        const validation = validateForm();
-        setErrors(validation);
+    // const handleSubmit = (event) => {
+    //     event.preventDefault();
+    //     const validation = validateForm();
+    //     setErrors(validation);
 
-        if (Object.keys(validation).length > 0) return;
+    //     if (Object.keys(validation).length > 0) return;
 
-        setNotifikasi(prev =>
-            prev.map(item =>
-                item.id === selectedRow.id
-                    ? { ...item, isSubmitted: true, laporan: form.laporan }
-                    : item
-            )
-        );
+    //     setNotifikasi(prev =>
+    //         prev.map(item =>
+    //             item.id === selectedRow.id
+    //                 ? { ...item, isSubmitted: true, laporan: form.laporan }
+    //                 : item
+    //         )
+    //     );
 
-        setShowForm(false);
-        setForm({ laporan: "" });
-        setSelectedRow(null);
+    //     setShowForm(false);
+    //     setForm({ laporan: "" });
+    //     setSelectedRow(null);
 
-    };
+    // };
 
     const detailBodyTemplate = (rowData) => {
         return (
@@ -102,8 +106,10 @@ export default function DaftarNotifikasi() {
     // file body template for data table
     const fileBodyTemplate = (data) => {
         if (!data) return <span>-</span>;
+        const validation = validateForm();
+        setErrors(validation);
 
-        const url = `http://localhost:3000/${data}`;
+        const url = `${api}/${data}`;
 
         return (
             <Button
@@ -138,13 +144,12 @@ export default function DaftarNotifikasi() {
 
     const getLocalDateOnly = (isoString) => {
         const d = new Date(isoString);
-        return new Date(d.getFullYear(), d.getMonth(), d.getDate()); // jam 00:00 WIB
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate()); 
     };
 
     const isLaporanAllowed = (row) => {
         const now = new Date();
 
-        // Pakai tanggal lokal & jam_mulai lokal
         const localDate = getLocalDateOnly(row.tanggal);
         const startTime = new Date(row.jam_mulai);
 
@@ -174,7 +179,7 @@ export default function DaftarNotifikasi() {
                     setLaporanText(row.laporan || '');
                     setShowDialog(true);
                 }}
-                disabled={!bolehLapor}   // HANYA disable kalau BELUM mulai
+                disabled={!bolehLapor}
             />
         );
     };
@@ -182,8 +187,8 @@ export default function DaftarNotifikasi() {
     const handleSaveLaporan = async () => {
         if (!currentTask) return;
         try {
-            const res = await axios.patch(
-                `http://localhost:3000/api/task/disposisi/${currentTask._id}/laporan`,
+            const res = await api.patch(
+                `/api/task/disposisi/${currentTask._id}/laporan`,
                 { laporan: laporanText },
                 {
                     headers: { Authorization: `Bearer ${token}` }
@@ -234,11 +239,12 @@ export default function DaftarNotifikasi() {
                                 <label className="block mb-2 font-semibold">Isi Laporan</label>
                                 <InputTextarea
                                     rows={5}
-                                    className="w-full"
+                                    cclassName={`w-full ${errors.laporan ? "p-invalid" : ""}`}
                                     value={laporanText}
                                     onChange={(e) => setLaporanText(e.target.value)}
                                     placeholder="Tuliskan laporan kegiatan di sini..."
                                 />
+                                {errors.laporan && <small className="p-error">{errors.laporan}</small>}
                             </div>
 
                             <div className="flex justify-end gap-2 mt-3">

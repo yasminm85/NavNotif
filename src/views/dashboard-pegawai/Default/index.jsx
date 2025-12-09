@@ -17,14 +17,17 @@ export default function DashboardPegawai() {
   const token = localStorage.getItem('token');
   const shownToastIds = useRef(new Set());
 
-
+  const api = axios.create({
+        baseURL: 'https://navnotif.up.railway.app',
+        withCredentials: true
+    });
 
 
   useEffect(() => {
     const fetchNotifications = async () => {
       if (!token) return;
       try {
-        const res = await axios.get('http://localhost:3000/api/notif/notification/my', {
+        const res = await api.get('/api/notif/notification/my', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setNotifications(res.data.notifications);
@@ -99,8 +102,8 @@ export default function DashboardPegawai() {
 
   const handleOke = async (notifId) => {
     try {
-      const res = await axios.patch(
-        `http://localhost:3000/api/notif/notifications/done/${notifId}`,
+      const res = await api.patch(
+        `/api/notif/notifications/done/${notifId}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` }
