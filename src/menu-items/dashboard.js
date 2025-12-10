@@ -32,6 +32,16 @@ const dashboard = {
       breadcrumbs: false
 
     },
+    {
+      id: 'display',
+      title: 'Display',
+      type: 'item',
+      url: '/daftar-display',
+      icon: AssignmentIcon,
+      allowedRoles: ['admin'],  
+      breadcrumbs: false
+
+    },
   ]
 };
 
