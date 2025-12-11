@@ -9,20 +9,20 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './appDisplay.css';
+import alarmSound from './alarm-sound.mp3';
 
 export default function Disposisi() {
     const token = localStorage.getItem('token');
     const [loading, setLoading] = useState(true);
     const [showDisposisi, setShowDisposisi] = useState([]);
-    const [activeReminderItem, setActiveReminderItem] = useState(null);
-    const rows = 5; 
-    const scrollSpeed = 3000; 
     const [pageTitle, setPageTitle] = useState("Agenda Keseluruhan");
+    const rows = 5;
+    const scrollSpeed = 3000;
 
     // ---------------------------- CHECK REMINDER ----------------------------
     const checkReminderActive = (items) => {
         const now = new Date();
-        let reminderItem = null;
+        const activeReminders = [];
 
         items.forEach(item => {
             const start = new Date(item.jam_mulai);
@@ -34,51 +34,150 @@ export default function Disposisi() {
             reminderEnd.setMinutes(reminderEnd.getMinutes() + 10); // tampil selama 10 menit
 
             if (now >= reminderStart && now < reminderEnd) {
-                reminderItem = item;
+                activeReminders.push(item);
             }
         });
 
-        return reminderItem;
+        return activeReminders;
     };
 
     // ---------------------------- FILTER VALID ITEMS ----------------------------
-    const filterValidItems = (data) => {
+    // const filterValidItems = (data) => {
+    //     const now = new Date();
+    //     const today = new Date(now.toDateString());
+    //     const threeDaysLater = new Date();
+    //     threeDaysLater.setDate(now.getDate() + 3);
+
+    //     return data.filter(item => {
+    //         const start = new Date(item.jam_mulai);
+    //         const tanggal = new Date(item.tanggal);
+
+    //         let end = null;
+    //         if (item.jam_selesai && item.jam_selesai !== "Selesai") {
+    //             end = new Date(item.jam_selesai);
+    //         } else {
+    //             end = new Date(tanggal);
+    //             end.setHours(23, 59, 0, 0);
+    //         }
+
+    //         if (end < now) return false;
+    //         if (tanggal < today && end < now) return false;
+    //         if (start <= now && end >= now) return true;
+    //         if (tanggal >= today && tanggal <= threeDaysLater) return true;
+
+    //         return false;
+    //     });
+    // };
+ const filterValidItems = (data) => {
     const now = new Date();
-    const today = new Date(now.toDateString());
-    const threeDaysLater = new Date();
-    threeDaysLater.setDate(now.getDate() + 3);
+
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+
+    const threeDaysLater = new Date(today);
+    threeDaysLater.setDate(today.getDate() + 3);
 
     return data.filter(item => {
-        const start = new Date(item.jam_mulai);
         const tanggal = new Date(item.tanggal);
+        tanggal.setHours(0, 0, 0, 0);
 
-        let end = null;
-        if (item.jam_selesai && item.jam_selesai !== "Selesai") {
-            end = new Date(item.jam_selesai);
-        } else {
-            end = new Date(tanggal); 
-            end.setHours(23, 59, 0, 0); 
+        // ❌ kegiatan di luar range 3 hari → buang
+        if (!(tanggal >= today && tanggal <= threeDaysLater)) {
+            return false;
         }
 
-        if (end < now) return false;
+        // ✅ Kegiatan bukan hari ini → langsung tampilkan
+        if (tanggal.getTime() !== today.getTime()) {
+            return true;
+        }
 
-        if (tanggal < today && end < now) return false;
+        // ===============================
+        // KHUSUS HARI INI CEK SUDAH SELESAI
+        // ===============================
+        let selesai = null;
 
-        if (start <= now && end >= now) return true;
+        // CASE A → jam_selesai string ISO (bisa di-parse)
+        if (item.jam_selesai && !isNaN(Date.parse(item.jam_selesai))) {
+            selesai = new Date(item.jam_selesai);
+        }
 
-        if (tanggal >= today && tanggal <= threeDaysLater) return true;
+        // CASE B → jam_selesai format "14.30" atau "14:30"
+        else if (typeof item.jam_selesai === "string" && item.jam_selesai.trim() !== "") {
+            const jamFix = item.jam_selesai.replace(/\./g, ":");
+            const [hh, mm] = jamFix.split(":");
+            selesai = new Date(item.tanggal);
+            selesai.setHours(hh || 0, mm || 0, 0, 0);
+        }
 
-        return false;
+        // CASE C → kosong / null / "Selesai" → anggap belum selesai
+        else {
+            return true;
+        }
+
+        // ❌ Jika sudah selesai → hilangkan
+        if (selesai < now) {
+            return false;
+        }
+
+        return true;
     });
 };
-
 
     // ---------------------------- STATUS ROW ----------------------------
     const isOngoing = (item) => {
         const now = new Date();
         const start = new Date(item.jam_mulai);
-        const end = new Date(item.jam_selesai);
+
+        let end;
+        if (item.jam_selesai && item.jam_selesai !== "Selesai") {
+            end = new Date(item.jam_selesai);
+        } else {
+            // jika selesai = Selesai → anggap sampai jam 23.59
+            end = new Date(item.jam_mulai);
+            end.setHours(23, 59, 0, 0);
+        }
+
         return now >= start && now <= end;
+    };
+
+    // ---------------------------- ALARM AUDIO ----------------------------
+    const [playedReminders, setPlayedReminders] = useState([]);
+    const [alarmHistory, setAlarmHistory] = useState({});
+
+    const playAlarmSound = () => {
+        const audio = new Audio(alarmSound);
+
+        audio.play().catch(err => console.log("Audio play error:", err));
+
+        setTimeout(() => {
+            audio.pause();
+            audio.currentTime = 0;
+        }, 10000);
+    };
+
+    const triggerAlarm = (item) => {
+
+        const now = new Date();
+        const lastPlayed = alarmHistory[item._id];
+
+        if (lastPlayed && (now - new Date(lastPlayed) < 10 * 60 * 1000)) {
+            return; 
+        }
+
+        playAlarmSound();
+
+        setAlarmHistory(prev => ({
+            ...prev,
+            [item._id]: now
+        }));
+
+        // juga simpan sebagai playedReminders jika ingin
+        setPlayedReminders(prev => {
+            const updated = [...prev, item._id];
+            localStorage.setItem("playedReminders", JSON.stringify(updated));
+            return updated;
+        });
+
     };
 
     // ---------------------------- GET DATA ----------------------------
@@ -92,15 +191,26 @@ export default function Disposisi() {
             );
 
             const items = filterValidItems(response.data);
-            const reminder = checkReminderActive(items);
+            const reminders = checkReminderActive(items);
 
-            if (reminder) {
-                setActiveReminderItem(reminder);
-                setPageTitle("Agenda Kegiatan Hari Ini");
-                setShowDisposisi([reminder]);
+            if (reminders.length > 0) {
+                setPageTitle("AGENDA KEGIATAN HARI INI");
+                setShowDisposisi(sortNormal(reminders));
+
+                // alarm hanya untuk reminder yang belum diputar
+               const newReminders = reminders.filter(r => !playedReminders.includes(r._id));
+               console.log("Played:", playedReminders);
+                console.log("Reminders:", reminders.map(r => r._id));
+                console.log("New:", newReminders.map(r => r._id));
+
+
+                // Putar alarm per kegiatan baru yang muncul
+                newReminders.forEach(item => {
+                    triggerAlarm(item);
+                });
+
             } else {
-                setActiveReminderItem(null);
-                setPageTitle("Agenda Keseluruhan");
+                setPageTitle("AGENDA KEGIATAN ");
                 setShowDisposisi(sortNormal(items));
             }
 
@@ -147,10 +257,15 @@ export default function Disposisi() {
 
     // ---------------------------- AUTO UPDATE DATA ----------------------------
     useEffect(() => {
-        getDataDisposisi(); // load pertama
+        const saved = localStorage.getItem("playedReminders");
+        if (saved) {
+            setPlayedReminders(JSON.parse(saved));
+        }
+
+        getDataDisposisi(); 
         const interval = setInterval(() => {
-            getDataDisposisi(); // update reminder / display normal
-        }, 10000); // cek tiap 10 detik
+            getDataDisposisi(); 
+        }, 10000); 
 
         return () => clearInterval(interval);
     }, []);
@@ -164,20 +279,28 @@ export default function Disposisi() {
     return (
         <div className="card">
             <MainCard title={
-            <span style={{ textAlign: 'center', display: 'block', fontSize: '24px', fontWeight: 'bold' }}>
-                {pageTitle}
-            </span>}>
+                <span style={{ textAlign: 'center', display: 'block', fontSize: '24px', fontWeight: 'bold' }}>
+                    {pageTitle}
+                </span>
+            }>
                 <DataTable
                     value={showDisposisi}
                     loading={loading}
                     rows={rows}
-                    paginator={false}        
+                    paginator={false}
                     scrollable
-                    scrollHeight="430px"    
+                    scrollHeight="430px"
                     dataKey="_id"
                     rowClassName={(row) => {
+                        const now = new Date();
+                        const start = new Date(row.jam_mulai);
+                        const reminderStart = new Date(start);
+                        reminderStart.setMinutes(reminderStart.getMinutes() - 30);
+                        const reminderEnd = new Date(reminderStart);
+                        reminderEnd.setMinutes(reminderEnd.getMinutes() + 10);
+
                         if (isOngoing(row)) return "row-ongoing"; // biru
-                        if (activeReminderItem && row._id === activeReminderItem._id) return "row-reminder"; // hijau
+                        if (now >= reminderStart && now < reminderEnd) return "row-reminder"; // hijau
                         return "";
                     }}
                 >

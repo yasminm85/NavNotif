@@ -454,56 +454,31 @@ export default function Disposisi() {
 
     // Highlight row logic
     const rowClass = (rowData) => {
-    if (!rowData) return "";
+        console.log("Row data", rowData);
+        if (!rowData) return "";
 
-    const now = new Date();
-    const mulai = rowData.jam_mulai ? new Date(rowData.jam_mulai) : null;
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    const selesai = rowData.jam_selesai && rowData.jam_selesai.trim() !== ""
-        ? new Date(rowData.jam_selesai)
-        : null;
+        const tglKegiatan = new Date(rowData.tanggal);
+        const tanggalKegiatan = new Date(tglKegiatan.getFullYear(), tglKegiatan.getMonth(), tglKegiatan.getDate());
 
-    // Jika laporan sudah dibuat → hijau
-    if (rowData.laporan_status === "SUDAH") {
-        return "completed-row";
-    }
+        const mulai = rowData.jam_mulai ? new Date(rowData.jam_mulai) : null;
+        const selesai = rowData.jam_selesai ? new Date(rowData.jam_selesai) : null;
 
-    // Normalisasi tanggal kegiatan
-    const tanggalKegiatan = new Date(
-        new Date(rowData.tanggal).getFullYear(),
-        new Date(rowData.tanggal).getMonth(),
-        new Date(rowData.tanggal).getDate()
-    );
+        if (rowData.laporan_status === "SUDAH") return "completed-row";
+        if (tanggalKegiatan < today) return "highlight-row";
 
-    const today = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate()
-    );
+        if (tanggalKegiatan.getTime() === today.getTime()) {
+            if (mulai && now < mulai) return "";
 
-    // === KONDISI 1: Tanggal sudah lewat & BELUM isi laporan → kuning
-    if (tanggalKegiatan < today) {
-        return "highlight-row";
-    }
+            if (mulai && now >= mulai && (!selesai || now <= selesai)) return "highlight-row";
 
-    // === KONDISI 2: Hari ini
-    if (tanggalKegiatan.getTime() === today.getTime()) {
-        // Belum mulai → tidak highlight
-        if (mulai && now < mulai) return "";
-
-        // Sedang berlangsung
-        if (mulai && now >= mulai && (!selesai || now <= selesai)) {
-            return "highlight-row";
+            if (selesai && now > selesai && rowData.laporan_status !== "SUDAH") return "highlight-row";
         }
 
-        // Sudah lewat jam selesai & belum isi laporan
-        if (selesai && now > selesai) {
-            return "highlight-row";
-        }
-    }
-
-    return "";
-};
+        return "";
+    };
 
     // setting date 
     const formDate = (date) => {
