@@ -65,7 +65,6 @@ export default function Disposisi() {
         return newErrors;
     };
 
-
     // get data pegawai
     const fetchPegawai = async () => {
         try {
@@ -87,7 +86,6 @@ export default function Disposisi() {
     const getDataDisposisi = async () => {
         try {
             setLoading(true);
-            // console.log(token);
             const response = await axios.get('http://localhost:3000/api/task/disposisi', {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -104,7 +102,6 @@ export default function Disposisi() {
         getDataDisposisi();
     }, []);
 
-
     // reminder notif
     const notifOptions = [
         { label: '1 jam sebelum kegiatan', value: 'REMINDER_1H' },
@@ -120,7 +117,6 @@ export default function Disposisi() {
         { id: 'DT', name: 'Direktorat Teknik' },
         { id: 'DS', name: 'Direktorat Keselamatan Keamanan dan Standardisasi' },
         { id: 'DM', name: 'Direktorat SDM dan Umum' },
-
     ]
 
     const divisi = [
@@ -147,7 +143,6 @@ export default function Disposisi() {
         { id: 'CSE', name: 'Corporate Services', DirId: 'DM' },
         { id: 'LKM', name: 'Learning and Knowledge Management', DirId: 'DM' },
     ]
-
 
     // handle direktorat dropdown
     const onDirektoratChange = (e) => {

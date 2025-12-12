@@ -28,10 +28,10 @@ export default function Disposisi() {
             const start = new Date(item.jam_mulai);
 
             const reminderStart = new Date(start);
-            reminderStart.setMinutes(reminderStart.getMinutes() - 30); // mulai 30 menit sebelum
+            reminderStart.setMinutes(reminderStart.getMinutes() - 30); 
 
             const reminderEnd = new Date(reminderStart);
-            reminderEnd.setMinutes(reminderEnd.getMinutes() + 10); // tampil selama 10 menit
+            reminderEnd.setMinutes(reminderEnd.getMinutes() + 10);
 
             if (now >= reminderStart && now < reminderEnd) {
                 activeReminders.push(item);
@@ -42,86 +42,52 @@ export default function Disposisi() {
     };
 
     // ---------------------------- FILTER VALID ITEMS ----------------------------
-    // const filterValidItems = (data) => {
-    //     const now = new Date();
-    //     const today = new Date(now.toDateString());
-    //     const threeDaysLater = new Date();
-    //     threeDaysLater.setDate(now.getDate() + 3);
+    const filterValidItems = (data) => {
+        const now = new Date();
 
-    //     return data.filter(item => {
-    //         const start = new Date(item.jam_mulai);
-    //         const tanggal = new Date(item.tanggal);
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
 
-    //         let end = null;
-    //         if (item.jam_selesai && item.jam_selesai !== "Selesai") {
-    //             end = new Date(item.jam_selesai);
-    //         } else {
-    //             end = new Date(tanggal);
-    //             end.setHours(23, 59, 0, 0);
-    //         }
+        const threeDaysLater = new Date(today);
+        threeDaysLater.setDate(today.getDate() + 3);
 
-    //         if (end < now) return false;
-    //         if (tanggal < today && end < now) return false;
-    //         if (start <= now && end >= now) return true;
-    //         if (tanggal >= today && tanggal <= threeDaysLater) return true;
+        return data.filter(item => {
+            const tanggal = new Date(item.tanggal);
+            
+            tanggal.setHours(0, 0, 0, 0);
 
-    //         return false;
-    //     });
-    // };
- const filterValidItems = (data) => {
-    const now = new Date();
+            if (!(tanggal >= today && tanggal <= threeDaysLater)) {
+                return false;
+            }
 
-    const today = new Date(now);
-    today.setHours(0, 0, 0, 0);
+            if (tanggal.getTime() !== today.getTime()) {
+                return true;
+            }
 
-    const threeDaysLater = new Date(today);
-    threeDaysLater.setDate(today.getDate() + 3);
+            let selesai = null;
 
-    return data.filter(item => {
-        const tanggal = new Date(item.tanggal);
-        tanggal.setHours(0, 0, 0, 0);
+            if (item.jam_selesai && !isNaN(Date.parse(item.jam_selesai))) {
+                selesai = new Date(item.jam_selesai);
+            }
 
-        // ❌ kegiatan di luar range 3 hari → buang
-        if (!(tanggal >= today && tanggal <= threeDaysLater)) {
-            return false;
-        }
+            else if (typeof item.jam_selesai === "string" && item.jam_selesai.trim() !== "") {
+                const jamFix = item.jam_selesai.replace(/\./g, ":");
+                const [hh, mm] = jamFix.split(":");
+                selesai = new Date(item.tanggal);
+                selesai.setHours(hh || 0, mm || 0, 0, 0);
+            }
 
-        // ✅ Kegiatan bukan hari ini → langsung tampilkan
-        if (tanggal.getTime() !== today.getTime()) {
+            else {
+                return true;
+            }
+
+            if (selesai < now) {
+                return false;
+            }
+
             return true;
-        }
-
-        // ===============================
-        // KHUSUS HARI INI CEK SUDAH SELESAI
-        // ===============================
-        let selesai = null;
-
-        // CASE A → jam_selesai string ISO (bisa di-parse)
-        if (item.jam_selesai && !isNaN(Date.parse(item.jam_selesai))) {
-            selesai = new Date(item.jam_selesai);
-        }
-
-        // CASE B → jam_selesai format "14.30" atau "14:30"
-        else if (typeof item.jam_selesai === "string" && item.jam_selesai.trim() !== "") {
-            const jamFix = item.jam_selesai.replace(/\./g, ":");
-            const [hh, mm] = jamFix.split(":");
-            selesai = new Date(item.tanggal);
-            selesai.setHours(hh || 0, mm || 0, 0, 0);
-        }
-
-        // CASE C → kosong / null / "Selesai" → anggap belum selesai
-        else {
-            return true;
-        }
-
-        // ❌ Jika sudah selesai → hilangkan
-        if (selesai < now) {
-            return false;
-        }
-
-        return true;
-    });
-};
+        });
+    };
 
     // ---------------------------- STATUS ROW ----------------------------
     const isOngoing = (item) => {
@@ -132,7 +98,7 @@ export default function Disposisi() {
         if (item.jam_selesai && item.jam_selesai !== "Selesai") {
             end = new Date(item.jam_selesai);
         } else {
-            // jika selesai = Selesai → anggap sampai jam 23.59
+
             end = new Date(item.jam_mulai);
             end.setHours(23, 59, 0, 0);
         }
@@ -171,7 +137,6 @@ export default function Disposisi() {
             [item._id]: now
         }));
 
-        // juga simpan sebagai playedReminders jika ingin
         setPlayedReminders(prev => {
             const updated = [...prev, item._id];
             localStorage.setItem("playedReminders", JSON.stringify(updated));
@@ -197,15 +162,9 @@ export default function Disposisi() {
                 setPageTitle("AGENDA KEGIATAN HARI INI");
                 setShowDisposisi(sortNormal(reminders));
 
-                // alarm hanya untuk reminder yang belum diputar
                const newReminders = reminders.filter(r => !playedReminders.includes(r._id));
-               console.log("Played:", playedReminders);
-                console.log("Reminders:", reminders.map(r => r._id));
-                console.log("New:", newReminders.map(r => r._id));
 
-
-                // Putar alarm per kegiatan baru yang muncul
-                newReminders.forEach(item => {
+               newReminders.forEach(item => {
                     triggerAlarm(item);
                 });
 
