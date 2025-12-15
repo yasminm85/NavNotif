@@ -1,0 +1,116 @@
+const Notification = require('../models/notif.model')
+const Disposisi = require('../models/disposisi.model')
+
+// membuat notif
+const createNotification = async ({ disposisiId, userId }) => {
+  try {
+    const notif = await Notification.create({
+      disposisi: disposisiId,
+      user: userId,
+      status: 'Belum Dibaca',
+      isDone: false
+    });
+
+    return notif;
+  } catch (err) {
+    console.error('Something went wrong:', err);
+    throw err;
+  }
+};
+
+// dapatin notifikasi di dashboard biar muncul teng notif nya
+const getMyNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user._id;
+    const now = new Date();
+    const reminderWindow = new Date(now.getTime() - 10 * 60000); 
+
+    const [notifications, countActive, countDone] = await Promise.all([
+      Notification.find({
+        user: userId,
+        isDone: false,
+        $or: [
+          { notifType: 'ON_CREATE' },
+          {
+            notifType: { $ne: 'ON_CREATE' },
+            sendAt: { $gte: reminderWindow, $lte: now }
+          }
+        ]
+
+      })
+        .populate('disposisi')
+        .sort({ createdAt: -1 }),
+
+      Notification.countDocuments({
+        user: userId,
+        isDone: false,
+        notifType: 'ON_CREATE',
+        sendAt: { $lte: now }
+      }),
+
+      Notification.countDocuments({
+        user: userId,
+        isDone: true,
+        notifType: 'ON_CREATE'
+      })
+    ]);
+
+    res.json({
+      countActive,
+      countDone,
+      notifications
+    });
+  } catch (err) {
+    console.error('Error getMyNotifications:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// menandakan bahwa notifikasi sudah diisi
+const markNotificationDone = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id || req.user._id;
+
+    const notif = await Notification.findOne({ _id: id, user: userId });
+
+    if (!notif) {
+      return res.status(404).json({ message: 'Notifikasi tidak ditemukan' });
+    }
+
+    notif.status = 'Terbaca';
+    notif.isDone = true;
+    notif.doneAt = new Date();
+    await notif.save();
+
+    if (notif.notifType === 'ON_CREATE') {
+      await Disposisi.findByIdAndUpdate(
+        notif.disposisi,
+        { status_notif: true },
+        { new: true }
+      );
+    }
+
+    res.json({
+      message: 'Notifikasi sudah terbaca',
+      notification: notif
+    });
+  } catch (error) {
+    console.error('markNotificationDone error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+module.exports = {
+  createNotification,
+  getMyNotifications,
+  markNotificationDone,
+};
+
+
+
+
+
+
+

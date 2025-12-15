@@ -1,0 +1,15 @@
+.row-ongoing {
+    background-color: #cfe2ff !important; 
+}
+
+.row-reminder {
+    background-color: #d4f8c6 !important;   
+}
+
+.row-finished-warning {
+    background-color: #FFF3B0 !important; /* kuning */
+}
+
+.row-finished-done {
+    background-color: #D7FFD9 !important; /* hijau muda */
+}
