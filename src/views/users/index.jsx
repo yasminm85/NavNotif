@@ -233,7 +233,7 @@ export default function Disposisi() {
                             ...rowData,
                             name: rowData.name || "",
                             email: rowData.email || "",
-                            password: "",
+                            password: rowData.password || "",
                         });
 
                         setSelectedData(rowData);

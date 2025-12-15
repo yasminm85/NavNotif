@@ -17,6 +17,15 @@ const register = async (req, res) => {
     }
 }
 
+const getAllUser = async (req, res) => {
+    try {
+        const user = await User.find({});
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
 // login
 const login = async (req, res) => {
     try {
@@ -108,6 +117,23 @@ const getUserById = async (req, res) => {
     }
 }
 
+const updateUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const user = await User.findByIdAndUpdate(id, req.body);
+
+        if (!user) {
+            return res.status(404).json({ messsage: "User not found" });
+        }
+
+        const userUpdate = await User.findById(id);
+        res.status(200).json(userUpdate);
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+}
+
 // hapus user
 const deleteUser = async (req, res) => {
     try {
@@ -149,5 +175,7 @@ module.exports = {
     getUserDetail,
     getEmployees,
     getUserById,
-    deleteUser
+    getAllUser,
+    deleteUser,
+    updateUser
 };
