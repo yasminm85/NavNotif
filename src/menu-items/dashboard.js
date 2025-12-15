@@ -1,6 +1,8 @@
 // assets
 import { IconDashboard } from '@tabler/icons-react';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import { ManageAccounts } from '@mui/icons-material';
+import ViewStreamIcon from '@mui/icons-material/ViewStream';
 
 // constant
 const icons = { IconDashboard };
@@ -38,6 +40,16 @@ const dashboard = {
       type: 'item',
       url: '/user',
       icon: ManageAccounts,
+      allowedRoles: ['admin'],  
+      breadcrumbs: false
+
+    },
+    {
+      id: 'daftar-display',
+      title: 'Daftar Display',
+      type: 'item',
+      url: '/daftar-display',
+      icon: ViewStreamIcon,
       allowedRoles: ['admin'],  
       breadcrumbs: false
 

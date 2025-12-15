@@ -19,6 +19,8 @@ const DaftarNotifikasi = Loadable(lazy(() => import('views/daftar-notifikasi')))
 // halaman kelola user
 const DaftarUser = Loadable(lazy(() => import('views/users')));
 
+// halaman daftar display 
+const DaftarDisplay = Loadable(lazy(() => import('views/daftar-display')));
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -56,6 +58,14 @@ const MainRoutes = {
       element: (
             <ProtectedRoute allowedRoles={['admin']} > 
             <DaftarUser />
+            </ProtectedRoute>
+      )
+    },
+    {
+      path: '/daftar-display',
+      element: (
+            <ProtectedRoute allowedRoles={['admin']} > 
+            <DaftarDisplay />
             </ProtectedRoute>
       )
     },
