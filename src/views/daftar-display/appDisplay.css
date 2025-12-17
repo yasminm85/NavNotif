@@ -1,15 +1,13 @@
 .row-ongoing {
-    background-color: #cfe2ff !important; 
+    background-color: #dbeafe !important;
+    font-weight: bold;
 }
 
 .row-reminder {
-    background-color: #d4f8c6 !important;   
+    background-color: #dcfce7 !important;
 }
 
-.row-finished-warning {
-    background-color: #FFF3B0 !important; /* kuning */
-}
-
-.row-finished-done {
-    background-color: #D7FFD9 !important; /* hijau muda */
+.row-finished {
+    background-color: #f3f4f6 !important;
+    color: #6b7280;
 }
