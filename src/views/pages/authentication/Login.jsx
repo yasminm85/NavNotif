@@ -32,6 +32,8 @@ useEffect(() => {
       navigate("/dashboard/default");
     } else if (user.role === "pegawai") {
       navigate("/dashboard-pegawai");
+    } else if (user.role === "EVP") {
+      navigate("/dashboard-evp");
     }
   }
 }, [user, isSuccess]);

@@ -444,7 +444,7 @@ export default function Disposisi() {
         if (!data) return <span>-</span>;
 
         const url = `http://localhost:3000/${data}`;
-
+        console.log(url);
         return (
             <Button
                 label="Lihat"

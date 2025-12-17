@@ -67,6 +67,10 @@ const DisposisiSchema = mongoose.Schema(
             type: String,
             default: null
         },
+        laporan_file_path: { 
+            type: String, 
+            default: null 
+        },
         laporan_status: {
             type: String,
             enum: ['BELUM', 'SUDAH'],
@@ -79,6 +83,10 @@ const DisposisiSchema = mongoose.Schema(
         },
         laporan_at: {
             type: Date
+        },
+        komentar: {
+            type: String,
+            default: null
         },
         status_notif: {
             type: Boolean,
