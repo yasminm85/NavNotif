@@ -32,29 +32,29 @@ export default function Disposisi() {
     const [hasActiveReminder, setHasActiveReminder] = useState(false);
 
     // ---------------------------- CHECK REMINDER ----------------------------
-const checkReminderActive = (items) => {
-    const now = new Date();
-    const activeReminders = [];
+    const checkReminderActive = (items) => {
+        const now = new Date();
+        const activeReminders = [];
 
-    items.forEach(item => {
-        if (!item.jam_mulai || !item.tanggal) return;
+        items.forEach(item => {
+            if (!item.jam_mulai || !item.tanggal) return;
 
-        const [hh, mm] = item.jam_mulai.replace(/\./g, ":").split(":");
-        const start = new Date(item.tanggal);
-        start.setHours(Number(hh), Number(mm), 0, 0);
+            const [hh, mm] = item.jam_mulai.replace(/\./g, ":").split(":");
+            const start = new Date(item.tanggal);
+            start.setHours(Number(hh), Number(mm), 0, 0);
 
-        const reminderStart = new Date(start);
-        reminderStart.setMinutes(reminderStart.getMinutes() - 30);
+            const reminderStart = new Date(start);
+            reminderStart.setMinutes(reminderStart.getMinutes() - 30);
 
-        const reminderEnd = new Date(start); // sampai jam_mulai
+            const reminderEnd = new Date(start); // sampai jam_mulai
 
-        if (now >= reminderStart && now < reminderEnd) {
-            activeReminders.push(item);
-        }
-    });
+            if (now >= reminderStart && now < reminderEnd) {
+                activeReminders.push(item);
+            }
+        });
 
-    return activeReminders;
-};
+        return activeReminders;
+    };
 
 
     // ---------------------------- FILTER VALID ITEMS ----------------------------
@@ -95,6 +95,7 @@ const checkReminderActive = (items) => {
         });
     };
 
+
     // ---------------------------- STATUS ROW ----------------------------
     const isOngoing = (item) => {
         const now = new Date();
@@ -119,6 +120,7 @@ const checkReminderActive = (items) => {
 
         return now >= start && now <= end;
     };
+
 
     // ---------------------------- ALARM AUDIO ----------------------------
     const [playedReminders, setPlayedReminders] = useState([]);
@@ -158,6 +160,7 @@ const checkReminderActive = (items) => {
         });
 
     };
+
 
     // ---------------------------- GET DATA ----------------------------
     const getDataDisposisi = async () => {
@@ -218,7 +221,6 @@ const checkReminderActive = (items) => {
             // ❗️JIKA TIDAK ADA REMINDER
             setHasActiveReminder(false);
 
-
             if (mode === MODE.TODAY) {
                 setMode(MODE.KEGIATAN);
             }
@@ -229,6 +231,7 @@ const checkReminderActive = (items) => {
             setLoading(false);
         }
     };
+
 
     // ---------------------------- FORMATTER ----------------------------
     const formDate = (date) => {
@@ -264,6 +267,7 @@ const checkReminderActive = (items) => {
 
         return () => clearInterval(interval);
     }, [showDisposisi]);
+
 
     // ---------------------------- AUTO UPDATE DATA ----------------------------
     useEffect(() => {
@@ -309,10 +313,12 @@ const checkReminderActive = (items) => {
         }
     }, [mode, agendaKegiatan, agendaSelesai]);
 
+
     // ---------------------------- SORT NORMAL ----------------------------
     const sortNormal = (items) => {
         return items.sort((a, b) => new Date(a.jam_mulai) - new Date(b.jam_mulai));
     };
+
 
     // ---------------------------- RENDER ----------------------------
     return (
@@ -331,37 +337,44 @@ const checkReminderActive = (items) => {
                     scrollHeight="430px"
                     dataKey="_id"
                     rowClassName={(row) => {
-                        // AGENDA SELESAI
-                        if (mode === MODE.SELESAI) {
-                            if (row.laporan_isi === true || row.status_laporan === "SUDAH") {
-                                return "row-laporan-sudah"; // hijau
-                            }
-                            return "row-laporan-belum"; // kuning
+                        console.table(
+                        showDisposisi.map(i => ({
+                            kegiatan: i.nama_kegiatan,
+                            laporan_status: i.laporan_status
+                        }))
+                        );
+                    // ================== AGENDA SELESAI ==================
+                    if (mode === MODE.SELESAI) {
+                        if (row.laporan_status === "SUDAH") {
+                            return "row-laporan-sudah";   // 🟢 Hijau
                         }
+                        return "row-laporan-belum";       // 🟡 Kuning
+                    }
 
-                        if (isOngoing(row)) return "row-ongoing";
+                    // ================== AGENDA BERLANGSUNG ==================
+                    if (isOngoing(row)) return "row-ongoing";
 
-                        const now = new Date();
-                        if (row.jam_mulai) {
-                            const startFix = row.jam_mulai.replace(/\./g, ":");
-                            const [hh, mm] = startFix.split(":");
+                    // ================== REMINDER ==================
+                    const now = new Date();
+                    if (row.jam_mulai) {
+                        const startFix = row.jam_mulai.replace(/\./g, ":");
+                        const [hh, mm] = startFix.split(":");
 
-                            const start = new Date(row.tanggal);
-                            start.setHours(hh, mm, 0, 0);
+                        const start = new Date(row.tanggal);
+                        start.setHours(hh, mm, 0, 0);
 
-                            const reminderStart = new Date(start);
-                            reminderStart.setMinutes(reminderStart.getMinutes() - 30);
+                        const reminderStart = new Date(start);
+                        reminderStart.setMinutes(reminderStart.getMinutes() - 30);
 
-                            const reminderEnd = new Date(reminderStart);
-                            reminderEnd.setMinutes(reminderEnd.getMinutes() + 10);
+                        const reminderEnd = new Date(start);
 
-                            if (now >= reminderStart && now < reminderEnd) {
-                                return "row-reminder";
-                            }
+                        if (now >= reminderStart && now < reminderEnd) {
+                            return "row-reminder";
                         }
+                    }
 
-                        return "";
-                    }}
+                    return "";
+                }}
 
                 >
                     <Column field="nama_kegiatan" header="Nama Kegiatan" />

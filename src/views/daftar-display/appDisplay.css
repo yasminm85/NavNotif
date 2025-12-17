@@ -1,13 +1,24 @@
+/* sedang berlangsung */
 .row-ongoing {
-    background-color: #dbeafe !important;
+    background-color: #93BFC7 !important;
     font-weight: bold;
 }
 
+/* reminder */
 .row-reminder {
     background-color: #dcfce7 !important;
 }
 
-.row-finished {
-    background-color: #f3f4f6 !important;
-    color: #6b7280;
+/* agenda selesai - laporan BELUM diisi */
+.row-laporan-belum {
+    background-color: #fff3cd !important; /* kuning */
+    color: #856404;
+    font-weight: bold;
+}
+
+/* agenda selesai - laporan SUDAH diisi */
+.row-laporan-sudah {
+    background-color: #d1fae5 !important; /* hijau */
+    color: #065f46;
+    font-weight: bold;
 }
