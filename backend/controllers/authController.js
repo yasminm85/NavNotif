@@ -98,7 +98,7 @@ const getUserDetail = async (req, res) => {
 // dapatin yang pegawai pegawai ajah
 const getEmployees = async (req, res) => {
   try {
-    const employees = await User.find({ role: 'pegawai' }).select('_id email name');
+    const employees = await User.find({ role: 'pegawai' }).select('_id email name password');
     res.json(employees);
   } catch (err) {
     // console.error('Error getEmployees:', err);
@@ -118,21 +118,33 @@ const getUserById = async (req, res) => {
 }
 
 const updateUser = async (req, res) => {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
+    const payload = { ...req.body };
 
-        const user = await User.findByIdAndUpdate(id, req.body);
-
-        if (!user) {
-            return res.status(404).json({ messsage: "User not found" });
-        }
-
-        const userUpdate = await User.findById(id);
-        res.status(200).json(userUpdate);
-    } catch (error) {
-        res.status(500).json({message: error.message});
+    if (payload.password && payload.password.trim()) {
+      payload.password = await bcrypt.hash(payload.password, 10);
+    } else {
+      // kalau password kosong password kgk ngubah
+      delete payload.password;
     }
-}
+
+    const userUpdate = await User.findByIdAndUpdate(
+      id,
+      payload,
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    if (!userUpdate) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(userUpdate);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 // hapus user
 const deleteUser = async (req, res) => {

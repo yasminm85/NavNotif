@@ -96,8 +96,8 @@ export default function DashboardPegawai() {
 
   const handleOke = async (notifId) => {
     try {
-      const res = await api.patch(
-        `/api/notif/notifications/done/${notifId}`,
+      const res = await axios.patch(
+        `http://localhost:3000/api/notif/notifications/done/${notifId}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` }

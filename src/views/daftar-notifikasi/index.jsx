@@ -5,11 +5,14 @@ import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { FileUpload } from '@mui/icons-material';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import axios from 'axios';
+import './app.css';
+
 
 export default function DaftarNotifikasi() {
 
@@ -18,12 +21,14 @@ export default function DaftarNotifikasi() {
     const [selectedNotif, setSelectedNotif] = useState("");
     const [form, setForm] = useState({
         laporan: "",
+        file: null
     });
     const [errors, setErrors] = useState({});
     const [tasks, setTasks] = useState([]);
     const [currentTask, setCurrentTask] = useState(null);
     const [showDialog, setShowDialog] = useState(false);
     const [laporanText, setLaporanText] = useState('');
+    const [laporanPath, setLaporanPath] = useState(null);
     const token = localStorage.getItem('token');
 
     // fetch data disposisi
@@ -76,7 +81,7 @@ export default function DaftarNotifikasi() {
         const validation = validateForm();
         setErrors(validation);
 
-        const url = `${api}/${data}`;
+        const url = `http://localhost:3000/${data}`;
 
         return (
             <Button
@@ -86,6 +91,26 @@ export default function DaftarNotifikasi() {
                 onClick={() => window.open(url, "_blank")}
             />
         );
+    };
+
+    const handleChange = (field, value) => {
+
+        setForm({ ...form, [field]: value });
+        setErrors({ ...errors, [field]: "" });
+    };
+
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+
+        // Validasi PDF
+        if (file && file.type !== "application/pdf") {
+            alert("File harus berupa PDF!");
+            e.target.value = "";
+            return;
+        }
+
+        handleChange("file", file);
     };
 
     // setting date 
@@ -112,7 +137,7 @@ export default function DaftarNotifikasi() {
     // set time dan tanggal
     const getLocalDateOnly = (isoString) => {
         const d = new Date(isoString);
-        return new Date(d.getFullYear(), d.getMonth(), d.getDate()); 
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
     };
 
     // setting jam apakah laporan boleh di isi, soalnya kalau belum tanggalnya tombol isi laporan bakal disable
@@ -136,10 +161,8 @@ export default function DaftarNotifikasi() {
 
     // inih template buat kirim data pas pop up di data table
     const laporanActionTemplate = (row) => {
-        console.log(row);
-
         const bolehLapor = isLaporanAllowed(row);
-
+        console.log(bolehLapor);
         return (
             <Button
                 label={row.laporan ? 'Sudah Melaporkan' : 'Isi Laporan'}
@@ -147,6 +170,7 @@ export default function DaftarNotifikasi() {
                 onClick={() => {
                     setCurrentTask(row);
                     setLaporanText(row.laporan || '');
+                    setLaporanPath(row.laporan_file_path);
                     setShowDialog(true);
                 }}
                 disabled={!bolehLapor}
@@ -157,10 +181,14 @@ export default function DaftarNotifikasi() {
     // simpan hasil laporan
     const handleSaveLaporan = async () => {
         if (!currentTask) return;
+
+        const formData = new FormData();
+        if (form.file) formData.append("laporan_file_path", form.file);
+        formData.append("laporan", laporanText);
         try {
             const res = await axios.patch(
                 `http://localhost:3000/api/task/disposisi/${currentTask._id}/laporan`,
-                { laporan: laporanText },
+                formData,
                 {
                     headers: { Authorization: `Bearer ${token}` }
                 }
@@ -204,19 +232,46 @@ export default function DaftarNotifikasi() {
                                 <p>
                                     <strong>Agenda:</strong> {currentTask.agenda_kegiatan}
                                 </p>
+                                <p>
+                                    <strong>Komentar atau Feedback EVP:</strong> {currentTask.komentar}
+                                </p>
                             </div>
 
                             <div>
                                 <label className="block mb-2 font-semibold">Isi Laporan</label>
                                 <InputTextarea
                                     rows={5}
-                                    cclassName={`w-full ${errors.laporan ? "p-invalid" : ""}`}
+                                    className={`w-full ${errors.laporan ? "p-invalid" : ""}`}
                                     value={laporanText}
                                     onChange={(e) => setLaporanText(e.target.value)}
                                     placeholder="Tuliskan laporan kegiatan di sini..."
                                 />
-                                {errors.laporan && <small className="p-error">{errors.laporan}</small>}
+                                {/* File */}
+                                <div className="input_container">
+                                <input
+                                    id="fileUpload"
+                                    type="file"
+                                    className="w-full mb-3"
+                                    accept="application/pdf"
+                                    onChange={(e) => handleFileChange(e)}
+                                />
+                                </div>
+                                {errors.file && <small className="p-error">{errors.file}</small>}
                             </div>
+
+                            {laporanPath ? (
+                                <Button
+                                    label="Lihat File Laporan"
+                                    icon="pi pi-file"
+                                    className="p-button p-button-sm mb-2"
+                                    onClick={() =>
+                                        window.open(`http://localhost:3000/${laporanPath}`, "_blank")
+                                    }
+                                />
+                            ) : (
+                                <small className="text-gray-500 mb-2 block">Belum ada file laporan.</small>
+                            )}
+
 
                             <div className="flex justify-end gap-2 mt-3">
                                 <Button

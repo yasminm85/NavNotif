@@ -103,9 +103,9 @@ const createDisposisi = async (req, res) => {
 
                 if (
                     eventDate &&
-                    !isNaN(eventDate.getTime()) &&                 
+                    !isNaN(eventDate.getTime()) &&
                     typeof disposisi.jam_mulai === 'string' &&
-                    /^\d{2}:\d{2}$/.test(disposisi.jam_mulai)      
+                    /^\d{2}:\d{2}$/.test(disposisi.jam_mulai)
                 ) {
                     const [hh, mm] = disposisi.jam_mulai.split(':');
                     eventDate.setHours(parseInt(hh, 10));
@@ -118,7 +118,7 @@ const createDisposisi = async (req, res) => {
 
                 notificationOptions.forEach((optKey) => {
                     const offset = REMINDER_OFFSET_MINUTES[optKey];
-                    if (offset === undefined) return; 
+                    if (offset === undefined) return;
 
                     let reminderTime;
 
@@ -269,6 +269,19 @@ const updateLaporan = async (req, res) => {
         const userId = req.user.id || req.user._id;
         const userRole = req.user.role;
 
+        const file = req.file;
+        const filePath = file ? file.path : null;
+        // console.log(file);
+        // console.log(filePath);
+        // console.log(laporan);
+
+        const hasText = laporan && laporan.trim();
+        const hasFile = !!file;
+
+        if (!hasText && !hasFile) {
+            return res.status(400).json({ message: 'Laporan tidak boleh kosong' });
+        }
+
         if (!laporan || !laporan.trim()) {
             return res.status(400).json({ message: 'Laporan tidak boleh kosong' });
         }
@@ -288,10 +301,13 @@ const updateLaporan = async (req, res) => {
             });
         }
 
-        disposisi.laporan = laporan;
-        disposisi.laporan_status = 'SUDAH';
-        disposisi.laporan_by = userId;
-        disposisi.laporan_at = new Date();
+        if (hasText) disposisi.laporan = laporan;
+
+        if (hasFile) {
+            disposisi.laporan_file_path = filePath;
+        }
+
+        disposisi.laporan_by = userId
 
         await disposisi.save();
 
@@ -309,6 +325,38 @@ const updateLaporan = async (req, res) => {
     }
 };
 
+// menambahkan komentar
+
+const createKomentar = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { text } = req.body;
+    console.log(text);
+    console.log(req.body);
+    if (!text || !text.trim()) {
+      return res.status(400).json({ message: "Komentar tidak boleh kosong" });
+    }
+
+    const disposisi = await Disposisi.findById(id);
+    if (!disposisi) {
+      return res.status(404).json({ message: "Disposisi tidak ditemukan" });
+    }
+
+    disposisi.komentar = text;
+
+    await disposisi.save();
+
+    const populated = await Disposisi.findById(id)
+      .populate('nama_yang_dituju', 'name email')
+      .populate("laporan_by", "name email");
+
+    res.json({ message: "Komentar tersimpan", disposisi: populated });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
 
 
 
@@ -321,7 +369,8 @@ module.exports = {
     updateDisposisi,
     deleteDisposisi,
     getMyTasks,
-    updateLaporan
+    updateLaporan,
+    createKomentar
 };
 
 

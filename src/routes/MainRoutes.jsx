@@ -7,6 +7,9 @@ import ProtectedRoute from './ProtectedRoute';
 // dashboard routing
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
+// dashboard EVP
+const DashboardEVP = Loadable(lazy(() => import('views/dashboard-evp')));
+
 // Disposisi routing
 const Disposisi = Loadable(lazy(() => import('views/disposisi')));
 
@@ -21,6 +24,7 @@ const DaftarUser = Loadable(lazy(() => import('views/users')));
 
 // halaman daftar display 
 const DaftarDisplay = Loadable(lazy(() => import('views/daftar-display')));
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -84,7 +88,15 @@ const MainRoutes = {
             <DaftarNotifikasi />
             </ProtectedRoute>
       )
-    }
+    },
+    {
+      path: '/dashboard-evp',
+      element: (
+            <ProtectedRoute allowedRoles={['EVP']} > 
+            <DashboardEVP />
+            </ProtectedRoute>
+      )
+    },
   ]
 };
 
