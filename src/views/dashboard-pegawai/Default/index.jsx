@@ -15,6 +15,7 @@ export default function DashboardPegawai() {
   const [countActive, setCountActive] = useState(0);
   const [countDone, setCountDone] = useState(0);
   const token = localStorage.getItem('token');
+  const toastIdByNotifId = useRef(new Map());
   const shownToastIds = useRef(new Set());
 
   useEffect(() => {
@@ -70,13 +71,16 @@ export default function DashboardPegawai() {
         const kegiatan = n.disposisi?.nama_kegiatan || 'Disposisi';
 
         if (n.notifType === 'ON_CREATE') {
-          toast.info(
+          const toastId = toast.info(
             <NotifToast
               message={`Disposisi baru: ${kegiatan}`}
               onOke={() => handleOke(n._id)}
             />,
             { autoClose: false }
           );
+
+          toastIdByNotifId.current.set(n._id, toastId);
+
         } else if (n.notifType === 'REMINDER_1H') {
           toast.info(`Reminder: ${kegiatan} dimulai 1 jam lagi`, {
             autoClose: false
@@ -95,30 +99,44 @@ export default function DashboardPegawai() {
 
 
   const handleOke = async (notifId) => {
+    const target = notifications.find(n => n._id === notifId);
+    if (!target) return;
+
+    setNotifications(prev => prev.map(n => (
+      n._id === notifId ? { ...n, isDone: true } : n
+    )));
+    setCountActive(prev => Math.max(0, prev - 1));
+    setCountDone(prev => prev + 1);
+
+    const toastId = toastIdByNotifId.current?.get(notifId);
+    if (toastId) toast.dismiss(toastId);
+
     try {
       const res = await axios.patch(
         `http://localhost:3000/api/notif/notifications/done/${notifId}`,
         {},
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const updatedNotif = res.data.notification;
 
+      // sinkronkan state dengan response server (biar aman)
       setNotifications(prev =>
         prev.map(n => (n._id === updatedNotif._id ? updatedNotif : n))
       );
-
-      toast.dismiss();
-
-      toast.success("Notifikasi ditandai selesai");
-
     } catch (err) {
       console.error("Error update notif:", err.response?.data || err.message);
+
+      setNotifications(prev => prev.map(n => (
+        n._id === notifId ? target : n
+      )));
+      setCountActive(prev => prev + 1);
+      setCountDone(prev => Math.max(0, prev - 1));
+
       toast.error("Gagal menandai notifikasi");
     }
   };
+
 
   return (
     <Grid container spacing={gridSpacing}>
