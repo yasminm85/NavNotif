@@ -308,6 +308,7 @@ const updateLaporan = async (req, res) => {
         }
 
         disposisi.laporan_by = userId
+        disposisi.laporan_status = "SUDAH"
 
         await disposisi.save();
 
@@ -357,6 +358,36 @@ const createKomentar = async (req, res) => {
 };
 
 
+const DIRECTORAT_ORDER = ['DU','DK','DO','DT','DS','DM'];
+const DIRECTORAT_NAME = {
+  DU: 'Direktorat Utama',
+  DK: 'Direktorat Keuangan dan Manajemen Risiko',
+  DO: 'Direktorat Operasi',
+  DT: 'Direktorat Teknik',
+  DS: 'Direktorat Keselamatan Keamanan dan Standardisasi',
+  DM: 'Direktorat SDM dan Umum'
+};
+
+const statsDirektoratTotal = async (req, res) => {
+  try {
+    const rows = await Disposisi.aggregate([
+      { $unwind: '$direktorat' }, 
+      { $group: { _id: '$direktorat', total: { $sum: 1 } } }
+    ]);
+
+    const map = new Map(rows.map(r => [r._id, r.total]));
+
+    res.json({
+      categories: DIRECTORAT_ORDER,
+      series: [
+        { name: 'Total Kegiatan', data: DIRECTORAT_ORDER.map(id => map.get(id) ?? 0) }
+      ]
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 
 
 
@@ -370,7 +401,8 @@ module.exports = {
     deleteDisposisi,
     getMyTasks,
     updateLaporan,
-    createKomentar
+    createKomentar,
+    statsDirektoratTotal
 };
 
 

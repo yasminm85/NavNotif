@@ -22,7 +22,7 @@ export default function Disposisi() {
     const [pegawaisel, setPegawai] = useState([]);
     const [selectedpegawai, setSelectedpegawai] = useState([]);
     const [selecteddivisi, setSelecteddivisi] = useState([]);
-    const [selecteddirectorat, setSelecteddirectorat] = useState([]);
+    const [selecteddirektorat, setSelecteddirektorat] = useState([]);
     const [itemOptions, setitemOptions] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
@@ -54,7 +54,7 @@ export default function Disposisi() {
         if (!form.agenda) newErrors.agenda = "Agenda wajib diisi.";
         if (!selectedpegawai || selectedpegawai.length === 0)
             newErrors.namayangdituju = "Nama yang dituju wajib diisi.";
-        if (!selecteddirectorat || selecteddirectorat.length === 0)
+        if (!selecteddirektorat || selecteddirektorat.length === 0)
             newErrors.direktorat = "Direktorat wajib diisi.";
         if (!selecteddivisi || selecteddivisi.length === 0)
             newErrors.divisi = "Divisi wajib diisi.";
@@ -111,7 +111,7 @@ export default function Disposisi() {
     ];
 
     // inisialisasi direktorat dan divisi
-    const directorat = [
+    const direktorat = [
         { id: 'DU', name: 'Direktorat Utama' },
         { id: 'DK', name: 'Direktorat Keuangan dan Manajemen Risiko' },
         { id: 'DO', name: 'Direktorat Operasi' },
@@ -150,7 +150,7 @@ export default function Disposisi() {
     // handle direktorat dropdown
     const onDirektoratChange = (e) => {
         const selectedDir = e.value;
-        setSelecteddirectorat(selectedDir);
+        setSelecteddirektorat(selectedDir);
 
         const selectedDirCode = selectedDir.map((d) => d.id);
         const filteredDivisis = divisi.filter((div) =>
@@ -161,6 +161,10 @@ export default function Disposisi() {
 
         setSelecteddivisi([]);
     };
+
+    const direktoratMap = Object.fromEntries(direktorat.map(d => [d.id, d.name]));
+    const divisiMap = Object.fromEntries(divisi.map(d => [d.id, d.name]));
+
 
     // perubahan pada form dan input form
     const handleChange = (field, value) => {
@@ -201,8 +205,8 @@ export default function Disposisi() {
         if (Object.keys(validation).length > 0) return;
 
         const pegawaiIds = selectedpegawai.map((p) => p._id);
-        const direktoratIds = selecteddirectorat.map((d) => d.name);
-        const divisiIds = selecteddivisi.map((d) => d.name);
+        const direktoratIds = selecteddirektorat.map((d) => d.id);
+        const divisiIds = selecteddivisi.map((d) => d.id);
         const formData = new FormData();
 
         // console.log('pegawai ID:', selectedpegawai);
@@ -285,7 +289,7 @@ export default function Disposisi() {
                 dresscode: "",
             });
             setSelectedpegawai([]);
-            setSelecteddirectorat([]);
+            setSelecteddirektorat([]);
             setSelecteddivisi([]);
             setErrors({});
 
@@ -339,12 +343,12 @@ export default function Disposisi() {
                             )
                         );
 
-                        const direktoratSelected = directorat.filter(d =>
-                            (rowData.direktorat || []).includes(d.name)
+                        const direktoratSelected = direktorat.filter(d =>
+                            (rowData.direktorat || []).includes(d.id)
                         );
 
                         const divisiSelected = divisi.filter(d =>
-                            (rowData.divisi || []).includes(d.name)
+                            (rowData.divisi || []).includes(d.id)
                         );
 
                         const selectedDirIds = direktoratSelected.map(d => d.id);
@@ -370,7 +374,7 @@ export default function Disposisi() {
                         });
 
                         setSelectedpegawai(pegawaiSelected);
-                        setSelecteddirectorat(direktoratSelected);
+                        setSelecteddirektorat(direktoratSelected);
                         setSelecteddivisi(divisiSelected);
                         setitemOptions(filteredDivisiOptions);
 
@@ -567,7 +571,7 @@ export default function Disposisi() {
 
                             // reset multiselect
                             setSelectedpegawai([]);
-                            setSelecteddirectorat([]);
+                            setSelecteddirektorat([]);
                             setSelecteddivisi([]);
                         }}
                     />
@@ -624,8 +628,8 @@ export default function Disposisi() {
                         <MultiSelect
                             placeholder="Direktorat *"
                             className="w-full"
-                            value={selecteddirectorat}
-                            options={directorat}
+                            value={selecteddirektorat}
+                            options={direktorat}
                             optionLabel='name'
                             display='chip'
                             onChange={onDirektoratChange}
@@ -643,7 +647,7 @@ export default function Disposisi() {
                             display='chip'
                             onChange={(e) => setSelecteddivisi(e.value)}
                             placeholder={
-                                selecteddirectorat ? "Divisi" : "Pilihlah Direktorat Dahulu"
+                                selecteddirektorat ? "Divisi" : "Pilihlah Direktorat Dahulu"
                             }
 
                         />
@@ -793,9 +797,19 @@ export default function Disposisi() {
                                     ? selectedData.nama_yang_dituju.map((u) => u.name).join(", ")
                                     : "-"}
                             </p>
+                            <p>
+                                <strong>Direktorat:</strong>{" "}
+                                {(selectedData?.direktorat || [])
+                                    .map(id => direktoratMap[id] ?? id)
+                                    .join(', ')}
+                            </p>
 
-                            <p><strong>Direktorat:</strong> {selectedData.direktorat.join(', ')}</p>
-                            <p><strong>Divisi:</strong> {selectedData.divisi.join(', ')}</p>
+                            <p>
+                                <strong>Divisi:</strong>{" "}
+                                {(selectedData?.divisi || [])
+                                    .map(id => divisiMap[id] ?? id)
+                                    .join(', ')}
+                            </p>
                             <p><strong>Tanggal:</strong> {formDate(selectedData.tanggal)}</p>
                             <p><strong>Jam Mulai:</strong> {formTime(selectedData.jam_mulai)}</p>
                             <p><strong>Jam Selesai:</strong> {formTime(selectedData.jam_selesai)}</p>

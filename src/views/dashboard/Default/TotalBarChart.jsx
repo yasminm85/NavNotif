@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 // third party
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
+import axios from 'axios';
 
 // project imports
 import useConfig from 'hooks/useConfig';
@@ -16,7 +17,7 @@ import SkeletonTotalBarChart from 'ui-component/cards/Skeleton/TotalBarChart';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
 
-// chart data
+// chart data (baseline config)
 import chartData from './chart-data/total-bar-chart';
 
 export default function TotalBarChart({ isLoading }) {
@@ -24,40 +25,84 @@ export default function TotalBarChart({ isLoading }) {
   const { mode } = useConfig();
 
   const { primary } = theme.palette.text;
-  const darkLight = theme.palette.dark.light;
   const divider = theme.palette.divider;
   const grey500 = theme.palette.grey[500];
 
-  const errorMain = theme.palette.error.main;
+  const SecondaryMain = theme.palette.secondary.main;
   const successDark = theme.palette.success.dark;
 
+  const [totalKegiatan, setTotalKegiatan] = React.useState(0);
+
   React.useEffect(() => {
-    const newChartData = {
+    const newChartOptions = {
       ...chartData.options,
-      colors: [errorMain, successDark],
+      colors: [SecondaryMain, successDark],
       xaxis: {
+        ...chartData.options.xaxis,
         labels: {
+          formatter: (val) => val,
           style: {
-            style: { colors: primary }
+            colors: primary
           }
         }
       },
       yaxis: {
         labels: {
+          formatter: (val) => Math.round(val),
           style: {
-            style: { colors: primary }
+            colors: primary
           }
         }
       },
       grid: { borderColor: divider },
-      tooltip: { theme: mode },
-      legend: { labels: { colors: grey500 } }
+      tooltip: {
+      theme: mode
+    },
+      legend: { ...chartData.options.legend, labels: { colors: grey500 } }
     };
 
     if (!isLoading) {
-      ApexCharts.exec(`bar-chart`, 'updateOptions', newChartData);
+      ApexCharts.exec('bar-chart', 'updateOptions', newChartOptions, false, true);
     }
-  }, [mode, errorMain, successDark, primary, darkLight, divider, isLoading, grey500]);
+  }, [mode, SecondaryMain, successDark, primary, divider, isLoading, grey500]);
+
+  React.useEffect(() => {
+    const fetchBarChart = async () => {
+      try {
+        const token = localStorage.getItem('token');
+
+        const res = await axios.get('http://localhost:3000/api/task/disposisi/barchar', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const categories = res.data?.categories || [];
+        const series = res.data?.series || [];
+
+        // Update x-axis categories
+        ApexCharts.exec('bar-chart', 'updateOptions', {
+          xaxis: { type: 'category', categories }
+        });
+
+        // Update series
+        ApexCharts.exec('bar-chart', 'updateSeries', series);
+
+        // Update total header (sum semua series)
+        const total = Array.isArray(series)
+          ? series.reduce((sum, s) => {
+              const part = Array.isArray(s?.data) ? s.data.reduce((a, b) => a + (Number(b) || 0), 0) : 0;
+              return sum + part;
+            }, 0)
+          : 0;
+
+        setTotalKegiatan(total);
+      } catch (err) {
+        console.error('Fetch barchar error:', err);
+        setTotalKegiatan(0);
+      }
+    };
+
+    if (!isLoading) fetchBarChart();
+  }, [isLoading]);
 
   return (
     <>
@@ -74,15 +119,14 @@ export default function TotalBarChart({ isLoading }) {
                       <Typography variant="subtitle2">Total Kegiatan</Typography>
                     </Grid>
                     <Grid>
-                      <Typography variant="h3">50</Typography>
+                      <Typography variant="h3">{totalKegiatan}</Typography>
                     </Grid>
                   </Grid>
                 </Grid>
-                <Grid>
-                 
-                </Grid>
+                <Grid />
               </Grid>
             </Grid>
+
             <Grid
               size={12}
               sx={{
