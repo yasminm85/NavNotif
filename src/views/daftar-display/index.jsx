@@ -32,18 +32,19 @@ export default function Disposisi() {
     const [hasActiveReminder, setHasActiveReminder] = useState(false);
 
     // ---------------------------- CHECK REMINDER ----------------------------
- const checkReminderActive = (items) => {
+    const checkReminderActive = (items) => {
         const now = new Date();
         const activeReminders = [];
 
         items.forEach(item => {
             const start = new Date(item.jam_mulai);
+            if (isNaN(start.getTime())) return;
 
             const reminderStart = new Date(start);
             reminderStart.setMinutes(reminderStart.getMinutes() - 30); 
 
-            const reminderEnd = new Date(reminderStart);
-            reminderEnd.setMinutes(reminderEnd.getMinutes() + 10);
+            const reminderEnd = new Date(start);
+            reminderEnd.setMinutes(reminderEnd.getMinutes() - 25);
 
             if (now >= reminderStart && now < reminderEnd) {
                 activeReminders.push(item);
@@ -54,90 +55,110 @@ export default function Disposisi() {
     };
 
     // ---------------------------- FILTER VALID ITEMS ----------------------------
+    // const filterValidItems = (data) => {
+    //     const now = new Date();
+
+    //     return data.map(item => {
+    //         let selesai = false;
+    //         if (!item.tanggal) return { ...item, isSelesai: false };
+
+    //         const getValidDate = (val, baseDate) => {
+    //             if (!val || val === "-" || val.toLowerCase() === "selesai") return null;
+                
+    //             const d = new Date(val);
+    //             if (!isNaN(d.getTime())) return d;
+
+    //             try {
+    //                 const timePart = val.includes('-') ? val.split('-')[val.split('-').length - 1].trim() : val.trim();
+    //                 const parts = timePart.replace(/\./g, ":").split(":");
+    //                 const finalDate = new Date(baseDate);
+    //                 finalDate.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
+    //                 return finalDate;
+    //             } catch (e) { return null; }
+    //         };
+
+    //         const agendaDate = new Date(item.tanggal);
+    //         agendaDate.setHours(0, 0, 0, 0);
+    //         const today = new Date(now);
+    //         today.setHours(0, 0, 0, 0);
+
+    //         if (agendaDate < today) {
+    //             selesai = true;
+    //         } 
+    //         else if (agendaDate.getTime() === today.getTime()) {
+    //             const endTime = getValidDate(item.jam_selesai, item.tanggal) || 
+    //                             getValidDate(item.jam_mulai, item.tanggal);
+
+    //             if (endTime) {
+    //                 selesai = now > endTime;
+    //             }
+    //         }
+
+    //         return { ...item, isSelesai: selesai };
+    //     });
+    // };
     const filterValidItems = (data) => {
-        const now = new Date();
+    const now = new Date();
+    return data.map(item => {
+        let selesai = false;
+        if (!item.tanggal) return { ...item, isSelesai: false };
 
-        return data.map(item => {
-            let selesai = false;
+        const getValidDate = (val, baseDate) => {
+            if (!val || val === "-" || val.toLowerCase() === "selesai") return null;
+            const d = new Date(val);
+            if (!isNaN(d.getTime())) return d;
+            return null; // Asumsi data dari API sudah valid Date seperti log sebelumnya
+        };
 
-            if (!item.tanggal) {
-                return { ...item, isSelesai: false };
+        const agendaDate = new Date(item.tanggal);
+        agendaDate.setHours(0, 0, 0, 0);
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
+
+        if (agendaDate < today) {
+            selesai = true;
+        } 
+        else if (agendaDate.getTime() === today.getTime()) {
+            // Mengambil jam_selesai (13:00)
+            const endTime = getValidDate(item.jam_selesai, item.tanggal) || 
+                            getValidDate(item.jam_mulai, item.tanggal);
+
+            if (endTime) {
+                // Jika sekarang pukul 13:01, maka selesai = true
+                selesai = now > endTime;
             }
-
-            const agendaDate = new Date(item.tanggal);
-            agendaDate.setHours(0, 0, 0, 0);
-
-            const today = new Date(now);
-            today.setHours(0, 0, 0, 0);
-
-            // 🔴 TANGGAL SUDAH LEWAT
-            if (agendaDate < today) {
-                selesai = true;
-            }
-
-            // 🟡 TANGGAL HARI INI → CEK JAM SELESAI
-            else if (agendaDate.getTime() === today.getTime()) {
-
-                // ada jam_selesai valid
-                if (
-                    item.jam_selesai &&
-                    item.jam_selesai !== "-" &&
-                    item.jam_selesai.toLowerCase() !== "selesai"
-                ) {
-                    const [hh, mm] = item.jam_selesai.replace(/\./g, ":").split(":").map(Number);
-                    const end = new Date(item.tanggal);
-                    end.setHours(hh, mm, 0, 0);
-
-                    selesai = now > end;
-                }
-
-                // jam_selesai kosong → selesai akhir hari
-                else {
-                    const endOfDay = new Date(item.tanggal);
-                    endOfDay.setHours(23, 59, 59, 999);
-                    selesai = now > endOfDay;
-                }
-            }
-
-            return {
-                ...item,
-                isSelesai: selesai
-            };
-        });
-    };
+        }
+        return { ...item, isSelesai: selesai };
+    });
+};
 
     // ---------------------------- STATUS ROW ----------------------------
     const isOngoing = (item) => {
         if (!item.tanggal || !item.jam_mulai) return false;
-
         const now = new Date();
 
-            const itemDate = new Date(item.tanggal); // <<< GANTI DI SINI
-        if (!itemDate) return false;
+        const getValidDate = (val, baseDate, takeFirst = true) => {
+            if (!val || val === "-" || val.toLowerCase() === "selesai") return null;
+            const d = new Date(val);
+            if (!isNaN(d.getTime())) return d;
 
-        // START
-        const [sh, sm] = item.jam_mulai.replace(/\./g, ":").split(":").map(Number);
-        const start = new Date(item.tanggal);
-        start.setHours(sh, sm, 0, 0);
+            try {
+                const partsStr = val.split('-');
+                const timePart = takeFirst ? partsStr[0].trim() : partsStr[partsStr.length - 1].trim();
+                const parts = timePart.replace(/\./g, ":").split(":");
+                const finalDate = new Date(baseDate);
+                finalDate.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
+                return finalDate;
+            } catch (e) { return null; }
+        };
 
-        // END
-        let end;
-        if (
-            item.jam_selesai &&
-            item.jam_selesai !== "-" &&
-            item.jam_selesai.toLowerCase() !== "selesai"
-        ) {
-            const [eh, em] = item.jam_selesai.replace(/\./g, ":").split(":").map(Number);
-            end = new Date(item.tanggal);
-            end.setHours(eh, em, 0, 0);
-        } else {
-            end = new Date(item.tanggal);
-            end.setHours(23, 59, 59, 999);
-        }
+        const start = getValidDate(item.jam_mulai, item.tanggal, true);
+        const end = getValidDate(item.jam_selesai, item.tanggal, false) || 
+                    getValidDate(item.jam_mulai, item.tanggal, false);
 
+        if (!start || !end) return false;
         return now >= start && now <= end;
     };
-
 
     // ---------------------------- ALARM AUDIO ----------------------------
     const [playedReminders, setPlayedReminders] = useState([]);
@@ -178,40 +199,6 @@ export default function Disposisi() {
 
     };
 
-     const getFinishedItems = (items) => {
-        const now = new Date();
-        return items.filter(item => {
-            let selesai;
-
-            if (item.jam_selesai && !isNaN(Date.parse(item.jam_selesai))) {
-                selesai = new Date(item.jam_selesai);
-            } else {
-                selesai = new Date(item.jam_mulai);
-                selesai.setHours(23, 59, 0, 0);
-            }
-
-            return selesai < now;
-        });
-    };
-
-    const getItemsValid = (items) => {
-        const now = new Date();
-        return items.filter(item => {
-            const start = new Date(item.jam_mulai);
-
-            let selesai;
-            if (item.jam_selesai && !isNaN(Date.parse(item.jam_selesai))) {
-                selesai = new Date(item.jam_selesai);
-            } else {
-                selesai = new Date(item.jam_mulai);
-                selesai.setHours(23, 59, 0, 0);
-            }
-
-            return selesai >= now;
-        });
-    };
-
-
     // ---------------------------- GET DATA ----------------------------
     const getDataDisposisi = async () => {
         try {
@@ -223,13 +210,11 @@ export default function Disposisi() {
             );
 
             const items = filterValidItems(response.data);
+            
             const reminders = checkReminderActive(items);
 
-            const itemsValid = getItemsValid(items);
-            const finished = getFinishedItems(items);
-
             const kegiatan = items.filter(item => {
-                if (item.isSelesai) return false;
+                if (item.isSelesai) return false; 
 
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -249,8 +234,7 @@ export default function Disposisi() {
             setAgendaSelesai(sortNormal(selesai));
 
             if (reminders.length > 0) {
-                // setHasActiveReminder(true);
-                // setMode(MODE.TODAY);
+                setMode(MODE.TODAY);
                 setPageTitle("AGENDA KEGIATAN HARI INI");
                 setShowDisposisi(sortNormal(reminders));
 
@@ -258,13 +242,10 @@ export default function Disposisi() {
                     r => !playedReminders.includes(r._id)
                 );
                 newReminders.forEach(item => triggerAlarm(item));
-
-                return;
+                return; 
             }
 
-            // ❗️JIKA TIDAK ADA REMINDER
             setHasActiveReminder(false);
-
             if (mode === MODE.TODAY) {
                 setMode(MODE.KEGIATAN);
             }
@@ -275,7 +256,6 @@ export default function Disposisi() {
             setLoading(false);
         }
     };
-
 
     // ---------------------------- FORMATTER ----------------------------
     const formDate = (date) => {
@@ -348,7 +328,6 @@ export default function Disposisi() {
     useEffect(() => {
         if (mode === MODE.TODAY) {
             setPageTitle("AGENDA KEGIATAN HARI INI");
-            // showDisposisi SUDAH di-set dari reminders
             return;
         }
 
@@ -386,26 +365,27 @@ export default function Disposisi() {
                     scrollHeight="430px"
                     dataKey="_id"
                     rowClassName={(row) => {
-                    // ================== AGENDA SELESAI ==================
-                    if (mode === MODE.SELESAI) {
-                        if (row.laporan_status === "SUDAH") {
-                            return "row-laporan-sudah";   // 🟢 Hijau
+                        if (mode === MODE.SELESAI) {
+                            return row.laporan_status === "SUDAH" ? "row-laporan-sudah" : "row-laporan-belum";
                         }
-                        return "row-laporan-belum";       // 🟡 Kuning
-                    }
+                        
+                        if (isOngoing(row)) return "row-ongoing"; 
 
-                    const now = new Date();
-                        const start = new Date(row.jam_mulai);
-                        const reminderStart = new Date(start);
-                        reminderStart.setMinutes(reminderStart.getMinutes() - 30);
-                        const reminderEnd = new Date(reminderStart);
-                        reminderEnd.setMinutes(reminderEnd.getMinutes() + 10);
+                        const now = new Date();
+                        const cleanTime = row.jam_mulai?.split('-')[0].trim().replace(/\./g, ":");
+                        if (cleanTime) {
+                            const parts = cleanTime.split(":");
+                            const start = new Date(row.tanggal);
+                            start.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
+                            
+                            const reminderStart = new Date(start);
+                            reminderStart.setMinutes(reminderStart.getMinutes() - 30);
 
-                        if (isOngoing(row)) return "row-ongoing"; // biru
-                        if (now >= reminderStart && now < reminderEnd) return "row-reminder"; // hijau
+                            if (now >= reminderStart && now < start) return "row-reminder"; 
+                        }
+
                         return "";
-                }}
-
+                    }}
                 >
                     <Column field="nama_kegiatan" header="Nama Kegiatan" />
                     <Column
