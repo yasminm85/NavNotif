@@ -32,21 +32,18 @@ export default function Disposisi() {
     const [hasActiveReminder, setHasActiveReminder] = useState(false);
 
     // ---------------------------- CHECK REMINDER ----------------------------
-    const checkReminderActive = (items) => {
+ const checkReminderActive = (items) => {
         const now = new Date();
         const activeReminders = [];
 
         items.forEach(item => {
-            if (!item.jam_mulai || !item.tanggal) return;
-
-            const [hh, mm] = item.jam_mulai.replace(/\./g, ":").split(":");
-            const start = new Date(item.tanggal);
-            start.setHours(Number(hh), Number(mm), 0, 0);
+            const start = new Date(item.jam_mulai);
 
             const reminderStart = new Date(start);
-            reminderStart.setMinutes(reminderStart.getMinutes() - 30);
+            reminderStart.setMinutes(reminderStart.getMinutes() - 30); 
 
-            const reminderEnd = new Date(start); // sampai jam_mulai
+            const reminderEnd = new Date(reminderStart);
+            reminderEnd.setMinutes(reminderEnd.getMinutes() + 10);
 
             if (now >= reminderStart && now < reminderEnd) {
                 activeReminders.push(item);
@@ -56,7 +53,6 @@ export default function Disposisi() {
         return activeReminders;
     };
 
-
     // ---------------------------- FILTER VALID ITEMS ----------------------------
     const filterValidItems = (data) => {
         const now = new Date();
@@ -64,28 +60,43 @@ export default function Disposisi() {
         return data.map(item => {
             let selesai = false;
 
-            if (item.jam_selesai) {
-                const endTime = new Date(item.jam_selesai);
-                const hh = endTime.getHours();
-                const mm = endTime.getMinutes();
-
-                const end = new Date(item.tanggal);
-                end.setHours(hh, mm, 0, 0);
-
-                selesai = end.getTime() < now.getTime();
+            if (!item.tanggal) {
+                return { ...item, isSelesai: false };
             }
 
-            else if (item.jam_selesai && item.tanggal) {
-                const jamFix = item.jam_selesai.replace(/\./g, ":");
-                const [hh, mm] = jamFix.split(":");
+            const agendaDate = new Date(item.tanggal);
+            agendaDate.setHours(0, 0, 0, 0);
 
-                const tanggalFix = new Date(item.tanggal);
-                tanggalFix.setHours(0, 0, 0, 0);
+            const today = new Date(now);
+            today.setHours(0, 0, 0, 0);
 
-                const end = new Date(tanggalFix);
-                end.setHours(Number(hh), Number(mm), 0, 0);
+            // 🔴 TANGGAL SUDAH LEWAT
+            if (agendaDate < today) {
+                selesai = true;
+            }
 
-                selesai = end.getTime() < now.getTime();
+            // 🟡 TANGGAL HARI INI → CEK JAM SELESAI
+            else if (agendaDate.getTime() === today.getTime()) {
+
+                // ada jam_selesai valid
+                if (
+                    item.jam_selesai &&
+                    item.jam_selesai !== "-" &&
+                    item.jam_selesai.toLowerCase() !== "selesai"
+                ) {
+                    const [hh, mm] = item.jam_selesai.replace(/\./g, ":").split(":").map(Number);
+                    const end = new Date(item.tanggal);
+                    end.setHours(hh, mm, 0, 0);
+
+                    selesai = now > end;
+                }
+
+                // jam_selesai kosong → selesai akhir hari
+                else {
+                    const endOfDay = new Date(item.tanggal);
+                    endOfDay.setHours(23, 59, 59, 999);
+                    selesai = now > endOfDay;
+                }
             }
 
             return {
@@ -95,27 +106,33 @@ export default function Disposisi() {
         });
     };
 
-
     // ---------------------------- STATUS ROW ----------------------------
     const isOngoing = (item) => {
+        if (!item.tanggal || !item.jam_mulai) return false;
+
         const now = new Date();
 
-        const startFix = item.jam_mulai.replace(/\./g, ":");
-        const [sh, sm] = startFix.split(":");
+            const itemDate = new Date(item.tanggal); // <<< GANTI DI SINI
+        if (!itemDate) return false;
 
+        // START
+        const [sh, sm] = item.jam_mulai.replace(/\./g, ":").split(":").map(Number);
         const start = new Date(item.tanggal);
         start.setHours(sh, sm, 0, 0);
 
+        // END
         let end;
-        if (item.jam_selesai && item.jam_selesai !== "Selesai") {
-            const endFix = item.jam_selesai.replace(/\./g, ":");
-            const [eh, em] = endFix.split(":");
-
+        if (
+            item.jam_selesai &&
+            item.jam_selesai !== "-" &&
+            item.jam_selesai.toLowerCase() !== "selesai"
+        ) {
+            const [eh, em] = item.jam_selesai.replace(/\./g, ":").split(":").map(Number);
             end = new Date(item.tanggal);
             end.setHours(eh, em, 0, 0);
         } else {
             end = new Date(item.tanggal);
-            end.setHours(23, 59, 59, 0);
+            end.setHours(23, 59, 59, 999);
         }
 
         return now >= start && now <= end;
@@ -161,6 +178,39 @@ export default function Disposisi() {
 
     };
 
+     const getFinishedItems = (items) => {
+        const now = new Date();
+        return items.filter(item => {
+            let selesai;
+
+            if (item.jam_selesai && !isNaN(Date.parse(item.jam_selesai))) {
+                selesai = new Date(item.jam_selesai);
+            } else {
+                selesai = new Date(item.jam_mulai);
+                selesai.setHours(23, 59, 0, 0);
+            }
+
+            return selesai < now;
+        });
+    };
+
+    const getItemsValid = (items) => {
+        const now = new Date();
+        return items.filter(item => {
+            const start = new Date(item.jam_mulai);
+
+            let selesai;
+            if (item.jam_selesai && !isNaN(Date.parse(item.jam_selesai))) {
+                selesai = new Date(item.jam_selesai);
+            } else {
+                selesai = new Date(item.jam_mulai);
+                selesai.setHours(23, 59, 0, 0);
+            }
+
+            return selesai >= now;
+        });
+    };
+
 
     // ---------------------------- GET DATA ----------------------------
     const getDataDisposisi = async () => {
@@ -173,16 +223,10 @@ export default function Disposisi() {
             );
 
             const items = filterValidItems(response.data);
-            console.table(
-                items.map(i => ({
-                    kegiatan: i.nama_kegiatan,
-                    tanggal: i.tanggal,
-                    jam_selesai: i.jam_selesai,
-                    isSelesai: i.isSelesai
-                }))
-            );
-
             const reminders = checkReminderActive(items);
+
+            const itemsValid = getItemsValid(items);
+            const finished = getFinishedItems(items);
 
             const kegiatan = items.filter(item => {
                 if (item.isSelesai) return false;
@@ -205,8 +249,8 @@ export default function Disposisi() {
             setAgendaSelesai(sortNormal(selesai));
 
             if (reminders.length > 0) {
-                setHasActiveReminder(true);
-                setMode(MODE.TODAY);
+                // setHasActiveReminder(true);
+                // setMode(MODE.TODAY);
                 setPageTitle("AGENDA KEGIATAN HARI INI");
                 setShowDisposisi(sortNormal(reminders));
 
@@ -300,8 +344,14 @@ export default function Disposisi() {
 
         return () => clearTimeout(timer);
     }, [mode]);
-
+        
     useEffect(() => {
+        if (mode === MODE.TODAY) {
+            setPageTitle("AGENDA KEGIATAN HARI INI");
+            // showDisposisi SUDAH di-set dari reminders
+            return;
+        }
+
         if (mode === MODE.KEGIATAN) {
             setPageTitle("AGENDA KEGIATAN");
             setShowDisposisi(agendaKegiatan);
@@ -312,7 +362,6 @@ export default function Disposisi() {
             setShowDisposisi(agendaSelesai);
         }
     }, [mode, agendaKegiatan, agendaSelesai]);
-
 
     // ---------------------------- SORT NORMAL ----------------------------
     const sortNormal = (items) => {
@@ -337,12 +386,6 @@ export default function Disposisi() {
                     scrollHeight="430px"
                     dataKey="_id"
                     rowClassName={(row) => {
-                        console.table(
-                        showDisposisi.map(i => ({
-                            kegiatan: i.nama_kegiatan,
-                            laporan_status: i.laporan_status
-                        }))
-                        );
                     // ================== AGENDA SELESAI ==================
                     if (mode === MODE.SELESAI) {
                         if (row.laporan_status === "SUDAH") {
@@ -352,28 +395,41 @@ export default function Disposisi() {
                     }
 
                     // ================== AGENDA BERLANGSUNG ==================
-                    if (isOngoing(row)) return "row-ongoing";
+                    // if (isOngoing(row)) return "row-ongoing";
 
-                    // ================== REMINDER ==================
+                    // // ================== REMINDER ==================
+                    // const now = new Date();
+                    // if (row.jam_mulai) {
+                    //     const itemDate = new Date(row.tanggal); // <<< PENTING
+                    //     if (!itemDate) return "";
+
+                    //     const [hh, mm] = row.jam_mulai.replace(/\./g, ":").split(":").map(Number);
+
+                    //     const start = new Date(itemDate);
+                    //     start.setHours(hh, mm, 0, 0);
+
+                    //     const reminderStart = new Date(start);
+                    //     reminderStart.setMinutes(reminderStart.getMinutes() - 30);
+                    //     const reminderEnd = new Date(start);
+                    //     reminderEnd.setMinutes(reminderEnd.getMinutes() + 10);
+
+                    //     if (now >= reminderStart && now <= reminderEnd) {
+                    //         return "row-reminder";
+                    //     }
+                    // }
+
+
+                    // return "";
                     const now = new Date();
-                    if (row.jam_mulai) {
-                        const startFix = row.jam_mulai.replace(/\./g, ":");
-                        const [hh, mm] = startFix.split(":");
-
-                        const start = new Date(row.tanggal);
-                        start.setHours(hh, mm, 0, 0);
-
+                        const start = new Date(row.jam_mulai);
                         const reminderStart = new Date(start);
                         reminderStart.setMinutes(reminderStart.getMinutes() - 30);
+                        const reminderEnd = new Date(reminderStart);
+                        reminderEnd.setMinutes(reminderEnd.getMinutes() + 10);
 
-                        const reminderEnd = new Date(start);
-
-                        if (now >= reminderStart && now < reminderEnd) {
-                            return "row-reminder";
-                        }
-                    }
-
-                    return "";
+                        if (isOngoing(row)) return "row-ongoing"; // biru
+                        if (now >= reminderStart && now < reminderEnd) return "row-reminder"; // hijau
+                        return "";
                 }}
 
                 >
