@@ -394,32 +394,6 @@ export default function Disposisi() {
                         return "row-laporan-belum";       // 🟡 Kuning
                     }
 
-                    // ================== AGENDA BERLANGSUNG ==================
-                    // if (isOngoing(row)) return "row-ongoing";
-
-                    // // ================== REMINDER ==================
-                    // const now = new Date();
-                    // if (row.jam_mulai) {
-                    //     const itemDate = new Date(row.tanggal); // <<< PENTING
-                    //     if (!itemDate) return "";
-
-                    //     const [hh, mm] = row.jam_mulai.replace(/\./g, ":").split(":").map(Number);
-
-                    //     const start = new Date(itemDate);
-                    //     start.setHours(hh, mm, 0, 0);
-
-                    //     const reminderStart = new Date(start);
-                    //     reminderStart.setMinutes(reminderStart.getMinutes() - 30);
-                    //     const reminderEnd = new Date(start);
-                    //     reminderEnd.setMinutes(reminderEnd.getMinutes() + 10);
-
-                    //     if (now >= reminderStart && now <= reminderEnd) {
-                    //         return "row-reminder";
-                    //     }
-                    // }
-
-
-                    // return "";
                     const now = new Date();
                         const start = new Date(row.jam_mulai);
                         const reminderStart = new Date(start);
