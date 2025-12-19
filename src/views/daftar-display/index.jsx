@@ -1,5 +1,5 @@
 // project imports
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import MainCard from 'ui-component/cards/MainCard';
@@ -12,6 +12,7 @@ import './appDisplay.css';
 import alarmSound from './alarm-sound.mp3';
 
 export default function Disposisi() {
+    const playedRemindersRef = useRef([]);
     const token = localStorage.getItem('token');
     const [loading, setLoading] = useState(true);
     const [showDisposisi, setShowDisposisi] = useState([]);
@@ -55,82 +56,38 @@ export default function Disposisi() {
     };
 
     // ---------------------------- FILTER VALID ITEMS ----------------------------
-    // const filterValidItems = (data) => {
-    //     const now = new Date();
-
-    //     return data.map(item => {
-    //         let selesai = false;
-    //         if (!item.tanggal) return { ...item, isSelesai: false };
-
-    //         const getValidDate = (val, baseDate) => {
-    //             if (!val || val === "-" || val.toLowerCase() === "selesai") return null;
-                
-    //             const d = new Date(val);
-    //             if (!isNaN(d.getTime())) return d;
-
-    //             try {
-    //                 const timePart = val.includes('-') ? val.split('-')[val.split('-').length - 1].trim() : val.trim();
-    //                 const parts = timePart.replace(/\./g, ":").split(":");
-    //                 const finalDate = new Date(baseDate);
-    //                 finalDate.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
-    //                 return finalDate;
-    //             } catch (e) { return null; }
-    //         };
-
-    //         const agendaDate = new Date(item.tanggal);
-    //         agendaDate.setHours(0, 0, 0, 0);
-    //         const today = new Date(now);
-    //         today.setHours(0, 0, 0, 0);
-
-    //         if (agendaDate < today) {
-    //             selesai = true;
-    //         } 
-    //         else if (agendaDate.getTime() === today.getTime()) {
-    //             const endTime = getValidDate(item.jam_selesai, item.tanggal) || 
-    //                             getValidDate(item.jam_mulai, item.tanggal);
-
-    //             if (endTime) {
-    //                 selesai = now > endTime;
-    //             }
-    //         }
-
-    //         return { ...item, isSelesai: selesai };
-    //     });
-    // };
     const filterValidItems = (data) => {
-    const now = new Date();
-    return data.map(item => {
-        let selesai = false;
-        if (!item.tanggal) return { ...item, isSelesai: false };
+        const now = new Date();
+        return data.map(item => {
+            let selesai = false;
+            if (!item.tanggal) return { ...item, isSelesai: false };
 
-        const getValidDate = (val, baseDate) => {
-            if (!val || val === "-" || val.toLowerCase() === "selesai") return null;
-            const d = new Date(val);
-            if (!isNaN(d.getTime())) return d;
-            return null; // Asumsi data dari API sudah valid Date seperti log sebelumnya
-        };
+            const getValidDate = (val, baseDate) => {
+                if (!val || val === "-" || val.toLowerCase() === "selesai") return null;
+                const d = new Date(val);
+                if (!isNaN(d.getTime())) return d;
+                return null; 
+            };
 
-        const agendaDate = new Date(item.tanggal);
-        agendaDate.setHours(0, 0, 0, 0);
-        const today = new Date(now);
-        today.setHours(0, 0, 0, 0);
+            const agendaDate = new Date(item.tanggal);
+            agendaDate.setHours(0, 0, 0, 0);
+            const today = new Date(now);
+            today.setHours(0, 0, 0, 0);
 
-        if (agendaDate < today) {
-            selesai = true;
-        } 
-        else if (agendaDate.getTime() === today.getTime()) {
-            // Mengambil jam_selesai (13:00)
-            const endTime = getValidDate(item.jam_selesai, item.tanggal) || 
-                            getValidDate(item.jam_mulai, item.tanggal);
+            if (agendaDate < today) {
+                selesai = true;
+            } 
+            else if (agendaDate.getTime() === today.getTime()) {
+                const endTime = getValidDate(item.jam_selesai, item.tanggal) || 
+                                getValidDate(item.jam_mulai, item.tanggal);
 
-            if (endTime) {
-                // Jika sekarang pukul 13:01, maka selesai = true
-                selesai = now > endTime;
+                if (endTime) {
+                    selesai = now > endTime;
+                }
             }
-        }
-        return { ...item, isSelesai: selesai };
-    });
-};
+            return { ...item, isSelesai: selesai };
+        });
+    };
 
     // ---------------------------- STATUS ROW ----------------------------
     const isOngoing = (item) => {
@@ -175,30 +132,50 @@ export default function Disposisi() {
         }, 10000);
     };
 
+    // const triggerAlarm = (item) => {
+
+    //     const now = new Date();
+    //     const lastPlayed = alarmHistory[item._id];
+
+    //     if (lastPlayed && (now - new Date(lastPlayed) < 10 * 60 * 1000)) {
+    //         return; 
+    //     }
+
+    //     playAlarmSound();
+
+    //     setAlarmHistory(prev => ({
+    //         ...prev,
+    //         [item._id]: now
+    //     }));
+
+    //     setPlayedReminders(prev => {
+    //         const updated = [...prev, item._id];
+    //         localStorage.setItem("playedReminders", JSON.stringify(updated));
+    //         return updated;
+    //     });
+
+    // };
+
     const triggerAlarm = (item) => {
-
         const now = new Date();
-        const lastPlayed = alarmHistory[item._id];
-
-        if (lastPlayed && (now - new Date(lastPlayed) < 10 * 60 * 1000)) {
+        
+        // 1. Cek apakah ID ini sudah ada di Ref (sudah pernah bunyi)
+        if (playedRemindersRef.current.includes(item._id)) {
             return; 
         }
 
         playAlarmSound();
 
-        setAlarmHistory(prev => ({
-            ...prev,
-            [item._id]: now
-        }));
+        // 2. Masukkan ke Ref agar pengecekan berikutnya (10 detik lagi) gagal
+        playedRemindersRef.current.push(item._id);
 
+        // 3. Tetap update state & localStorage untuk persistensi UI
         setPlayedReminders(prev => {
             const updated = [...prev, item._id];
             localStorage.setItem("playedReminders", JSON.stringify(updated));
             return updated;
         });
-
     };
-
     // ---------------------------- GET DATA ----------------------------
     const getDataDisposisi = async () => {
         try {
@@ -381,7 +358,12 @@ export default function Disposisi() {
                             const reminderStart = new Date(start);
                             reminderStart.setMinutes(reminderStart.getMinutes() - 30);
 
-                            if (now >= reminderStart && now < start) return "row-reminder"; 
+                            if (now >= reminderStart && now < displayEnd) {
+                            return "row-reminder";}
+
+
+                            // if (now >= reminderStart && now < start) return "row-reminder"; 
+                            
                         }
 
                         return "";

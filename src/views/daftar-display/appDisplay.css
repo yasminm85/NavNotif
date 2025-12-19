@@ -4,9 +4,11 @@
     font-weight: bold;
 }
 
-/* reminder */
+/* Warna hijau untuk baris yang sedang diingatkan */
 .row-reminder {
-    background-color: #dcfce7 !important;
+    background-color: #d4edda !important; /* Hijau muda */
+    color: #155724 !important;
+    font-weight: bold;
 }
 
 /* agenda selesai - laporan BELUM diisi */
