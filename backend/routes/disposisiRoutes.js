@@ -5,7 +5,7 @@ const router = express.Router();
 const upload = require('../middleware/uploadMiddleware')
 const upload_laporan = require('../middleware/uploadFileLaporanMiddleware')
 
-const { getDisposisi, getDisposisiCount, getDisposisis, createDisposisi, deleteDisposisi, getMyTasks, updateDisposisi, updateLaporan, createKomentar, statsDirektoratTotal } = require('../controllers/disposisiController');
+const { getDisposisi, getDisposisiCount, getDisposisis, createDisposisi, deleteDisposisi, getMyTasks, updateDisposisi, updateLaporan, createKomentar, statsDirektoratTotal, reportTable } = require('../controllers/disposisiController');
 
 // route all disposisi
 router.get('/disposisi', verifyToken, authorizationRoles('admin', 'EVP'), getDisposisi);
@@ -15,7 +15,9 @@ router.get('/disposisi/my', verifyToken, authorizationRoles('pegawai', 'admin'),
 // hitung total disposisi
 router.get('/disposisi/count', verifyToken, authorizationRoles('admin'), getDisposisiCount);
 
-router.get('/disposisi/barchar', statsDirektoratTotal);
+router.get('/disposisi/barchart', statsDirektoratTotal);
+
+router.get('/disposisi/tablechart', reportTable);
 
 //route new disposisi
 router.post('/disposisi', verifyToken, authorizationRoles('admin'), upload.single('file'), createDisposisi);

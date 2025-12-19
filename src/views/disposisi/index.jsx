@@ -33,6 +33,8 @@ export default function Disposisi() {
     const [showLaporan, setShowLaporan] = useState(false);
     const [showDisposisi, setShowDisposisi] = useState([]);
     const [selectedNotifOptions, setSelectedNotifOptions] = useState([]);
+    const [direktorat, setDirektorat] = useState([]);
+    const [divisi, setDivisi] = useState([]);
     const [errors, setErrors] = useState({});
     const [form, setForm] = useState({
         namakegiatan: "",
@@ -97,9 +99,21 @@ export default function Disposisi() {
 
     };
 
+    const fetchSeed = async () => {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:3000/api/task/disposisi/barchart", {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        setDirektorat(res.data?.direktoratOptions || []);
+        setDivisi(res.data?.divisiOptions || []);
+    };
+
+
     useEffect(() => {
         fetchPegawai();
         getDataDisposisi();
+        fetchSeed();
     }, []);
 
 
@@ -110,66 +124,24 @@ export default function Disposisi() {
         { label: '2 menit sebelum kegiatan', value: 'REMINDER_2M' }
     ];
 
-    // inisialisasi direktorat dan divisi
-    const direktorat = [
-        { id: 'DU', name: 'Direktorat Utama' },
-        { id: 'DK', name: 'Direktorat Keuangan dan Manajemen Risiko' },
-        { id: 'DO', name: 'Direktorat Operasi' },
-        { id: 'DT', name: 'Direktorat Teknik' },
-        { id: 'DS', name: 'Direktorat Keselamatan Keamanan dan Standardisasi' },
-        { id: 'DM', name: 'Direktorat SDM dan Umum' },
-
-    ]
-
-    const divisi = [
-        { id: 'UI', name: 'Internal Audit', DirId: 'DU' },
-        { id: 'CS', name: 'Corporate Secretary', DirId: 'DU' },
-        { id: 'LS', name: 'Legal Compliance and Sustainability', DirId: 'DU' },
-        { id: 'CE', name: 'Community of Expertise', DirId: 'DU' },
-        { id: 'CG', name: 'Corporate Strategy', DirId: 'DK' },
-        { id: 'AM', name: 'Accounting and Asset Management', DirId: 'DK' },
-        { id: 'UI', name: 'Internal Audit', DirId: 'DK' },
-        { id: 'TR', name: 'Transaction', DirId: 'DK' },
-        { id: 'RM', name: 'Risk Management', DirId: 'DK' },
-        { id: 'PMO', name: 'Project Management Office', DirId: 'DK' },
-        { id: 'AN', name: 'Air Navigation Services Planning', DirId: 'DO' },
-        { id: 'ANC', name: 'Air Navigation Control', DirId: 'DO' },
-        { id: 'ANI', name: 'Air Navigation Information Management', DirId: 'DO' },
-        { id: 'TS', name: 'Technology Solution', DirId: 'DT' },
-        { id: 'IR', name: 'Infrastructure Readiness', DirId: 'DT' },
-        { id: 'IT', name: 'Information Technology', DirId: 'DT' },
-        { id: 'SS', name: 'Standard Security', DirId: 'DS' },
-        { id: 'SO', name: 'Safety Operation', DirId: 'DS' },
-        { id: 'HC', name: 'Human Capital Planning', DirId: 'DM' },
-        { id: 'HCS', name: 'Human Capital Services', DirId: 'DM' },
-        { id: 'CSE', name: 'Corporate Services', DirId: 'DM' },
-        { id: 'LKM', name: 'Learning and Knowledge Management', DirId: 'DM' },
-    ]
-
 
     // handle direktorat dropdown
     const onDirektoratChange = (e) => {
-        const selectedDir = e.value;
+        const selectedDir = e.value; 
         setSelecteddirektorat(selectedDir);
-
-        const selectedDirCode = selectedDir.map((d) => d.id);
-        const filteredDivisis = divisi.filter((div) =>
-            selectedDirCode.includes(div.DirId)
-        );
-
-        setitemOptions(filteredDivisis);
-
+        const selectedDirIds = selectedDir.map((d) => d.id);
+        const filtered = divisi.filter((v) => selectedDirIds.includes(v.direktoratId));
+        setitemOptions(filtered);
         setSelecteddivisi([]);
     };
+
 
     const direktoratMap = Object.fromEntries(direktorat.map(d => [d.id, d.name]));
     const divisiMap = Object.fromEntries(divisi.map(d => [d.id, d.name]));
 
 
-    // perubahan pada form dan input form
     const handleChange = (field, value) => {
 
-        // Kosyong kalau user hapus jam nya
         if (field === "jamSelesai") {
             if (!value) {
                 setForm({ ...form, jamSelesai: "" });
@@ -181,11 +153,9 @@ export default function Disposisi() {
         setErrors({ ...errors, [field]: "" });
     };
 
-    // sama ajah tapi buat file
     const handleFileChange = (e) => {
         const file = e.target.files[0];
 
-        // Validasi PDF
         if (file && file.type !== "application/pdf") {
             alert("File harus berupa PDF!");
             e.target.value = "";
@@ -461,7 +431,6 @@ export default function Disposisi() {
 
     // Highlight row logic
     const rowClass = (rowData) => {
-        console.log("row data:", rowData);
         if (!rowData) return "";
 
         const now = new Date();

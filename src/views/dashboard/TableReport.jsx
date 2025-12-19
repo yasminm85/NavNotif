@@ -1,161 +1,221 @@
-
-import React, { useState, useEffect } from 'react';
-import { classNames } from 'primereact/utils';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import React, { useEffect, useMemo, useState } from 'react';
+import axios from 'axios';
+import { FilterMatchMode } from 'primereact/api';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { InputText } from 'primereact/inputtext';
+import { MultiSelect } from 'primereact/multiselect';
+import { Dropdown } from 'primereact/dropdown';
+import { Tag } from 'primereact/tag';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
-import { Dropdown } from 'primereact/dropdown';
-import { MultiSelect } from 'primereact/multiselect';
-import { Tag } from 'primereact/tag';
-import { TriStateCheckbox } from 'primereact/tristatecheckbox';
-import { DataServices } from './DataServices';
+import { InputText } from 'primereact/inputtext';
+
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 
-
 export default function TableReport() {
-    const [bidang, setBidang] = useState(null);
-    const [filters, setFilters] = useState({
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-        bidang: { value: null, matchMode: FilterMatchMode.IN },
-        status: { value: null, matchMode: FilterMatchMode.EQUALS },
-        verified: { value: null, matchMode: FilterMatchMode.EQUALS }
-    });
-    const [loading, setLoading] = useState(true);
-    const [globalFilterValue, setGlobalFilterValue] = useState('');
-    const [bidangs] = useState([
-        { name: 'IT' },
-        { name: 'Audit' },
-        { name: 'Corporate' },
-        { name: 'Safety' },
-        { name: 'Legal' },
-        { name: 'Secretary' },
-        { name: 'Tata Usaha' },
-        { name: 'SDM' },
-    ]);
-    const [statuses] = useState(['Belum Melaporkan', 'Sudah Melaporkan']);
+  const [loading, setLoading] = useState(true);
 
-    const getSeverity = (status) => {
-        switch (status) {
-            case 'Belum Melaporkan':
-                return 'danger';
+  // master dari BE (pakai controller statsDirektoratTotal kamu)
+  const [direktoratOptions, setDirektoratOptions] = useState([]); // [{id,name}]
+  const [divisiMaster, setDivisiMaster] = useState([]); // [{id,name,direktoratId}]
 
-            case 'Sudah Melaporkan':
-                return 'success';
+  // data table dari report-table
+  const [raw, setRaw] = useState([]); // [{direktoratId, divisiId, totalKegiatan, belumMelapor, sudahMelapor}]
+
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    direktoratId: { value: null, matchMode: FilterMatchMode.IN },
+    divisiId: { value: null, matchMode: FilterMatchMode.IN },
+    status: { value: null, matchMode: FilterMatchMode.EQUALS }
+  });
+
+  const [globalFilterValue, setGlobalFilterValue] = useState('');
+
+  const statuses = ['Belum Melaporkan', 'Sudah Melaporkan'];
+  const getSeverity = (status) => (status === 'Sudah Melaporkan' ? 'success' : 'danger');
+
+  // fetch master + table
+  useEffect(() => {
+    let alive = true;
+
+    const fetchAll = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // master (direktoratOptions + divisiOptions) dari endpoint barchart kamu
+        const resMaster = await axios.get('http://localhost:3000/api/task/disposisi/barchart', { headers });
+        if (!alive) return;
+
+        setDirektoratOptions(Array.isArray(resMaster.data?.direktoratOptions) ? resMaster.data.direktoratOptions : []);
+        setDivisiMaster(Array.isArray(resMaster.data?.divisiOptions) ? resMaster.data.divisiOptions : []);
+
+        // table
+        const resTable = await axios.get('http://localhost:3000/api/task/disposisi/tablechart', { headers });
+        if (!alive) return;
+
+        setRaw(Array.isArray(resTable.data?.data) ? resTable.data.data : []);
+      } catch (err) {
+        console.error('Fetch TableReport error:', err);
+        if (alive) {
+          setDirektoratOptions([]);
+          setDivisiMaster([]);
+          setRaw([]);
         }
+      } finally {
+        if (alive) setLoading(false);
+      }
     };
 
-    useEffect(() => {
-        DataServices.getBidangMedium().then((data) => {
-            setBidang(getBidang(data));
-            setLoading(false);
-        });
-    }, []);
-
-    const getBidang = (data) => {
-        return [...(data || [])].map((d) => {
-            d.date = new Date(d.date);
-
-            return d;
-        });
+    fetchAll();
+    return () => {
+      alive = false;
     };
+  }, []);
 
-    const onGlobalFilterChange = (e) => {
-        const value = e.target.value;
-        let _filters = { ...filters };
+  // map id->name untuk display
+  const direktoratMap = useMemo(
+    () => Object.fromEntries((direktoratOptions || []).map((d) => [d.id, d.name])),
+    [direktoratOptions]
+  );
 
-        _filters['global'].value = value;
+  const divisiMap = useMemo(() => {
+    const normalized = (divisiMaster || []).map((v) => ({
+      id: v.id ?? v._id,
+      name: v.name,
+      direktoratId: v.direktoratId ?? v.DirId
+    }));
+    return Object.fromEntries(normalized.map((v) => [v.id, v.name]));
+  }, [divisiMaster]);
 
-        setFilters(_filters);
-        setGlobalFilterValue(value);
-    };
+  // divisi options mengikuti filter direktorat
+  const selectedDirektoratIds = filters?.direktoratId?.value || [];
+  const divisiOptions = useMemo(() => {
+    const base = (divisiMaster || []).map((v) => ({
+      id: v.id ?? v._id,
+      name: v.name,
+      direktoratId: v.direktoratId ?? v.DirId
+    }));
 
-    const renderHeader = () => {
-        return (
-            <div className="flex justify-content-end">
-                <IconField iconPosition="left">
-                    <InputIcon className="pi pi-search" />
-                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
-                </IconField>
-            </div>
-        );
-    };
+    if (!Array.isArray(selectedDirektoratIds) || selectedDirektoratIds.length === 0) return base;
+    return base.filter((v) => selectedDirektoratIds.includes(v.direktoratId));
+  }, [divisiMaster, selectedDirektoratIds]);
 
+  // rows final
+  const rows = useMemo(() => {
+    return (raw || []).map((r) => {
+      const total = Number(r.totalKegiatan ?? 0);
+      const belum = Number(r.belumMelapor ?? 0);
 
+      return {
+        key: `${r.direktoratId}_${r.divisiId}`,
+        direktoratId: r.direktoratId,
+        divisiId: r.divisiId,
+        direktoratName: direktoratMap[r.direktoratId] ?? r.direktoratId,
+        divisiName: divisiMap[r.divisiId] ?? r.divisiId,
+        totalKegiatan: total,
+        status: belum > 0 ? 'Belum Melaporkan' : 'Sudah Melaporkan',
+        belumMelapor: belum,
+        sudahMelapor: Number(r.sudahMelapor ?? 0)
+      };
+    });
+  }, [raw, direktoratMap, divisiMap]);
 
-    const representativeBodyTemplate = (rowData) => {
-        const bidang = rowData.bidang;
+  // header search
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    setFilters((prev) => ({ ...prev, global: { ...prev.global, value } }));
+    setGlobalFilterValue(value);
+  };
 
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{bidang.name}</span>
-            </div>
-        );
-    };
+  const header = (
+    <div className="flex justify-content-end">
+      <IconField iconPosition="left">
+        <InputIcon className="pi pi-search" />
+        <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
+      </IconField>
+    </div>
+  );
 
-    const representativesItemTemplate = (option) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{option.name}</span>
-            </div>
-        );
-    };
+  // filter templates
+  const direktoratFilter = (options) => (
+    <MultiSelect
+      value={options.value}
+      options={direktoratOptions}
+      optionLabel="name"
+      optionValue="id"
+      onChange={(e) => options.filterApplyCallback(e.value)}
+      placeholder="Pilih direktorat"
+      className="p-column-filter"
+      maxSelectedLabels={1}
+      style={{ minWidth: '16rem' }}
+    />
+  );
 
-    const statusBodyTemplate = (rowData) => {
-        return <Tag value={rowData.status} severity={getSeverity(rowData.status)} />;
-    };
+  const statusFilter = (options) => (
+    <Dropdown
+      value={options.value}
+      options={statuses}
+      onChange={(e) => options.filterApplyCallback(e.value)}
+      placeholder="Pilih hasil pelaporan"
+      className="p-column-filter"
+      showClear
+      style={{ minWidth: '14rem' }}
+      itemTemplate={(opt) => <Tag value={opt} severity={getSeverity(opt)} />}
+    />
+  );
 
-    const statusItemTemplate = (option) => {
-        return <Tag value={option} severity={getSeverity(option)} />;
-    };
+  const statusBody = (rowData) => <Tag value={rowData.status} severity={getSeverity(rowData.status)} />;
 
-    const verifiedBodyTemplate = (rowData) => {
-        return <i className={classNames('pi', { 'true-icon pi-check-circle': rowData.verified, 'false-icon pi-times-circle': !rowData.verified })}></i>;
-    };
+  return (
+    <div className="card">
+      <DataTable
+        value={rows}
+        paginator
+        rows={10}
+        dataKey="key"
+        filters={filters}
+        filterDisplay="row"
+        loading={loading}
+        header={header}
+        emptyMessage="Data tidak ditemukan."
+        globalFilterFields={['direktoratName', 'divisiName', 'status', 'direktoratId', 'divisiId']}
+      >
+        <Column
+          header="Direktorat"
+          field="direktoratId"
+          body={(r) => r.direktoratName}
+          filter
+          filterField="direktoratId"
+          showFilterMenu={false}
+          filterElement={direktoratFilter}
+          style={{ minWidth: '20rem' }}
+        />
 
-    const representativeRowFilterTemplate = (options) => {
-        return (
-            <MultiSelect
-                value={options.value}
-                options={bidangs}
-                itemTemplate={representativesItemTemplate}
-                onChange={(e) => options.filterApplyCallback(e.value)}
-                optionLabel="name"
-                placeholder="Pilih bidang"
-                className="p-column-filter"
-                maxSelectedLabels={1}
-                style={{ minWidth: '14rem' }}
-            />
-        );
-    };
+        <Column
+          header="Divisi"
+          field="divisiId"
+          body={(r) => r.divisiName}
+          style={{ minWidth: '18rem' }}
+        />
 
-    const statusRowFilterTemplate = (options) => {
-        return (
-            <Dropdown value={options.value} options={statuses} onChange={(e) => options.filterApplyCallback(e.value)} itemTemplate={statusItemTemplate} placeholder="Pilih Hasil Pelaporan" className="p-column-filter" showClear style={{ minWidth: '12rem' }} />
-        );
-    };
+        <Column field="totalKegiatan" header="Total Kegiatan" style={{ minWidth: '10rem' }} />
 
-    // const verifiedRowFilterTemplate = (options) => {
-    //     return <TriStateCheckbox value={options.value} onChange={(e) => options.filterApplyCallback(e.value)} />;
-    // };
-
-    const header = renderHeader();
-
-    return (
-        <div className="card">
-            <DataTable value={bidang} paginator rows={5} dataKey="id" filters={filters} filterDisplay="row" loading={loading}
-                globalFilterFields={['jmlkegiatan', 'bidang.name', 'hasilpelaporan']} header={header} emptyMessage="No customers found.">
-                <Column header="Bidang" filterField="bidang" showFilterMenu={false} filterMenuStyle={{ width: '14rem' }} style={{ minWidth: '14rem' }}
-                    body={representativeBodyTemplate} filter filterElement={representativeRowFilterTemplate} />
-                <Column field="jmlkegiatan" header="Jumlah Kegiatan"  />
-                <Column field="status" header="Hasil Pelaporan" showFilterMenu={false} filterMenuStyle={{ width: '14rem' }} style={{ minWidth: '12rem' }} body={statusBodyTemplate} filter filterElement={statusRowFilterTemplate} />
-            </DataTable>
-        </div>
-    );
+        <Column
+          field="status"
+          header="Hasil Pelaporan"
+          body={statusBody}
+          filter
+          filterField="status"
+          showFilterMenu={false}
+          filterElement={statusFilter}
+          style={{ minWidth: '16rem' }}
+        />
+      </DataTable>
+    </div>
+  );
 }

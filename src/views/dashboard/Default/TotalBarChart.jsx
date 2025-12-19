@@ -47,6 +47,7 @@ export default function TotalBarChart({ isLoading }) {
         }
       },
       yaxis: {
+        stepSize: 1,
         labels: {
           formatter: (val) => Math.round(val),
           style: {
@@ -71,22 +72,19 @@ export default function TotalBarChart({ isLoading }) {
       try {
         const token = localStorage.getItem('token');
 
-        const res = await axios.get('http://localhost:3000/api/task/disposisi/barchar', {
+        const res = await axios.get('http://localhost:3000/api/task/disposisi/barchart', {
           headers: { Authorization: `Bearer ${token}` }
         });
 
         const categories = res.data?.categories || [];
         const series = res.data?.series || [];
 
-        // Update x-axis categories
         ApexCharts.exec('bar-chart', 'updateOptions', {
-          xaxis: { type: 'category', categories }
+          xaxis: { type: 'category', categories: res.data.categories  }
         });
 
-        // Update series
         ApexCharts.exec('bar-chart', 'updateSeries', series);
 
-        // Update total header (sum semua series)
         const total = Array.isArray(series)
           ? series.reduce((sum, s) => {
               const part = Array.isArray(s?.data) ? s.data.reduce((a, b) => a + (Number(b) || 0), 0) : 0;

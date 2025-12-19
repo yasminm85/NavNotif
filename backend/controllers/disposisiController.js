@@ -1,5 +1,7 @@
 const Disposisi = require('../models/disposisi.model')
 const Notification = require('../models/notif.model')
+const Direktorat = require('../models/direktorat.model')
+const Divisi = require('../models/divisi.model')
 
 //get all disposisi
 const getDisposisi = async (req, res) => {
@@ -329,64 +331,103 @@ const updateLaporan = async (req, res) => {
 // menambahkan komentar
 
 const createKomentar = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { text } = req.body;
-    console.log(text);
-    console.log(req.body);
-    if (!text || !text.trim()) {
-      return res.status(400).json({ message: "Komentar tidak boleh kosong" });
+    try {
+        const { id } = req.params;
+        const { text } = req.body;
+        console.log(text);
+        console.log(req.body);
+        if (!text || !text.trim()) {
+            return res.status(400).json({ message: "Komentar tidak boleh kosong" });
+        }
+
+        const disposisi = await Disposisi.findById(id);
+        if (!disposisi) {
+            return res.status(404).json({ message: "Disposisi tidak ditemukan" });
+        }
+
+        disposisi.komentar = text;
+
+        await disposisi.save();
+
+        const populated = await Disposisi.findById(id)
+            .populate('nama_yang_dituju', 'name email')
+            .populate("laporan_by", "name email");
+
+        res.json({ message: "Komentar tersimpan", disposisi: populated });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
-
-    const disposisi = await Disposisi.findById(id);
-    if (!disposisi) {
-      return res.status(404).json({ message: "Disposisi tidak ditemukan" });
-    }
-
-    disposisi.komentar = text;
-
-    await disposisi.save();
-
-    const populated = await Disposisi.findById(id)
-      .populate('nama_yang_dituju', 'name email')
-      .populate("laporan_by", "name email");
-
-    res.json({ message: "Komentar tersimpan", disposisi: populated });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
 };
 
-
-const DIRECTORAT_ORDER = ['DU','DK','DO','DT','DS','DM'];
-const DIRECTORAT_NAME = {
-  DU: 'Direktorat Utama',
-  DK: 'Direktorat Keuangan dan Manajemen Risiko',
-  DO: 'Direktorat Operasi',
-  DT: 'Direktorat Teknik',
-  DS: 'Direktorat Keselamatan Keamanan dan Standardisasi',
-  DM: 'Direktorat SDM dan Umum'
-};
 
 const statsDirektoratTotal = async (req, res) => {
   try {
-    const rows = await Disposisi.aggregate([
-      { $unwind: '$direktorat' }, 
-      { $group: { _id: '$direktorat', total: { $sum: 1 } } }
+    const [rows, direktoratList, divisiList] = await Promise.all([
+      Disposisi.aggregate([
+        { $unwind: '$direktorat' },
+        {
+          $group: {
+            _id: '$direktorat',
+            total: { $sum: 1 }
+          }
+        }
+      ]),
+      Direktorat.find().sort({ order: 1 }).lean(),
+      Divisi.find().sort({ order: 1 }).lean()
     ]);
 
-    const map = new Map(rows.map(r => [r._id, r.total]));
+    const map = new Map(rows.map(r => [r._id, r]));
+    const categories = direktoratList.map(d => d._id);
+    const totalData = categories.map(id => map.get(id)?.total ?? 0);
 
     res.json({
-      categories: DIRECTORAT_ORDER,
-      series: [
-        { name: 'Total Kegiatan', data: DIRECTORAT_ORDER.map(id => map.get(id) ?? 0) }
-      ]
+      categories,
+      series: [{ name: 'Total Kegiatan', data: totalData }],
+      direktoratOptions: direktoratList.map(d => ({ id: d._id, name: d.name })),
+      divisiOptions: divisiList.map(v => ({ id: v._id, name: v.name, direktoratId: v.direktoratId }))
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
+const reportTable = async (req, res) => {
+  try {
+    const rows = await Disposisi.aggregate([
+      { $unwind: '$direktorat' },
+      { $unwind: '$divisi' },
+      {
+        $group: {
+          _id: { dir: '$direktorat', div: '$divisi' },
+          totalKegiatan: { $sum: 1 },
+          belumMelapor: {
+            $sum: { $cond: [{ $eq: ['$laporan_status', 'BELUM'] }, 1, 0] }
+          },
+          sudahMelapor: {
+            $sum: { $cond: [{ $ne: ['$laporan_status', 'BELUM'] }, 1, 0] }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          direktoratId: '$_id.dir',
+          divisiId: '$_id.div',
+          totalKegiatan: 1,
+          belumMelapor: 1,
+          sudahMelapor: 1
+        }
+      },
+      { $sort: { direktoratId: 1, divisiId: 1 } }
+    ]);
+
+    res.json({ data: rows });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
 
 
 
@@ -402,7 +443,8 @@ module.exports = {
     getMyTasks,
     updateLaporan,
     createKomentar,
-    statsDirektoratTotal
+    statsDirektoratTotal,
+    reportTable
 };
 
 
