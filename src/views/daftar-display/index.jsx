@@ -132,44 +132,17 @@ export default function Disposisi() {
         }, 10000);
     };
 
-    // const triggerAlarm = (item) => {
-
-    //     const now = new Date();
-    //     const lastPlayed = alarmHistory[item._id];
-
-    //     if (lastPlayed && (now - new Date(lastPlayed) < 10 * 60 * 1000)) {
-    //         return; 
-    //     }
-
-    //     playAlarmSound();
-
-    //     setAlarmHistory(prev => ({
-    //         ...prev,
-    //         [item._id]: now
-    //     }));
-
-    //     setPlayedReminders(prev => {
-    //         const updated = [...prev, item._id];
-    //         localStorage.setItem("playedReminders", JSON.stringify(updated));
-    //         return updated;
-    //     });
-
-    // };
-
     const triggerAlarm = (item) => {
         const now = new Date();
         
-        // 1. Cek apakah ID ini sudah ada di Ref (sudah pernah bunyi)
         if (playedRemindersRef.current.includes(item._id)) {
             return; 
         }
 
         playAlarmSound();
 
-        // 2. Masukkan ke Ref agar pengecekan berikutnya (10 detik lagi) gagal
         playedRemindersRef.current.push(item._id);
 
-        // 3. Tetap update state & localStorage untuk persistensi UI
         setPlayedReminders(prev => {
             const updated = [...prev, item._id];
             localStorage.setItem("playedReminders", JSON.stringify(updated));
@@ -343,31 +316,38 @@ export default function Disposisi() {
                     dataKey="_id"
                     rowClassName={(row) => {
                         if (mode === MODE.SELESAI) {
-                            return row.laporan_status === "SUDAH" ? "row-laporan-sudah" : "row-laporan-belum";
-                        }
-                        
-                        if (isOngoing(row)) return "row-ongoing"; 
+                        return row.laporan_status === "SUDAH" ? "row-laporan-sudah" : "row-laporan-belum";
+                    }
+                    
+                    const now = new Date();
+                    const agendaDate = new Date(row.tanggal);
 
-                        const now = new Date();
-                        const cleanTime = row.jam_mulai?.split('-')[0].trim().replace(/\./g, ":");
-                        if (cleanTime) {
-                            const parts = cleanTime.split(":");
-                            const start = new Date(row.tanggal);
-                            start.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
-                            
-                            const reminderStart = new Date(start);
-                            reminderStart.setMinutes(reminderStart.getMinutes() - 30);
-
-                            if (now >= reminderStart && now < displayEnd) {
-                            return "row-reminder";}
-
-
-                            // if (now >= reminderStart && now < start) return "row-reminder"; 
-                            
-                        }
-
+                    if (agendaDate.toDateString() !== now.toDateString()) {
                         return "";
-                    }}
+                    }
+
+                    const startTimeStr = row.jam_mulai?.split('-')[0].trim().replace(/\./g, ":");
+                    if (startTimeStr) {
+                        try {
+                            const start = new Date(row.jam_mulai);
+                            // const [hours, minutes] = startTimeStr.split(":");
+                            // start.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                            
+                            const reminderStart = new Date(start.getTime());
+                            reminderStart.setMinutes(reminderStart.getMinutes() - 30);
+                            const reminderEnd = new Date(reminderStart);
+                            reminderEnd.setMinutes(reminderEnd.getMinutes() + 1);
+
+                            if (now >= reminderStart && now < reminderEnd) {
+                                return "row-reminder";
+                            }
+                        } catch (e) {}
+                    }
+
+                    if (isOngoing(row)) return "row-ongoing"; 
+
+                    return "";
+                }}
                 >
                     <Column field="nama_kegiatan" header="Nama Kegiatan" />
                     <Column
