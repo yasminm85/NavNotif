@@ -1,6 +1,6 @@
 /* sedang berlangsung */
 .row-ongoing {
-    background-color: #93BFC7 !important;
+    background-color: #C7EEFF !important;
     font-weight: bold;
 }
 
@@ -13,14 +13,14 @@
 
 /* agenda selesai - laporan BELUM diisi */
 .row-laporan-belum {
-    background-color: #fff3cd !important; /* kuning */
+    background-color: #FCDE70 !important; /* kuning */
     color: #856404;
     font-weight: bold;
 }
 
 /* agenda selesai - laporan SUDAH diisi */
 .row-laporan-sudah {
-    background-color: #d1fae5 !important; /* hijau */
+    background-color: #C0EBA6 !important; /* hijau */
     color: #065f46;
     font-weight: bold;
 }

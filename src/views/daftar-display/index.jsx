@@ -149,6 +149,7 @@ export default function Disposisi() {
             return updated;
         });
     };
+
     // ---------------------------- GET DATA ----------------------------
     const getDataDisposisi = async () => {
         try {
@@ -336,7 +337,7 @@ export default function Disposisi() {
                             const reminderStart = new Date(start.getTime());
                             reminderStart.setMinutes(reminderStart.getMinutes() - 30);
                             const reminderEnd = new Date(reminderStart);
-                            reminderEnd.setMinutes(reminderEnd.getMinutes() + 1);
+                            reminderEnd.setMinutes(reminderEnd.getMinutes() + 5);
 
                             if (now >= reminderStart && now < reminderEnd) {
                                 return "row-reminder";
