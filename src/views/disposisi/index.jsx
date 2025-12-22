@@ -14,6 +14,8 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './app.css';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+
 
 export default function Disposisi() {
     const token = localStorage.getItem('token');
@@ -127,7 +129,7 @@ export default function Disposisi() {
 
     // handle direktorat dropdown
     const onDirektoratChange = (e) => {
-        const selectedDir = e.value; 
+        const selectedDir = e.value;
         setSelecteddirektorat(selectedDir);
         const selectedDirIds = selectedDir.map((d) => d.id);
         const filtered = divisi.filter((v) => selectedDirIds.includes(v.direktoratId));
@@ -271,18 +273,36 @@ export default function Disposisi() {
 
     // handle delete button
     const handleDelete = async (id) => {
-        const hapusPop = (window.confirm(`Yakin hapus data?`));
-        if (!hapusPop) return;
 
-        try {
-            await axios.delete(`http://localhost:3000/api/task/disposisi/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-
-            setShowDisposisi((prev) => prev.filter((item) => item._id != id));
-        } catch (error) {
-            console.error("Gagal Hapus Disposisi", error.response?.data || error.message)
-        }
+        Swal.fire({
+            title: 'Apakah Yakin Dihapus?',
+            text: "Tidak bisa akses data lagi!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Hapus!'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await axios.delete(`http://localhost:3000/api/task/disposisi/${id}`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    Swal.fire(
+                        'Deleted!',
+                        'Data Disposisi berhasil dihapus.',
+                        'success'
+                    );
+                    setShowDisposisi((prev) => prev.filter((item) => item._id != id));
+                } catch (error) {
+                    Swal.fire(
+                        'Error!',
+                        'Gagal Mengahapus Disposisi.',
+                        'error'
+                    );
+                }
+            }
+        });
     };
 
     // action view, edit, and delete

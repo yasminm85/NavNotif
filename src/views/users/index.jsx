@@ -13,11 +13,9 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router-dom';
 
 
 export default function Disposisi() {
-    const navigate = useNavigate();
     const token = localStorage.getItem('token');
     const [pegawaisel, setPegawai] = useState([]);
     const [editMode, setEditMode] = useState(false);
