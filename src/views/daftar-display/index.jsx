@@ -119,7 +119,6 @@ export default function Disposisi() {
 
     // ---------------------------- ALARM AUDIO ----------------------------
     const [playedReminders, setPlayedReminders] = useState([]);
-    const [alarmHistory, setAlarmHistory] = useState({});
 
     const playAlarmSound = () => {
         const audio = new Audio(alarmSound);
@@ -331,8 +330,6 @@ export default function Disposisi() {
                     if (startTimeStr) {
                         try {
                             const start = new Date(row.jam_mulai);
-                            // const [hours, minutes] = startTimeStr.split(":");
-                            // start.setHours(parseInt(hours), parseInt(minutes), 0, 0);
                             
                             const reminderStart = new Date(start.getTime());
                             reminderStart.setMinutes(reminderStart.getMinutes() - 30);
