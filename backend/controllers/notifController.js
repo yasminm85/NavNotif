@@ -1,23 +1,6 @@
 const Notification = require('../models/notif.model')
 const Disposisi = require('../models/disposisi.model')
 
-// membuat notif
-const createNotification = async ({ disposisiId, userId }) => {
-  try {
-    const notif = await Notification.create({
-      disposisi: disposisiId,
-      user: userId,
-      status: 'Belum Dibaca',
-      isDone: false
-    });
-
-    return notif;
-  } catch (err) {
-    console.error('Something went wrong:', err);
-    throw err;
-  }
-};
-
 // dapatin notifikasi di dashboard biar muncul teng notif nya
 const getMyNotifications = async (req, res) => {
   try {
@@ -97,7 +80,6 @@ const markNotificationDone = async (req, res) => {
 
 
 module.exports = {
-  createNotification,
   getMyNotifications,
   markNotificationDone,
 
