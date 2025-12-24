@@ -192,13 +192,21 @@ export default function Disposisi() {
                     r => !playedReminders.includes(r._id)
                 );
                 newReminders.forEach(item => triggerAlarm(item));
-                return; 
+                // return; 
+            } else {
+                setHasActiveReminder(false);
+
+                // ⬇️ INI KUNCI NYA
+                setMode(prevMode => {
+                    if (prevMode === MODE.TODAY) {
+                        setPageTitle("AGENDA KEGIATAN");
+                        setShowDisposisi(sortNormal(kegiatan));
+                        return MODE.KEGIATAN;
+                    }
+                    return prevMode;
+                });
             }
 
-            setHasActiveReminder(false);
-            if (mode === MODE.TODAY) {
-                setMode(MODE.KEGIATAN);
-            }
 
         } catch (err) {
             console.error("Error mengambil data disposisi", err);

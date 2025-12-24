@@ -8,6 +8,7 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { MultiSelect } from 'primereact/multiselect';
+import { Dropdown } from 'primereact/dropdown';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -123,7 +124,6 @@ export default function Disposisi() {
     const notifOptions = [
         { label: '1 jam sebelum kegiatan', value: 'REMINDER_1H' },
         { label: '30 menit sebelum kegiatan', value: 'REMINDER_30M' },
-        { label: '2 menit sebelum kegiatan', value: 'REMINDER_2M' }
     ];
 
 
@@ -726,7 +726,7 @@ export default function Disposisi() {
                         <label className="block mb-1 font-semibold">
                             Atur Pengingat Notifikasi
                         </label>
-                        <MultiSelect
+                        <Dropdown
                             placeholder="Pilih pengingat"
                             className="w-full"
                             value={selectedNotifOptions}

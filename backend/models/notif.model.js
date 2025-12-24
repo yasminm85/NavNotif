@@ -25,7 +25,7 @@ const NotificationSchema = mongoose.Schema({
   },
   notifType: {
     type: String,
-    enum: ['ON_CREATE', 'REMINDER_1H', 'REMINDER_30M', 'REMINDER_2M'],
+    enum: ['ON_CREATE', 'REMINDER_1H', 'REMINDER_30M'],
     default: 'ON_CREATE'
   },
   sendAt: {

@@ -42,7 +42,6 @@ const getDisposisis = async (req, res) => {
 const REMINDER_OFFSET_MINUTES = {
     REMINDER_1H: -60,
     REMINDER_30M: -30,
-    REMINDER_2M: -2
 };
 
 const createDisposisi = async (req, res) => {
