@@ -78,8 +78,8 @@ export default function DaftarNotifikasi() {
     // file body template untuk data table
     const fileBodyTemplate = (data) => {
         if (!data) return <span>-</span>;
-        const validation = validateForm();
-        setErrors(validation);
+        // const validation = validateForm();
+        // setErrors(validation);
 
         const url = `http://localhost:3000/${data}`;
 

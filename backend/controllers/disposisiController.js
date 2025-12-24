@@ -97,7 +97,7 @@ const createDisposisi = async (req, res) => {
                 isDone: false
             }));
 
-            // 2) REMINDERS (optional)
+
             // 2) REMINDERS (optional)
             if (Array.isArray(notificationOptions) && notificationOptions.length > 0) {
                 // karena jam_mulai kamu sudah "Tue Dec 23 2025 22:14:00 GMT+0700 ..."
@@ -134,6 +134,7 @@ const createDisposisi = async (req, res) => {
                     });
                 }
             }
+
 
 
             // insert notifs
