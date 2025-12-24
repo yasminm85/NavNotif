@@ -12,6 +12,7 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './app.css';
 import axios from 'axios';
+import { Tag } from 'primereact/tag';
 
 export default function DashboardEVP() {
     const token = localStorage.getItem('token');
@@ -78,13 +79,17 @@ export default function DashboardEVP() {
                         setSelectedLaporan(rowData.laporan);
                         setLaporanPath(rowData.laporan_file_path);
                         setLaporanBy(rowData.laporan_by);
-                        setKomentar(rowData.komentar)
+                        setKomentar(rowData.komentar);
                         setShowLaporan(true);
                     }}
                 />
             </div>
         );
     };
+
+    const getSeverity = (status) => (status === 'SUDAH' ? 'success' : 'danger');
+    const statusBodyTemplate = (rowData) => <Tag value={rowData.laporan_status} severity={getSeverity(rowData.laporan_status)} />;
+    
 
     const namaPegawaiTemplate = (rowData) => {
         if (Array.isArray(rowData) && rowData.length) {
@@ -211,6 +216,8 @@ export default function DashboardEVP() {
                     <Column header="Jam" body={(row) => `${formTime(row.jam_mulai)} - ${formTime(row.jam_selesai)}`} style={{ minWidth: '10rem' }} />
                     <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
                     <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
+                    <Column header="Status Laporan" body={statusBodyTemplate} style={{ minWidth: '8rem' }} />
+
                     {/*  Action */}
                 </DataTable>
 

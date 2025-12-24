@@ -39,7 +39,6 @@ const getDisposisis = async (req, res) => {
     }
 }
 
-//create new disposisi
 const REMINDER_OFFSET_MINUTES = {
     REMINDER_1H: -60,
     REMINDER_30M: -30,
@@ -50,21 +49,24 @@ const createDisposisi = async (req, res) => {
     try {
         const filePath = req.file ? req.file.path : null;
 
-        const nama_yang_dituju = req.body.nama_yang_dituju
-            ? JSON.parse(req.body.nama_yang_dituju)
-            : [];
+        const nama_yang_dituju = req.body.nama_yang_dituju ? JSON.parse(req.body.nama_yang_dituju) : [];
+        const direktorat = req.body.direktorat ? JSON.parse(req.body.direktorat) : [];
+        const divisi = req.body.divisi ? JSON.parse(req.body.divisi) : [];
+        let notificationOptions = [];
+        try {
+            if (Array.isArray(req.body.notificationOptions)) {
+                notificationOptions = req.body.notificationOptions;
+            } else if (typeof req.body.notificationOptions === 'string' && req.body.notificationOptions.trim()) {
+                notificationOptions = JSON.parse(req.body.notificationOptions);
+            }
+        } catch (e) {
+            notificationOptions = [];
+        }
 
-        const direktorat = req.body.direktorat
-            ? JSON.parse(req.body.direktorat)
-            : [];
+        console.log('RAW notifOptions:', req.body.notificationOptions);
+        console.log('PARSED notifOptions:', notificationOptions);
 
-        const divisi = req.body.divisi
-            ? JSON.parse(req.body.divisi)
-            : [];
 
-        const notificationOptions = req.body.notificationOptions
-            ? JSON.parse(req.body.notificationOptions)
-            : [];
 
         const disposisi = await Disposisi.create({
             nama_kegiatan: req.body.nama_kegiatan,
@@ -78,9 +80,9 @@ const createDisposisi = async (req, res) => {
             tempat: req.body.tempat,
             catatan: req.body.catatan,
             dresscode: req.body.dresscode,
-            file_path: filePath
+            file_path: filePath,
+            notificationOptions
         });
-
 
         let notifDocs = [];
 
@@ -91,62 +93,50 @@ const createDisposisi = async (req, res) => {
                 disposisi: disposisi._id,
                 user: userId,
                 notifType: 'ON_CREATE',
-                sendAt: now
+                sendAt: now,
+                isDone: false
             }));
 
-            if (notificationOptions.length > 0) {
-                const now = new Date();
+            // 2) REMINDERS (optional)
+            // 2) REMINDERS (optional)
+            if (Array.isArray(notificationOptions) && notificationOptions.length > 0) {
+                // karena jam_mulai kamu sudah "Tue Dec 23 2025 22:14:00 GMT+0700 ..."
+                const eventDate = new Date(req.body.jam_mulai);
 
-                let eventDate = null;
+                const validEventDate = !isNaN(eventDate.getTime());
 
-                if (disposisi.tanggal) {
-                    eventDate = new Date(disposisi.tanggal);
-                }
+                if (validEventDate) {
+                    const uniqueOptions = [...new Set(notificationOptions.map((o) => String(o).trim()))];
+                    const reminderDocs = [];
 
-                if (
-                    eventDate &&
-                    !isNaN(eventDate.getTime()) &&
-                    typeof disposisi.jam_mulai === 'string' &&
-                    /^\d{2}:\d{2}$/.test(disposisi.jam_mulai)
-                ) {
-                    const [hh, mm] = disposisi.jam_mulai.split(':');
-                    eventDate.setHours(parseInt(hh, 10));
-                    eventDate.setMinutes(parseInt(mm, 10));
-                    eventDate.setSeconds(0);
-                    eventDate.setMilliseconds(0);
-                }
+                    uniqueOptions.forEach((optKey) => {
+                        const offset = REMINDER_OFFSET_MINUTES[optKey];
+                        if (offset === undefined) return;
 
-                const reminderDocs = [];
+                        const reminderTime = new Date(eventDate.getTime() + offset * 60 * 1000);
+                        if (isNaN(reminderTime.getTime())) return;
 
-                notificationOptions.forEach((optKey) => {
-                    const offset = REMINDER_OFFSET_MINUTES[optKey];
-                    if (offset === undefined) return;
-
-                    let reminderTime;
-
-                    if (eventDate && !isNaN(eventDate.getTime())) {
-                        reminderTime = new Date(eventDate.getTime() + offset * 60000);
-                    } else {
-                        reminderTime = new Date();
-                    }
-                    if (reminderTime < now) {
-                        reminderTime = now;
-                    }
-
-                    nama_yang_dituju.forEach((userId) => {
-                        reminderDocs.push({
-                            disposisi: disposisi._id,
-                            user: userId,
-                            notifType: optKey,
-                            sendAt: reminderTime
+                        nama_yang_dituju.forEach((userId) => {
+                            reminderDocs.push({
+                                disposisi: disposisi._id,
+                                user: userId,
+                                notifType: optKey,
+                                sendAt: reminderTime,
+                                isDone: false
+                            });
                         });
                     });
-                });
 
-                notifDocs = notifDocs.concat(reminderDocs);
+                    notifDocs = notifDocs.concat(reminderDocs);
+                } else {
+                    console.log('[createDisposisi] Skip reminder: invalid jam_mulai', {
+                        jam_mulai: req.body.jam_mulai
+                    });
+                }
             }
 
 
+            // insert notifs
             if (notifDocs.length > 0) {
                 await Notification.insertMany(notifDocs);
             }
@@ -361,70 +351,70 @@ const createKomentar = async (req, res) => {
 
 
 const statsDirektoratTotal = async (req, res) => {
-  try {
-    const [rows, direktoratList, divisiList] = await Promise.all([
-      Disposisi.aggregate([
-        { $unwind: '$direktorat' },
-        {
-          $group: {
-            _id: '$direktorat',
-            total: { $sum: 1 }
-          }
-        }
-      ]),
-      Direktorat.find().sort({ order: 1 }).lean(),
-      Divisi.find().sort({ order: 1 }).lean()
-    ]);
+    try {
+        const [rows, direktoratList, divisiList] = await Promise.all([
+            Disposisi.aggregate([
+                { $unwind: '$direktorat' },
+                {
+                    $group: {
+                        _id: '$direktorat',
+                        total: { $sum: 1 }
+                    }
+                }
+            ]),
+            Direktorat.find().sort({ order: 1 }).lean(),
+            Divisi.find().sort({ order: 1 }).lean()
+        ]);
 
-    const map = new Map(rows.map(r => [r._id, r]));
-    const categories = direktoratList.map(d => d._id);
-    const totalData = categories.map(id => map.get(id)?.total ?? 0);
+        const map = new Map(rows.map(r => [r._id, r]));
+        const categories = direktoratList.map(d => d._id);
+        const totalData = categories.map(id => map.get(id)?.total ?? 0);
 
-    res.json({
-      categories,
-      series: [{ name: 'Total Kegiatan', data: totalData }],
-      direktoratOptions: direktoratList.map(d => ({ id: d._id, name: d.name })),
-      divisiOptions: divisiList.map(v => ({ id: v._id, name: v.name, direktoratId: v.direktoratId }))
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+        res.json({
+            categories,
+            series: [{ name: 'Total Kegiatan', data: totalData }],
+            direktoratOptions: direktoratList.map(d => ({ id: d._id, name: d.name })),
+            divisiOptions: divisiList.map(v => ({ id: v._id, name: v.name, direktoratId: v.direktoratId }))
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 };
 
 const reportTable = async (req, res) => {
-  try {
-    const rows = await Disposisi.aggregate([
-      { $unwind: '$direktorat' },
-      { $unwind: '$divisi' },
-      {
-        $group: {
-          _id: { dir: '$direktorat', div: '$divisi' },
-          totalKegiatan: { $sum: 1 },
-          belumMelapor: {
-            $sum: { $cond: [{ $eq: ['$laporan_status', 'BELUM'] }, 1, 0] }
-          },
-          sudahMelapor: {
-            $sum: { $cond: [{ $ne: ['$laporan_status', 'BELUM'] }, 1, 0] }
-          }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          direktoratId: '$_id.dir',
-          divisiId: '$_id.div',
-          totalKegiatan: 1,
-          belumMelapor: 1,
-          sudahMelapor: 1
-        }
-      },
-      { $sort: { direktoratId: 1, divisiId: 1 } }
-    ]);
+    try {
+        const rows = await Disposisi.aggregate([
+            { $unwind: '$direktorat' },
+            { $unwind: '$divisi' },
+            {
+                $group: {
+                    _id: { dir: '$direktorat', div: '$divisi' },
+                    totalKegiatan: { $sum: 1 },
+                    belumMelapor: {
+                        $sum: { $cond: [{ $eq: ['$laporan_status', 'BELUM'] }, 1, 0] }
+                    },
+                    sudahMelapor: {
+                        $sum: { $cond: [{ $ne: ['$laporan_status', 'BELUM'] }, 1, 0] }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    direktoratId: '$_id.dir',
+                    divisiId: '$_id.div',
+                    totalKegiatan: 1,
+                    belumMelapor: 1,
+                    sudahMelapor: 1
+                }
+            },
+            { $sort: { direktoratId: 1, divisiId: 1 } }
+        ]);
 
-    res.json({ data: rows });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+        res.json({ data: rows });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 };
 
 

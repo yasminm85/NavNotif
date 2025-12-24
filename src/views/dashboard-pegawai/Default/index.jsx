@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Grid from '@mui/material/Grid2';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -7,40 +7,8 @@ import TotalSelesai from './TotalSelesai';
 import { gridSpacing } from 'store/constant';
 import axios from 'axios';
 
-
-// ==============================|| DASHBOARD PEGAWAI ||============================== //
-
-export default function DashboardPegawai() {
-  const [notifications, setNotifications] = useState([]);
-  const [countActive, setCountActive] = useState(0);
-  const [countDone, setCountDone] = useState(0);
-  const token = localStorage.getItem('token');
-  const toastIdByNotifId = useRef(new Map());
-  const shownToastIds = useRef(new Set());
-
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      if (!token) return;
-      try {
-        const res = await axios.get('http://localhost:3000/api/notif/notification/my', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setNotifications(res.data.notifications);
-        setCountActive(res.data.countActive);
-        setCountDone(res.data.countDone);
-      } catch (err) {
-        console.error('Error get notifications:', err.response?.data || err.message);
-      }
-    };
-
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 15_000);
-    return () => clearInterval(interval);
-  }, [token]);
-
-
-
-  const NotifToast = ({ message, onOke }) => (
+function NotifToast({ message, onOke }) {
+  return (
     <div>
       <p className="mb-2">{message}</p>
       <button
@@ -58,89 +26,164 @@ export default function DashboardPegawai() {
       </button>
     </div>
   );
+}
+
+function usePolling(fn, delay, enabled = true) {
+  const fnRef = useRef(fn);
+  useEffect(() => {
+    fnRef.current = fn;
+  }, [fn]);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        await fnRef.current();
+      } catch (e) {
+        console.error('Polling error:', e);
+      }
+    };
+
+    run();
+
+    const id = setInterval(() => {
+      if (!cancelled) run();
+    }, delay);
+
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [delay, enabled]);
+}
+
+export default function DashboardPegawai() {
+  const token = localStorage.getItem('token');
+
+  const [notifications, setNotifications] = useState([]);
+  const [countActive, setCountActive] = useState(0);
+  const [countDone, setCountDone] = useState(0);
+
+  // untuk nge-track toast yang sudah pernah ditampilkan biar ga spam tiap polling
+  const toastIdByNotifId = useRef(new Map());
+  const shownToastIds = useRef(new Set());       // ON_CREATE
+  const shownReminderIds = useRef(new Set());    // REMINDER
+
+  const fetchNotifications = useCallback(async () => {
+    if (!token) return;
+
+    const res = await axios.get('http://localhost:3000/api/notif/notification/my', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const onCreate = Array.isArray(res.data?.notifications) ? res.data.notifications : [];
+    const reminders = Array.isArray(res.data?.reminders) ? res.data.reminders : [];
+
+    // gabungkan supaya satu Data Source
+    setNotifications([...onCreate, ...reminders]);
+
+    setCountActive(res.data?.countActive || 0);
+    setCountDone(res.data?.countDone || 0);
+  }, [token]);
+
+  usePolling(fetchNotifications, 3000, !!token);
+
+  const handleOke = useCallback(
+    async (notifId) => {
+      const target = notifications.find((n) => n._id === notifId);
+      if (!target) return;
+
+      // optimistic UI update
+      setNotifications((prev) => prev.map((n) => (n._id === notifId ? { ...n, isDone: true } : n)));
+
+      // countActive & countDone hanya untuk ON_CREATE (sesuai backend kamu)
+      if (target.notifType === 'ON_CREATE') {
+        setCountActive((prev) => Math.max(0, prev - 1));
+        setCountDone((prev) => prev + 1);
+      }
+
+      // tutup toast kalau ada
+      const toastId = toastIdByNotifId.current?.get(notifId);
+      if (toastId) toast.dismiss(toastId);
+
+      try {
+        // endpoint done kamu: bisa dipakai untuk ON_CREATE & REMINDER juga
+        const res = await axios.patch(
+          `http://localhost:3000/api/notif/notifications/done/${notifId}`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        const updatedNotif = res.data?.notification;
+        if (updatedNotif?._id) {
+          setNotifications((prev) => prev.map((n) => (n._id === updatedNotif._id ? updatedNotif : n)));
+        }
+      } catch (err) {
+        console.error('Error update notif:', err.response?.data || err.message);
+
+        // rollback
+        setNotifications((prev) => prev.map((n) => (n._id === notifId ? target : n)));
+
+        if (target.notifType === 'ON_CREATE') {
+          setCountActive((prev) => prev + 1);
+          setCountDone((prev) => Math.max(0, prev - 1));
+        }
+
+        toast.error('Gagal menandai notifikasi');
+      }
+    },
+    [notifications, token]
+  );
 
   useEffect(() => {
     if (!Array.isArray(notifications)) return;
 
     notifications
-      .filter((n) => !n.isDone)
+      .filter((n) => !n.isDone && n.notifType === 'ON_CREATE')
       .forEach((n) => {
         if (shownToastIds.current.has(n._id)) return;
         shownToastIds.current.add(n._id);
 
         const kegiatan = n.disposisi?.nama_kegiatan || 'Disposisi';
+        const toastId = toast.info(
+          <NotifToast message={`Disposisi baru: ${kegiatan}`} onOke={() => handleOke(n._id)} />,
+          { autoClose: false }
+        );
 
-        if (n.notifType === 'ON_CREATE') {
-          const toastId = toast.info(
-            <NotifToast
-              message={`Disposisi baru: ${kegiatan}`}
-              onOke={() => handleOke(n._id)}
-            />,
-            { autoClose: false }
-          );
-
-          toastIdByNotifId.current.set(n._id, toastId);
-
-        } else if (n.notifType === 'REMINDER_1H') {
-          toast.info(`Reminder: ${kegiatan} dimulai 1 jam lagi`, {
-            autoClose: false
-          });
-        } else if (n.notifType === 'REMINDER_30M') {
-          toast.info(`Reminder: ${kegiatan} dimulai 30 menit lagi`, {
-            autoClose: false
-          });
-        } else if (n.notifType === 'REMINDER_2M') {
-          toast.info(`Reminder: ${kegiatan} dimulai 2 menit lagi`, {
-            autoClose: false
-          });
-        }
+        toastIdByNotifId.current.set(n._id, toastId);
       });
-  }, [notifications]);
 
+    notifications
+      .filter((n) => !n.isDone && ['REMINDER_1H', 'REMINDER_30M', 'REMINDER_2M'].includes(n.notifType))
+      .forEach((n) => {
+        if (shownReminderIds.current.has(n._id)) return;
+        shownReminderIds.current.add(n._id);
 
-  const handleOke = async (notifId) => {
-    const target = notifications.find(n => n._id === notifId);
-    if (!target) return;
+        const kegiatan = n.disposisi?.nama_kegiatan || 'Kegiatan';
+        const label =
+          n.notifType === 'REMINDER_1H'
+            ? '1 jam'
+            : n.notifType === 'REMINDER_30M'
+            ? '30 menit'
+            : '2 menit';
 
-    setNotifications(prev => prev.map(n => (
-      n._id === notifId ? { ...n, isDone: true } : n
-    )));
-    setCountActive(prev => Math.max(0, prev - 1));
-    setCountDone(prev => prev + 1);
+        // reminder juga pakai tombol oke biar bisa di-done dan gak balik lagi
+        const toastId = toast.info(
+          <NotifToast message={`Reminder: ${kegiatan} dimulai ${label} lagi`} onOke={() => handleOke(n._id)} />,
+          { autoClose: false }
+        );
 
-    const toastId = toastIdByNotifId.current?.get(notifId);
-    if (toastId) toast.dismiss(toastId);
-
-    try {
-      const res = await axios.patch(
-        `http://localhost:3000/api/notif/notifications/done/${notifId}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const updatedNotif = res.data.notification;
-
-      // sinkronkan state dengan response server (biar aman)
-      setNotifications(prev =>
-        prev.map(n => (n._id === updatedNotif._id ? updatedNotif : n))
-      );
-    } catch (err) {
-      console.error("Error update notif:", err.response?.data || err.message);
-
-      setNotifications(prev => prev.map(n => (
-        n._id === notifId ? target : n
-      )));
-      setCountActive(prev => prev + 1);
-      setCountDone(prev => Math.max(0, prev - 1));
-
-      toast.error("Gagal menandai notifikasi");
-    }
-  };
-
+        toastIdByNotifId.current.set(n._id, toastId);
+      });
+  }, [notifications, handleOke]);
 
   return (
     <Grid container spacing={gridSpacing}>
       <ToastContainer position="top-right" />
+
       <Grid size={12}>
         <Grid container spacing={gridSpacing}>
           <Grid size={{ lg: 6, md: 6, sm: 6, xs: 12 }}>
@@ -151,7 +194,6 @@ export default function DashboardPegawai() {
           </Grid>
         </Grid>
       </Grid>
-
     </Grid>
   );
 }

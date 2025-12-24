@@ -17,13 +17,9 @@ import 'primeflex/primeflex.css';
 
 export default function TableReport() {
   const [loading, setLoading] = useState(true);
-
-  // master dari BE (pakai controller statsDirektoratTotal kamu)
-  const [direktoratOptions, setDirektoratOptions] = useState([]); // [{id,name}]
-  const [divisiMaster, setDivisiMaster] = useState([]); // [{id,name,direktoratId}]
-
-  // data table dari report-table
-  const [raw, setRaw] = useState([]); // [{direktoratId, divisiId, totalKegiatan, belumMelapor, sudahMelapor}]
+  const [direktoratOptions, setDirektoratOptions] = useState([]);
+  const [divisiMaster, setDivisiMaster] = useState([]); 
+  const [raw, setRaw] = useState([]); 
 
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -37,7 +33,6 @@ export default function TableReport() {
   const statuses = ['Belum Melaporkan', 'Sudah Melaporkan'];
   const getSeverity = (status) => (status === 'Sudah Melaporkan' ? 'success' : 'danger');
 
-  // fetch master + table
   useEffect(() => {
     let alive = true;
 
@@ -47,14 +42,12 @@ export default function TableReport() {
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
 
-        // master (direktoratOptions + divisiOptions) dari endpoint barchart kamu
         const resMaster = await axios.get('http://localhost:3000/api/task/disposisi/barchart', { headers });
         if (!alive) return;
 
         setDirektoratOptions(Array.isArray(resMaster.data?.direktoratOptions) ? resMaster.data.direktoratOptions : []);
         setDivisiMaster(Array.isArray(resMaster.data?.divisiOptions) ? resMaster.data.divisiOptions : []);
 
-        // table
         const resTable = await axios.get('http://localhost:3000/api/task/disposisi/tablechart', { headers });
         if (!alive) return;
 
@@ -77,7 +70,6 @@ export default function TableReport() {
     };
   }, []);
 
-  // map id->name untuk display
   const direktoratMap = useMemo(
     () => Object.fromEntries((direktoratOptions || []).map((d) => [d.id, d.name])),
     [direktoratOptions]
@@ -92,7 +84,6 @@ export default function TableReport() {
     return Object.fromEntries(normalized.map((v) => [v.id, v.name]));
   }, [divisiMaster]);
 
-  // divisi options mengikuti filter direktorat
   const selectedDirektoratIds = filters?.direktoratId?.value || [];
   const divisiOptions = useMemo(() => {
     const base = (divisiMaster || []).map((v) => ({
@@ -105,7 +96,6 @@ export default function TableReport() {
     return base.filter((v) => selectedDirektoratIds.includes(v.direktoratId));
   }, [divisiMaster, selectedDirektoratIds]);
 
-  // rows final
   const rows = useMemo(() => {
     return (raw || []).map((r) => {
       const total = Number(r.totalKegiatan ?? 0);
@@ -125,7 +115,6 @@ export default function TableReport() {
     });
   }, [raw, direktoratMap, divisiMap]);
 
-  // header search
   const onGlobalFilterChange = (e) => {
     const value = e.target.value;
     setFilters((prev) => ({ ...prev, global: { ...prev.global, value } }));

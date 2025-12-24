@@ -326,7 +326,7 @@ export default function Disposisi() {
                     className="p-button-rounded p-button-warning p-button-sm"
                     onClick={() => {
                         if (!rowData) return;
-
+                        console.log(rowData);
                         const pegawaiSelected = pegawaisel.filter(p =>
                             (rowData.nama_yang_dituju || []).some(id =>
                                 id === p._id || id?._id === p._id
@@ -803,7 +803,6 @@ export default function Disposisi() {
                             <p><strong>Jam Mulai:</strong> {formTime(selectedData.jam_mulai)}</p>
                             <p><strong>Jam Selesai:</strong> {formTime(selectedData.jam_selesai)}</p>
                             <p><strong>Tempat:</strong> {selectedData.tempat}</p>
-                            <p><strong>Catatan:</strong> {selectedData.catatan || "-"}</p>
                             <p><strong>File:</strong>{fileBodyTemplate(selectedData.file_path)}</p>
                             <p><strong>Dresscode:</strong> {selectedData.dresscode || "-"}</p>
                         </div>

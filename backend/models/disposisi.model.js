@@ -67,9 +67,9 @@ const DisposisiSchema = mongoose.Schema(
             type: String,
             default: null
         },
-        laporan_file_path: { 
-            type: String, 
-            default: null 
+        laporan_file_path: {
+            type: String,
+            default: null
         },
         laporan_status: {
             type: String,
@@ -91,7 +91,8 @@ const DisposisiSchema = mongoose.Schema(
         status_notif: {
             type: Boolean,
             default: false
-        }
+        },
+
     },
 
 

@@ -31,7 +31,6 @@ const NotificationSchema = mongoose.Schema({
   sendAt: {
     type: Date,
     required: true,
-    default: Date.now
   }
 
 

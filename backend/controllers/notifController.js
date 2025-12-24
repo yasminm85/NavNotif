@@ -23,48 +23,42 @@ const getMyNotifications = async (req, res) => {
   try {
     const userId = req.user.id || req.user._id;
     const now = new Date();
-    const reminderWindow = new Date(now.getTime() - 10 * 60000); 
 
-    const [notifications, countActive, countDone] = await Promise.all([
+    const [onCreate, countActive, countDone, reminders] = await Promise.all([
+      Notification.find({ user: userId, isDone: false, notifType: "ON_CREATE" })
+        .populate("disposisi")
+        .sort({ createdAt: -1 }),
+
+      Notification.countDocuments({ user: userId, isDone: false, notifType: "ON_CREATE" }),
+      Notification.countDocuments({ user: userId, isDone: true, notifType: "ON_CREATE" }),
+
       Notification.find({
         user: userId,
         isDone: false,
-        $or: [
-          { notifType: 'ON_CREATE' },
-          {
-            notifType: { $ne: 'ON_CREATE' },
-            sendAt: { $gte: reminderWindow, $lte: now }
-          }
-        ]
-
-      })
-        .populate('disposisi')
-        .sort({ createdAt: -1 }),
-
-      Notification.countDocuments({
-        user: userId,
-        isDone: false,
-        notifType: 'ON_CREATE',
+        notifType: { $in: ["REMINDER_1H", "REMINDER_30M", "REMINDER_2M"] },
         sendAt: { $lte: now }
-      }),
-
-      Notification.countDocuments({
-        user: userId,
-        isDone: true,
-        notifType: 'ON_CREATE'
       })
+        .populate("disposisi")
+        .sort({ sendAt: 1 })
+        .limit(20) // biar gak banjir
     ]);
 
-    res.json({
-      countActive,
-      countDone,
-      notifications
-    });
+    if (reminders.length > 0) {
+      await Notification.updateMany(
+        { _id: { $in: reminders.map((r) => r._id) } },
+        { $set: { isDone: true } }
+      );
+    }
+
+    res.json({ countActive, countDone, notifications: onCreate, reminders });
   } catch (err) {
-    console.error('Error getMyNotifications:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error getMyNotifications:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
 
 // menandakan bahwa notifikasi sudah diisi
 const markNotificationDone = async (req, res) => {
@@ -106,6 +100,7 @@ module.exports = {
   createNotification,
   getMyNotifications,
   markNotificationDone,
+
 };
 
 

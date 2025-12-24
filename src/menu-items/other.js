@@ -1,17 +1,16 @@
 // src/menu-items/other.js
 import { IconDashboard } from '@tabler/icons-react';
 import AssignmentIcon from '@mui/icons-material/Assignment';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 
 
 const other = {
   id: 'other-group',
   type: 'group',
-  title: 'Lainnya',
+  title: 'Halaman Pegawai',
   children: [
   {
     id: 'dashboard-pegawai',
-    title: 'Dashboard Pegawai',
+    title: 'Dashboard',
     type: 'item',
     url: '/dashboard-pegawai',
     icon: IconDashboard,
