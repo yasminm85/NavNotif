@@ -18,7 +18,7 @@ const getMyNotifications = async (req, res) => {
       Notification.find({
         user: userId,
         isDone: false,
-        notifType: { $in: ["REMINDER_1H", "REMINDER_30M", "REMINDER_2M"] },
+        notifType: { $in: ["REMINDER_1H", "REMINDER_30M"] },
         sendAt: { $lte: now }
       })
         .populate("disposisi")

@@ -40,114 +40,125 @@ const getDisposisis = async (req, res) => {
 }
 
 const REMINDER_OFFSET_MINUTES = {
-    REMINDER_1H: -60,
-    REMINDER_30M: -30,
+  REMINDER_1H: -60,
+  REMINDER_30M: -30
 };
 
 const createDisposisi = async (req, res) => {
+  try {
+    const filePath = req.file ? req.file.path : null;
+
+    const nama_yang_dituju = req.body.nama_yang_dituju ? JSON.parse(req.body.nama_yang_dituju) : [];
+    const direktorat = req.body.direktorat ? JSON.parse(req.body.direktorat) : [];
+    const divisi = req.body.divisi ? JSON.parse(req.body.divisi) : [];
+
+    // ✅ parsing notificationOptions tahan banting
+    let notificationOptions = [];
     try {
-        const filePath = req.file ? req.file.path : null;
-
-        const nama_yang_dituju = req.body.nama_yang_dituju ? JSON.parse(req.body.nama_yang_dituju) : [];
-        const direktorat = req.body.direktorat ? JSON.parse(req.body.direktorat) : [];
-        const divisi = req.body.divisi ? JSON.parse(req.body.divisi) : [];
-        let notificationOptions = [];
+      if (Array.isArray(req.body.notificationOptions)) {
+        notificationOptions = req.body.notificationOptions;
+      } else if (typeof req.body.notificationOptions === 'string' && req.body.notificationOptions.trim()) {
+        // bisa berupa JSON array string atau string biasa
         try {
-            if (Array.isArray(req.body.notificationOptions)) {
-                notificationOptions = req.body.notificationOptions;
-            } else if (typeof req.body.notificationOptions === 'string' && req.body.notificationOptions.trim()) {
-                notificationOptions = JSON.parse(req.body.notificationOptions);
-            }
-        } catch (e) {
-            notificationOptions = [];
+          notificationOptions = JSON.parse(req.body.notificationOptions);
+        } catch {
+          notificationOptions = req.body.notificationOptions; // string biasa
         }
+      }
+    } catch (e) {
+      notificationOptions = [];
+    }
 
-        console.log('RAW notifOptions:', req.body.notificationOptions);
-        console.log('PARSED notifOptions:', notificationOptions);
+    // ✅ pastikan selalu array
+    if (!Array.isArray(notificationOptions)) {
+      notificationOptions = notificationOptions ? [String(notificationOptions).trim()] : [];
+    } else {
+      notificationOptions = notificationOptions.map((x) => String(x).trim());
+    }
 
+    console.log('tanggal:', req.body.tanggal);
+    console.log('jam_mulai:', req.body.jam_mulai);
+    console.log('notificationOptions RAW:', req.body.notificationOptions);
+    console.log('notificationOptions NORMALIZED:', notificationOptions);
 
+    const disposisi = await Disposisi.create({
+      nama_kegiatan: req.body.nama_kegiatan,
+      agenda_kegiatan: req.body.agenda_kegiatan,
+      nama_yang_dituju,
+      direktorat,
+      divisi,
+      tanggal: req.body.tanggal,
+      jam_mulai: req.body.jam_mulai,
+      jam_selesai: req.body.jam_selesai,
+      tempat: req.body.tempat,
+      catatan: req.body.catatan,
+      dresscode: req.body.dresscode,
+      file_path: filePath,
+      notificationOptions
+    });
 
-        const disposisi = await Disposisi.create({
-            nama_kegiatan: req.body.nama_kegiatan,
-            agenda_kegiatan: req.body.agenda_kegiatan,
-            nama_yang_dituju,
-            direktorat,
-            divisi,
-            tanggal: req.body.tanggal,
-            jam_mulai: req.body.jam_mulai,
-            jam_selesai: req.body.jam_selesai,
-            tempat: req.body.tempat,
-            catatan: req.body.catatan,
-            dresscode: req.body.dresscode,
-            file_path: filePath,
-            notificationOptions
-        });
+    let notifDocs = [];
 
-        let notifDocs = [];
+    if (Array.isArray(nama_yang_dituju) && nama_yang_dituju.length > 0) {
+      const now = new Date();
 
-        if (Array.isArray(nama_yang_dituju) && nama_yang_dituju.length > 0) {
-            const now = new Date();
+      // 1) ON_CREATE
+      notifDocs = nama_yang_dituju.map((userId) => ({
+        disposisi: disposisi._id,
+        user: userId,
+        notifType: 'ON_CREATE',
+        sendAt: now,
+        isDone: false
+      }));
 
-            notifDocs = nama_yang_dituju.map((userId) => ({
+      // 2) REMINDER
+      if (notificationOptions.length > 0) {
+        // ✅ jam_mulai kamu sekarang sudah date string lengkap → langsung parse
+        const eventDate = new Date(req.body.jam_mulai);
+
+        if (!isNaN(eventDate.getTime())) {
+          const uniqueOptions = [...new Set(notificationOptions)];
+          const reminderDocs = [];
+
+          uniqueOptions.forEach((optKey) => {
+            const offset = REMINDER_OFFSET_MINUTES[optKey];
+            if (offset === undefined) return;
+
+            const reminderTime = new Date(eventDate.getTime() + offset * 60 * 1000);
+            if (isNaN(reminderTime.getTime())) return;
+
+            nama_yang_dituju.forEach((userId) => {
+              reminderDocs.push({
                 disposisi: disposisi._id,
                 user: userId,
-                notifType: 'ON_CREATE',
-                sendAt: now,
+                notifType: optKey,
+                sendAt: reminderTime,
                 isDone: false
-            }));
+              });
+            });
+          });
 
-
-            // 2) REMINDERS (optional)
-            if (Array.isArray(notificationOptions) && notificationOptions.length > 0) {
-                // karena jam_mulai kamu sudah "Tue Dec 23 2025 22:14:00 GMT+0700 ..."
-                const eventDate = new Date(req.body.jam_mulai);
-
-                const validEventDate = !isNaN(eventDate.getTime());
-
-                if (validEventDate) {
-                    const uniqueOptions = [...new Set(notificationOptions.map((o) => String(o).trim()))];
-                    const reminderDocs = [];
-
-                    uniqueOptions.forEach((optKey) => {
-                        const offset = REMINDER_OFFSET_MINUTES[optKey];
-                        if (offset === undefined) return;
-
-                        const reminderTime = new Date(eventDate.getTime() + offset * 60 * 1000);
-                        if (isNaN(reminderTime.getTime())) return;
-
-                        nama_yang_dituju.forEach((userId) => {
-                            reminderDocs.push({
-                                disposisi: disposisi._id,
-                                user: userId,
-                                notifType: optKey,
-                                sendAt: reminderTime,
-                                isDone: false
-                            });
-                        });
-                    });
-
-                    notifDocs = notifDocs.concat(reminderDocs);
-                } else {
-                    console.log('[createDisposisi] Skip reminder: invalid jam_mulai', {
-                        jam_mulai: req.body.jam_mulai
-                    });
-                }
-            }
-
-
-
-            // insert notifs
-            if (notifDocs.length > 0) {
-                await Notification.insertMany(notifDocs);
-            }
+          notifDocs = notifDocs.concat(reminderDocs);
+        } else {
+          console.log('[createDisposisi] Skip reminder: invalid jam_mulai', {
+            jam_mulai: req.body.jam_mulai
+          });
         }
+      }
 
-        res.status(200).json(disposisi);
-    } catch (error) {
-        console.error('createDisposisi error:', error);
-        res.status(500).json({ message: error.message });
+      // insert notifs
+      if (notifDocs.length > 0) {
+        await Notification.insertMany(notifDocs);
+      }
     }
+
+    res.status(200).json(disposisi);
+  } catch (error) {
+    console.error('createDisposisi error:', error);
+    res.status(500).json({ message: error.message });
+  }
 };
+
 
 
 
