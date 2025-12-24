@@ -197,7 +197,7 @@ export default function Disposisi() {
         formData.append("tempat", form.tempat);
         formData.append("catatan", form.catatan);
         formData.append("dresscode", form.dresscode);
-        formData.append("reminder", form.reminder);
+        // formData.append("reminder", form.reminder);
 
         if (form.file) {
             formData.append("file", form.file);

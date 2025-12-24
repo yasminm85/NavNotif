@@ -157,7 +157,7 @@ export default function DashboardPegawai() {
       });
 
     notifications
-      .filter((n) => !n.isDone && ['REMINDER_1H', 'REMINDER_30M', 'REMINDER_2M'].includes(n.notifType))
+      .filter((n) => !n.isDone && ['REMINDER_1H', 'REMINDER_30M'].includes(n.notifType))
       .forEach((n) => {
         if (shownReminderIds.current.has(n._id)) return;
         shownReminderIds.current.add(n._id);
