@@ -11,6 +11,7 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './app.css';
+import Modal from '../dashboard-evp/Modal.jsx';
 import axios from 'axios';
 import { Tag } from 'primereact/tag';
 
@@ -28,7 +29,7 @@ export default function DashboardEVP() {
     const [komentarText, setKomentar] = useState("");
     const [pegawaisel, setPegawai] = useState([]);
     const [currentTask, setCurrentTask] = useState(null);
-
+    const [visible, setVisible] = useState(false);
 
     // get data pegawai
     const fetchPegawai = async () => {
@@ -92,7 +93,7 @@ export default function DashboardEVP() {
 
     const getSeverity = (status) => (status === 'SUDAH' ? 'success' : 'danger');
     const statusBodyTemplate = (rowData) => <Tag value={rowData.laporan_status} severity={getSeverity(rowData.laporan_status)} />;
-    
+
 
     const namaPegawaiTemplate = (rowData) => {
         if (Array.isArray(rowData) && rowData.length) {
@@ -153,8 +154,8 @@ export default function DashboardEVP() {
                 prev.map(t => {
                     if (t._id !== updated._id) return t;
                     return {
-                        ...t,        
-                        ...updated, 
+                        ...t,
+                        ...updated,
                     };
                 })
             );
@@ -184,7 +185,24 @@ export default function DashboardEVP() {
                     }}
                 >
                     {selectedLaporan ? (
-                        <><label className="block mb-2 font-semibold">Isi Laporan</label><InputTextarea value={selectedLaporan} disabled rows={5} cols={30} /></>
+                        <div className="mt-3">
+                            <label className="block mb-2 font-semibold">Isi Laporan</label>
+                            <div className="relative">
+                                <InputTextarea
+                                    value={selectedLaporan?.replace(/<[^>]*>/g, '').substring(0, 200)}
+                                    disabled
+                                    rows={5}
+                                    cols={30}
+                                />
+                                <Button
+                                    icon="pi pi-window-maximize"
+                                    className="p-button-text p-button-sm absolute top-2 right-2"
+                                    onClick={() => setVisible(true)}
+                                    tooltip="Lihat fullscreen"
+                                    tooltipOptions={{ position: 'left' }}
+                                />
+                            </div>
+                        </div>
                     ) : (
                         <Typography color="error">Belum ada laporan yang ditulis.</Typography>
                     )}
@@ -214,6 +232,24 @@ export default function DashboardEVP() {
                             <Button label="Kirim" onClick={handleSendComment} />
                         </div>
                     </div>
+                </Dialog>
+
+                <Dialog
+                    header="Isi Laporan"
+                    visible={visible}
+                    maximizable
+                    style={{ width: '80vw' }}
+                    onHide={() => setVisible(false)}
+                >
+                    {/* Render HTML yang ada di laporan yaaks*/}
+                    <div
+                        className="ql-editor"
+                        dangerouslySetInnerHTML={{ __html: selectedLaporan }}
+                        style={{
+                            minHeight: '300px',
+                            padding: '12px 15px'
+                        }}
+                    />
                 </Dialog>
 
                 {/* TABLE */}

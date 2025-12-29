@@ -7,4 +7,73 @@
     background-color: #9EDF9C !important; /* hijau */
     color: white !important;
 }
+.textarea-container {
+  padding: 20px;
+}
+
+/* Styles for the full-screen modal */
+.full-screen-modal {
+  position: fixed; /* Positions the modal relative to the browser window */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white; /* Or any background color you prefer */
+  z-index: 1000; /* Ensures it's on top of other content */
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: flex-end; /* Aligns the close button to the top right */
+  padding: 10px;
+}
+
+.close-button {
+  /* Basic styling for the close button */
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+/* Styles for the textarea inside the modal */
+.full-screen-textarea {
+  flex-grow: 1; /* Makes the textarea fill the remaining space */
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box; /* Includes padding in width calculation */
+  border: none;
+  resize: none; /* Prevents manual resizing within the modal */
+  font-size: 16px;
+}
+
+/* css parsing karakter struktur laporan */
+.ql-editor {
+  padding: 12px 15px;
+  line-height: 1.6;
+}
+
+.ql-editor h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+
+.ql-editor ol, .ql-editor ul {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.ql-editor li {
+  margin-bottom: 0.5em;
+}
+
+.ql-editor em {
+  font-style: italic;
+}
+
+.ql-editor .ql-align-justify {
+  text-align: justify;
+}
 
