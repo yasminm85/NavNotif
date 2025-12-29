@@ -232,9 +232,6 @@ export default function DaftarNotifikasi() {
                                 <p>
                                     <strong>Agenda:</strong> {currentTask.agenda_kegiatan}
                                 </p>
-                                <p>
-                                    <strong>Komentar atau Feedback EVP:</strong> {currentTask.komentar}
-                                </p>
                             </div>
 
                             <div>
@@ -272,14 +269,21 @@ export default function DaftarNotifikasi() {
                                 <small className="text-gray-500 mb-2 block">Belum ada file laporan.</small>
                             )}
 
+                            <p>
+                                    <strong>Komentar atau Feedback EVP:</strong> {currentTask.komentar}
+                                </p>
+
 
                             <div className="flex justify-end gap-2 mt-3">
+                                {currentTask.laporan_status =="SUDAH" ? (
                                 <Button
-                                    label="Batal"
+                                    label="Kembali"
                                     className="p-button-text"
                                     onClick={() => setShowDialog(false)}
                                 />
+                                 ) : (
                                 <Button label="Simpan" onClick={handleSaveLaporan} />
+                                )}
                             </div>
                         </div>
                     )}

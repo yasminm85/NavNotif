@@ -197,7 +197,6 @@ export default function Disposisi() {
         formData.append("tempat", form.tempat);
         formData.append("catatan", form.catatan);
         formData.append("dresscode", form.dresscode);
-        // formData.append("reminder", form.reminder);
 
         if (form.file) {
             formData.append("file", form.file);
@@ -615,7 +614,7 @@ export default function Disposisi() {
                     {/* Direktorat */}
                     <div className="mb-3">
                         <MultiSelect
-                            placeholder="Direktorat *"
+                            placeholder="Direktorat Yang Mengundang*"
                             className="w-full"
                             value={selecteddirektorat}
                             options={direktorat}
@@ -636,7 +635,7 @@ export default function Disposisi() {
                             display='chip'
                             onChange={(e) => setSelecteddivisi(e.value)}
                             placeholder={
-                                selecteddirektorat ? "Divisi" : "Pilihlah Direktorat Dahulu"
+                                selecteddirektorat ? "Divisi Yang Mengundang" : "Pilihlah Direktorat Dahulu"
                             }
 
                         />

@@ -52,31 +52,28 @@ const createDisposisi = async (req, res) => {
     const direktorat = req.body.direktorat ? JSON.parse(req.body.direktorat) : [];
     const divisi = req.body.divisi ? JSON.parse(req.body.divisi) : [];
 
-    // ✅ parsing notificationOptions tahan banting
     let notificationOptions = [];
     try {
       if (Array.isArray(req.body.notificationOptions)) {
         notificationOptions = req.body.notificationOptions;
       } else if (typeof req.body.notificationOptions === 'string' && req.body.notificationOptions.trim()) {
-        // bisa berupa JSON array string atau string biasa
         try {
           notificationOptions = JSON.parse(req.body.notificationOptions);
         } catch {
-          notificationOptions = req.body.notificationOptions; // string biasa
+          notificationOptions = req.body.notificationOptions; 
         }
       }
     } catch (e) {
       notificationOptions = [];
     }
 
-    // ✅ pastikan selalu array
     if (!Array.isArray(notificationOptions)) {
       notificationOptions = notificationOptions ? [String(notificationOptions).trim()] : [];
     } else {
       notificationOptions = notificationOptions.map((x) => String(x).trim());
     }
 
-    console.log('tanggal:', req.body.tanggal);
+    console.log('tangggal:', req.body.tanggal);
     console.log('jam_mulai:', req.body.jam_mulai);
     console.log('notificationOptions RAW:', req.body.notificationOptions);
     console.log('notificationOptions NORMALIZED:', notificationOptions);
@@ -102,7 +99,6 @@ const createDisposisi = async (req, res) => {
     if (Array.isArray(nama_yang_dituju) && nama_yang_dituju.length > 0) {
       const now = new Date();
 
-      // 1) ON_CREATE
       notifDocs = nama_yang_dituju.map((userId) => ({
         disposisi: disposisi._id,
         user: userId,
@@ -111,9 +107,7 @@ const createDisposisi = async (req, res) => {
         isDone: false
       }));
 
-      // 2) REMINDER
       if (notificationOptions.length > 0) {
-        // ✅ jam_mulai kamu sekarang sudah date string lengkap → langsung parse
         const eventDate = new Date(req.body.jam_mulai);
 
         if (!isNaN(eventDate.getTime())) {
@@ -140,13 +134,12 @@ const createDisposisi = async (req, res) => {
 
           notifDocs = notifDocs.concat(reminderDocs);
         } else {
-          console.log('[createDisposisi] Skip reminder: invalid jam_mulai', {
+          console.log('Invalid Jam Mulai', {
             jam_mulai: req.body.jam_mulai
           });
         }
       }
 
-      // insert notifs
       if (notifDocs.length > 0) {
         await Notification.insertMany(notifDocs);
       }

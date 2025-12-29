@@ -69,8 +69,8 @@ export default function DashboardPegawai() {
 
   // untuk nge-track toast yang sudah pernah ditampilkan biar ga spam tiap polling
   const toastIdByNotifId = useRef(new Map());
-  const shownToastIds = useRef(new Set());       // ON_CREATE
-  const shownReminderIds = useRef(new Set());    // REMINDER
+  const shownToastIds = useRef(new Set());       
+  const shownReminderIds = useRef(new Set());    
 
   const fetchNotifications = useCallback(async () => {
     if (!token) return;
@@ -96,7 +96,6 @@ export default function DashboardPegawai() {
       const target = notifications.find((n) => n._id === notifId);
       if (!target) return;
 
-      // optimistic UI update
       setNotifications((prev) => prev.map((n) => (n._id === notifId ? { ...n, isDone: true } : n)));
 
       // countActive & countDone hanya untuk ON_CREATE (sesuai backend kamu)
@@ -110,7 +109,6 @@ export default function DashboardPegawai() {
       if (toastId) toast.dismiss(toastId);
 
       try {
-        // endpoint done kamu: bisa dipakai untuk ON_CREATE & REMINDER juga
         const res = await axios.patch(
           `http://localhost:3000/api/notif/notifications/done/${notifId}`,
           {},
