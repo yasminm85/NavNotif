@@ -6,6 +6,8 @@ import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { FileUpload } from '@mui/icons-material';
+import { Editor } from 'primereact/editor';
+
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -236,13 +238,14 @@ export default function DaftarNotifikasi() {
 
                             <div>
                                 <label className="block mb-2 font-semibold">Isi Laporan</label>
-                                <InputTextarea
-                                    rows={5}
-                                    className={`w-full ${errors.laporan ? "p-invalid" : ""}`}
+
+                                <Editor
                                     value={laporanText}
-                                    onChange={(e) => setLaporanText(e.target.value)}
-                                    placeholder="Tuliskan laporan kegiatan di sini..."
+                                    onTextChange={(e) => setLaporanText(e.htmlValue)}
+                                    style={{ height: '200px' }}
+                                    className={errors.laporan ? "p-invalid" : ""}
                                 />
+
                                 {/* File */}
                                 <div className="input_container">
                                 <input
