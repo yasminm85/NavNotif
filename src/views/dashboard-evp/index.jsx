@@ -168,6 +168,33 @@ export default function DashboardEVP() {
         }
     }
 
+    const htmlToPlainText = (html) => {
+        if (!html) return '';
+
+        let text = html;
+        text = text.replace(/<h[1-6][^>]*>(.*?)<\/h[1-6]>/gi, '\n$1\n');
+
+        let counter = 1;
+        text = text.replace(/<li[^>]*>(.*?)<\/li>/gi, (match, content) => {
+            const cleanContent = content.replace(/<[^>]*>/g, '');
+            return `\n${counter++}. ${cleanContent}`;
+        });
+
+        text = text.replace(/<p[^>]*>(.*?)<\/p>/gi, '\n$1\n');
+        text = text.replace(/<br\s*\/?>/gi, '\n');
+        text = text.replace(/<[^>]*>/g, '');
+        text = text.replace(/&nbsp;/g, ' ');
+        text = text.replace(/&amp;/g, '&');
+        text = text.replace(/&lt;/g, '<');
+        text = text.replace(/&gt;/g, '>');
+        text = text.replace(/&quot;/g, '"');
+        text = text.replace(/\n\s*\n/g, '\n\n');
+        text = text.trim();
+
+        return text;
+    };
+
+
 
     return (
         <div className="card">
@@ -189,10 +216,11 @@ export default function DashboardEVP() {
                             <label className="block mb-2 font-semibold">Isi Laporan</label>
                             <div className="relative">
                                 <InputTextarea
-                                    value={selectedLaporan?.replace(/<[^>]*>/g, '').substring(0, 200)}
+                                    value={htmlToPlainText(selectedLaporan)}
                                     disabled
                                     rows={5}
                                     cols={30}
+                                    style={{ whiteSpace: 'pre-wrap' }}
                                 />
                                 <Button
                                     icon="pi pi-window-maximize"
@@ -238,7 +266,7 @@ export default function DashboardEVP() {
                     header="Isi Laporan"
                     visible={visible}
                     maximizable
-                    style={{ width: '80vw' }}
+                    style={{ width: '50vw' }}
                     onHide={() => setVisible(false)}
                 >
                     {/* Render HTML yang ada di laporan yaaks*/}
