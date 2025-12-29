@@ -305,13 +305,14 @@ const updateLaporan = async (req, res) => {
 
         disposisi.laporan_by = userId
         disposisi.laporan_status = "SUDAH"
+        disposisi.laporan_at = new Date();
 
         await disposisi.save();
 
         const populated = await Disposisi.findById(disposisi._id)
             .populate('nama_yang_dituju', 'name email')
             .populate('laporan_by', 'name email');
-
+            
         res.json({
             message: 'Laporan berhasil disimpan',
             disposisi: populated

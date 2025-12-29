@@ -24,6 +24,7 @@ export default function DashboardEVP() {
     const [errors, setErrors] = useState({});
     const [laporanPath, setLaporanPath] = useState(null);
     const [laporanby, setLaporanBy] = useState("");
+    const [laporanat, setLaporanAt] = useState("");
     const [komentarText, setKomentar] = useState("");
     const [pegawaisel, setPegawai] = useState([]);
     const [currentTask, setCurrentTask] = useState(null);
@@ -69,6 +70,7 @@ export default function DashboardEVP() {
 
     // laporan body template buat data table
     const laporanBodyTemplate = (rowData) => {
+        console.log(rowData);
         return (
             <div className="flex gap-2">
                 <Button
@@ -79,6 +81,7 @@ export default function DashboardEVP() {
                         setSelectedLaporan(rowData.laporan);
                         setLaporanPath(rowData.laporan_file_path);
                         setLaporanBy(rowData.laporan_by);
+                        setLaporanAt(rowData.laporan_at);
                         setKomentar(rowData.komentar);
                         setShowLaporan(true);
                     }}
@@ -114,6 +117,15 @@ export default function DashboardEVP() {
     // setting time
     const formTime = (date) => {
         if (!date) return "Selesai";
+
+        return new Date(date).toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
+
+    const formTimeLaporan = (date) => {
+        if (!date) return "-";
 
         return new Date(date).toLocaleTimeString("id-ID", {
             hour: "2-digit",
@@ -187,6 +199,7 @@ export default function DashboardEVP() {
                         <Typography color="error">Belum ada file laporan.</Typography>
                     )}
                     <Typography className='mt-3'>Ditulis Oleh: {laporanby?.name ?? "-"}</Typography>
+                    <Typography className='mt-3'>Ditulis Tanggal: {formDate(laporanat) ?? "-"} - Jam: {formTimeLaporan(laporanat) ?? "-"}</Typography>
 
                     <div className="mt-3">
                         <label className="block mb-2 font-semibold">Berikan Komentar atau Feedback</label>
