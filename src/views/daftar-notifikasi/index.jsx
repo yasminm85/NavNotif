@@ -333,7 +333,7 @@ export default function DaftarNotifikasi() {
                                 </p>
 
                             <div className="flex justify-end gap-2 mt-3">
-                                {currentTask.laporan_status ==="true" ? (
+                                {currentTask.laporan_status ==="SUDAH" ? (
                                 <Button
                                     label="Kembali"
                                     className="p-button-text"
@@ -376,17 +376,6 @@ export default function DaftarNotifikasi() {
                                     style={{ height: '200px' }}
                                     className={errors.laporan_tambahan ? "p-invalid" : ""}
                                 />
-
-                                {/* <p className="text-xs text-red-500">
-                                    STATUS: {String(currentTaskTambahan?.laporan_tambahan_status)}
-                                </p>
-
-                                {console.log(
-                                    "laporan_tambahan_status:",
-                                    currentTaskTambahan?.laporan_tambahan_status,
-                                    typeof currentTaskTambahan?.laporan_tambahan_status
-                                )} */}
-
 
                                 {/* File */}
                                 <div className="input_container">
