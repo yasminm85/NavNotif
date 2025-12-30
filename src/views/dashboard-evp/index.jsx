@@ -30,30 +30,11 @@ export default function DashboardEVP() {
     const [laporanatTambahan, setLaporatAtTambahan] = useState("");
     const [komentarText, setKomentar] = useState("");
     const [currentTask, setCurrentTask] = useState(null);
-    const [currentTaskTambahan, setCurrentTaskTambahan] = useState(null);
     const [visible, setVisible] = useState(false);
+    const [visible2, setVisible2] = useState(false);
     const [errors, setErrors] = useState({});
-    const [laporantype, setLaporanType] = useState("");
-    const [pegawaisel, setPegawai] = useState([]);
+    
 
-
-
-    // get data pegawai
-    const fetchPegawai = async () => {
-        try {
-            const res = await axios.get('http://localhost:3000/api/auth/getEmp', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-
-            setPegawai(res.data);
-        } catch (err) {
-            console.error('Gagal ambil data pegawai:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     //get all data disposisi
     const getDataDisposisi = async () => {
@@ -72,7 +53,6 @@ export default function DashboardEVP() {
     };
 
     useEffect(() => {
-        fetchPegawai();
         getDataDisposisi();
     }, []);
 
@@ -106,7 +86,6 @@ export default function DashboardEVP() {
                     icon="pi pi-folder"
                     className="p-button-rounded p-button-help p-button-sm"
                     onClick={() => {
-                        setCurrentTaskTambahan(rowData);
                         setSelectedLaporanTambahan(rowData.laporan_tambahan);
                         setLaporanPathTambahan(rowData.laporan_tambahan_path);
                         setLaporanByTambahan(rowData.laporan_tambahan_by);
@@ -317,7 +296,7 @@ export default function DashboardEVP() {
                                 <Button
                                     icon="pi pi-window-maximize"
                                     className="p-button-text p-button-sm absolute top-2 right-2"
-                                    onClick={() => setVisible(true)}
+                                    onClick={() => setVisible2(true)}
                                     tooltip="Lihat fullscreen"
                                     tooltipOptions={{ position: 'left' }}
                                 />
@@ -351,6 +330,24 @@ export default function DashboardEVP() {
                     <div
                         className="ql-editor"
                         dangerouslySetInnerHTML={{ __html: selectedLaporan }}
+                        style={{
+                            minHeight: '300px',
+                            padding: '12px 15px'
+                        }}
+                    />
+                </Dialog>
+
+                <Dialog
+                    header="Isi Laporan Tambahan"
+                    visible={visible2}
+                    maximizable
+                    style={{ width: '50vw' }}
+                    onHide={() => setVisible2(false)}
+                >
+                    {/* Render HTML yang ada di laporan yaaks*/}
+                    <div
+                        className="ql-editor"
+                        dangerouslySetInnerHTML={{ __html: selectedLaporanTambahan }}
                         style={{
                             minHeight: '300px',
                             padding: '12px 15px'
