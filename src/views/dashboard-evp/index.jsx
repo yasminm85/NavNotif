@@ -210,6 +210,7 @@ export default function DashboardEVP() {
                         setSelectedLaporan(null)
                     }}
                 >
+                    
                     {selectedLaporan ? (
                         <div className="mt-3">
                             <label className="block mb-2 font-semibold">Isi Laporan</label>
@@ -221,6 +222,7 @@ export default function DashboardEVP() {
                                     cols={30}
                                     style={{ whiteSpace: 'pre-wrap' }}
                                 />
+                                
                                 <Button
                                     icon="pi pi-window-maximize"
                                     className="p-button-text p-button-sm absolute top-2 right-2"

@@ -524,6 +524,7 @@ export default function Disposisi() {
     };
 
 
+
     const footer = (
         <Button label="Submit" className="w-full" onClick={handleSubmit} />
     );
@@ -758,14 +759,19 @@ export default function Disposisi() {
                     header="Laporan Disposisi"
                     visible={showLaporan}
                     modal
-                    style={{ width: "25rem" }}
+                    style={{ width: "30rem" }}
                     onHide={() => {
-                        setShowLaporan(false)
-                        setSelectedLaporan(null)
+                        setShowLaporan(false);
+                        setSelectedLaporan(null);
                     }}
                 >
-                    <p>{selectedLaporan}</p>
+                    <div
+                        style={{ whiteSpace: "normal" }}
+                        dangerouslySetInnerHTML={{ __html: selectedLaporan }}
+                    />
                 </Dialog>
+
+
 
                 {/* VIEW DETAIL LENGKAP */}
                 <Dialog
