@@ -312,13 +312,77 @@ const updateLaporan = async (req, res) => {
         const populated = await Disposisi.findById(disposisi._id)
             .populate('nama_yang_dituju', 'name email')
             .populate('laporan_by', 'name email');
-            
+
         res.json({
             message: 'Laporan berhasil disimpan',
             disposisi: populated
         });
     } catch (error) {
         console.error('updateLaporan error:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const updateLaporanTambahan = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { laporan_tambahan } = req.body;
+        const userId = req.user.id || req.user._id;
+        const userRole = req.user.role;
+
+        const file = req.file;
+        const filePath = file ? file.path : null;
+        // console.log(file);
+        // console.log(filePath);
+        // console.log(laporan);
+
+        const hasText = laporan_tambahan && laporan_tambahan.trim();
+        const hasFile = !!file;
+
+        if (!hasText && !hasFile) {
+            return res.status(400).json({ message: 'Laporan Tambahan tidak boleh kosong' });
+        }
+
+        if (!laporan_tambahan || !laporan_tambahan.trim()) {
+            return res.status(400).json({ message: 'Laporan Tambahan tidak boleh kosong' });
+        }
+
+        let query = { _id: id, nama_yang_dituju: userId };
+
+        if (userRole === 'admin') {
+            query = { _id: id };
+        }
+
+        const disposisi = await Disposisi.findOne(query);
+
+        if (!disposisi) {
+            return res.status(404).json({
+                message:
+                    'Disposisi tidak ditemukan'
+            });
+        }
+
+        if (hasText) disposisi.laporan_tambahan = laporan_tambahan;
+
+        if (hasFile) {
+            disposisi.laporan_tambahan_path = filePath;
+        }
+
+        disposisi.laporan_tambahan_by = userId
+        disposisi.laporan_tambahan_at = new Date();
+
+        await disposisi.save();
+
+        const populated = await Disposisi.findById(disposisi._id)
+            .populate('nama_yang_dituju', 'name email')
+            .populate('laporan_tambahan_by', 'name email');
+            
+        res.json({
+            message: 'Laporan tambahan berhasil disimpan',
+            disposisi: populated
+        });
+    } catch (error) {
+        console.error('updateLaporanTambahan error:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -439,7 +503,8 @@ module.exports = {
     updateLaporan,
     createKomentar,
     statsDirektoratTotal,
-    reportTable
+    reportTable,
+    updateLaporanTambahan
 };
 
 

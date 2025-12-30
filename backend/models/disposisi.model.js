@@ -104,6 +104,28 @@ const DisposisiSchema = mongoose.Schema(
         laporan_tambahan: {
             type: String,
             default: null
+        },
+
+        laporan_tambahan_path: {
+            type: String,
+            default: null
+        },
+
+        laporan_tambahan_by: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            default: null
+        },
+
+        laporan_tambahan_status: {
+            type: String,
+            enum: ['BELUM', 'SUDAH'],
+            default: 'BELUM'
+        },
+
+        laporan_tambahan_at: {
+            type: Date,
+            default: null
         }
 
     },

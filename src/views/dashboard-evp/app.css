@@ -1,25 +1,25 @@
 .p-datatable .p-datatable-tbody .highlight-row {
-    background-color: #ffdd57 !important; /* kuning */
+    background-color: #ffdd57 !important; 
     color: #333 !important;
 }
 
 .p-datatable .p-datatable-tbody .completed-row {
-    background-color: #9EDF9C !important; /* hijau */
+    background-color: #9EDF9C !important;
     color: white !important;
 }
 .textarea-container {
   padding: 20px;
 }
 
-/* Styles for the full-screen modal */
+/* Styles modul fullscreen */
 .full-screen-modal {
-  position: fixed; /* Positions the modal relative to the browser window */
+  position: fixed; 
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: white; /* Or any background color you prefer */
-  z-index: 1000; /* Ensures it's on top of other content */
+  background-color: white; 
+  z-index: 1000; 
   display: flex;
   flex-direction: column;
   padding: 10px;
@@ -27,24 +27,21 @@
 
 .modal-header {
   display: flex;
-  justify-content: flex-end; /* Aligns the close button to the top right */
-  padding: 10px;
+  justify-content: flex-end; 
 }
 
 .close-button {
-  /* Basic styling for the close button */
   padding: 5px 10px;
   cursor: pointer;
 }
 
-/* Styles for the textarea inside the modal */
 .full-screen-textarea {
-  flex-grow: 1; /* Makes the textarea fill the remaining space */
+  flex-grow: 1;
   width: 50%;
   padding: 10px;
-  box-sizing: border-box; /* Includes padding in width calculation */
+  box-sizing: border-box; 
   border: none;
-  resize: none; /* Prevents manual resizing within the modal */
+  resize: none; 
   font-size: 16px;
 }
 

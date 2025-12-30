@@ -28,9 +28,13 @@ export default function DaftarNotifikasi() {
     const [errors, setErrors] = useState({});
     const [tasks, setTasks] = useState([]);
     const [currentTask, setCurrentTask] = useState(null);
+    const [currentTaskTambahan, setCurrentTaskTambahan] = useState(null);
     const [showDialog, setShowDialog] = useState(false);
+    const [showDialogTambahan, setShowDialogTambahan] = useState(false);
     const [laporanText, setLaporanText] = useState('');
+    const [laporanTextTambahan, setLaporanTextTambahan] = useState('');
     const [laporanPath, setLaporanPath] = useState(null);
+    const [laporanPathTambahan, setLaporanPathTambahan] = useState(null);
     const token = localStorage.getItem('token');
 
     // fetch data disposisi
@@ -180,6 +184,24 @@ export default function DaftarNotifikasi() {
         );
     };
 
+    const laporanTambahanActionTemplate = (row) => {
+        const bolehLapor = isLaporanAllowed(row);
+        console.log(bolehLapor);
+        return (
+            <Button
+                label={row.laporan_tambahan ? 'Sudah Melaporkan' : 'Isi Laporan'}
+                severity={row.laporan_tambahan ? "success" : "primary"}
+                onClick={() => {
+                    setCurrentTaskTambahan(row);
+                    setLaporanTextTambahan(row.laporan_tambahan || '');
+                    setLaporanPathTambahan(row.laporan_tambahan_path);
+                    setShowDialogTambahan(true);
+                }}
+                disabled={!bolehLapor}
+            />
+        );
+    };
+
     // simpan hasil laporan
     const handleSaveLaporan = async () => {
         if (!currentTask) return;
@@ -213,11 +235,43 @@ export default function DaftarNotifikasi() {
         }
     };
 
+    const handleSaveLaporanTambahan = async () => {
+        if (!currentTaskTambahan) return;
+
+        const formData = new FormData();
+        if (form.file) formData.append("laporan_tambahan_path", form.file);
+        formData.append("laporan_tambahan", laporanTextTambahan);
+        try {
+            const res = await axios.patch(
+                `http://localhost:3000/api/task/disposisi/${currentTaskTambahan._id}/laporan-tambahan`,
+                formData,
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+
+            const updated = res.data.disposisi;
+
+            setTasks((prev) =>
+                prev.map((t) => (t._id === updated._id ? updated : t))
+            );
+
+            setShowDialogTambahan(false);
+            setCurrentTaskTambahan(null);
+            setLaporanTextTambahan('');
+        } catch (err) {
+            console.error(
+                'Error update laporan:',
+                err.response?.data || err.message
+            );
+        }
+    };
+
     return (
         <div className="card">
             <MainCard title="Daftar Notifikasi">
 
-
+                {/* Dialog atau Pop Up untuk membuat laporan */}
                 <Dialog
                     header="Laporan Tugas"
                     visible={showDialog}
@@ -272,10 +326,9 @@ export default function DaftarNotifikasi() {
                                 <small className="text-gray-500 mb-2 block">Belum ada file laporan.</small>
                             )}
 
-                            <p>
+                             <p>
                                     <strong>Komentar atau Feedback EVP:</strong> {currentTask.komentar}
                                 </p>
-
 
                             <div className="flex justify-end gap-2 mt-3">
                                 {currentTask.laporan_status =="SUDAH" ? (
@@ -291,6 +344,78 @@ export default function DaftarNotifikasi() {
                         </div>
                     )}
                 </Dialog>
+                {/* End */}
+
+                {/* Dialog atau Pop Up untuk membuat laporan TAMBAHAN */}
+                <Dialog
+                    header="Laporan Tambahan"
+                    visible={showDialogTambahan}
+                    style={{ width: '30rem' }}
+                    modal
+                    onHide={() => setShowDialogTambahan(false)}
+                >
+                    {currentTaskTambahan && (
+                        <div className="flex flex-column gap-3">
+                            <div>
+                                <p>
+                                    <strong>Nama Kegiatan:</strong> {currentTaskTambahan.nama_kegiatan}
+                                </p>
+                                <p>
+                                    <strong>Agenda:</strong> {currentTaskTambahan.agenda_kegiatan}
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block mb-2 font-semibold">Isi Laporan</label>
+
+                                <Editor
+                                    value={laporanTextTambahan}
+                                    onTextChange={(e) => setLaporanTextTambahan(e.htmlValue)}
+                                    style={{ height: '200px' }}
+                                    className={errors.laporan_tambahan ? "p-invalid" : ""}
+                                />
+
+                                {/* File */}
+                                <div className="input_container">
+                                <input
+                                    id="laporan_tambahan_path"
+                                    type="file"
+                                    className="w-full mb-3"
+                                    accept="application/pdf"
+                                    onChange={(e) => handleFileChange(e)}
+                                />
+                                </div>
+                                {errors.file && <small className="p-error">{errors.file}</small>}
+                            </div>
+
+                            {laporanPathTambahan ? (
+                                <Button
+                                    label="Lihat File Laporan"
+                                    icon="pi pi-file"
+                                    className="p-button p-button-sm mb-2"
+                                    onClick={() =>
+                                        window.open(`http://localhost:3000/${laporanPathTambahan}`, "_blank")
+                                    }
+                                />
+                            ) : (
+                                <small className="text-gray-500 mb-2 block">Belum ada file laporan.</small>
+                            )}
+
+                            <div className="flex justify-end gap-2 mt-3">
+                                {currentTask?.laporan_tambahan_status === "SUDAH" ? 
+                                <Button
+                                    label="Kembali"
+                                    className="p-button-text"
+                                    onClick={() => setShowDialogTambahan(false)}
+                                />
+                                  : 
+                                <Button label="Simpan" onClick={handleSaveLaporanTambahan} />
+                                }
+                            </div>
+                        </div>
+                    )}
+                </Dialog>
+                {/* End */}
 
                 <Dialog
                     header="Detail Notifikasi"
@@ -327,6 +452,7 @@ export default function DaftarNotifikasi() {
                     <Column field="tempat" header="Tempat" style={{ minWidth: '12rem' }} />
                     <Column header="Detail" body={detailBodyTemplate} style={{ textAlign: 'left', width: '6rem' }} />
                     <Column header="Laporan" body={laporanActionTemplate} style={{ textAlign: 'center', width: '6rem' }} />
+                    <Column header="Laporan Tambahan" body={laporanTambahanActionTemplate} style={{ textAlign: 'center', width: '6rem' }} />
                 </DataTable>
 
             </MainCard>

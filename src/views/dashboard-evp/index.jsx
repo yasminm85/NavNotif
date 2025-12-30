@@ -11,7 +11,6 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './app.css';
-import Modal from '../dashboard-evp/Modal.jsx';
 import axios from 'axios';
 import { Tag } from 'primereact/tag';
 
