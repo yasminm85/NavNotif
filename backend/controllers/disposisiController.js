@@ -370,7 +370,8 @@ const updateLaporanTambahan = async (req, res) => {
 
         disposisi.laporan_tambahan_by = userId
         disposisi.laporan_tambahan_at = new Date();
-
+        disposisi.laporan_tambahan_status = "SUDAH";
+        
         await disposisi.save();
 
         const populated = await Disposisi.findById(disposisi._id)

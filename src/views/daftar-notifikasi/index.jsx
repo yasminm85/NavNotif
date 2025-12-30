@@ -256,6 +256,8 @@ export default function DaftarNotifikasi() {
                 prev.map((t) => (t._id === updated._id ? updated : t))
             );
 
+            
+
             setShowDialogTambahan(false);
             setCurrentTaskTambahan(null);
             setLaporanTextTambahan('');
@@ -331,7 +333,7 @@ export default function DaftarNotifikasi() {
                                 </p>
 
                             <div className="flex justify-end gap-2 mt-3">
-                                {currentTask.laporan_status =="SUDAH" ? (
+                                {currentTask.laporan_status ==="true" ? (
                                 <Button
                                     label="Kembali"
                                     className="p-button-text"
@@ -375,6 +377,17 @@ export default function DaftarNotifikasi() {
                                     className={errors.laporan_tambahan ? "p-invalid" : ""}
                                 />
 
+                                {/* <p className="text-xs text-red-500">
+                                    STATUS: {String(currentTaskTambahan?.laporan_tambahan_status)}
+                                </p>
+
+                                {console.log(
+                                    "laporan_tambahan_status:",
+                                    currentTaskTambahan?.laporan_tambahan_status,
+                                    typeof currentTaskTambahan?.laporan_tambahan_status
+                                )} */}
+
+
                                 {/* File */}
                                 <div className="input_container">
                                 <input
@@ -400,17 +413,23 @@ export default function DaftarNotifikasi() {
                             ) : (
                                 <small className="text-gray-500 mb-2 block">Belum ada file laporan.</small>
                             )}
+                            
 
                             <div className="flex justify-end gap-2 mt-3">
-                                {currentTask?.laporan_tambahan_status === "SUDAH" ? 
+
+                                {currentTaskTambahan?.laporan_tambahan ? (
                                 <Button
                                     label="Kembali"
                                     className="p-button-text"
                                     onClick={() => setShowDialogTambahan(false)}
                                 />
-                                  : 
-                                <Button label="Simpan" onClick={handleSaveLaporanTambahan} />
-                                }
+                            ) : (
+                                <Button
+                                    label="Simpan"
+                                    onClick={handleSaveLaporanTambahan}
+                                />
+                            )}
+
                             </div>
                         </div>
                     )}
