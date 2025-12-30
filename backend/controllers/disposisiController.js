@@ -9,6 +9,7 @@ const getDisposisi = async (req, res) => {
         const disposisi = await Disposisi.find()
             .populate("nama_yang_dituju", "name")
             .populate("laporan_by", "name email")
+            .populate("laporan_tambahan_by", "name email")
             .sort({ createdAt: -1 });
         res.status(200).json(disposisi);
     } catch (error) {
@@ -248,6 +249,7 @@ const getMyTasks = async (req, res) => {
         })
             .populate("nama_yang_dituju", "name email")
             .populate("laporan_by", "name email")
+            .populate("laporan_tambahan_by", "name email")
             .sort({ tanggal: -1 });
 
         res.json(disposisiList);
@@ -267,9 +269,6 @@ const updateLaporan = async (req, res) => {
 
         const file = req.file;
         const filePath = file ? file.path : null;
-        // console.log(file);
-        // console.log(filePath);
-        // console.log(laporan);
 
         const hasText = laporan && laporan.trim();
         const hasFile = !!file;
@@ -330,11 +329,10 @@ const updateLaporanTambahan = async (req, res) => {
         const userId = req.user.id || req.user._id;
         const userRole = req.user.role;
 
+        console.log('userId:', userId);
+
         const file = req.file;
         const filePath = file ? file.path : null;
-        // console.log(file);
-        // console.log(filePath);
-        // console.log(laporan);
 
         const hasText = laporan_tambahan && laporan_tambahan.trim();
         const hasFile = !!file;
@@ -370,14 +368,16 @@ const updateLaporanTambahan = async (req, res) => {
 
         disposisi.laporan_tambahan_by = userId
         disposisi.laporan_tambahan_at = new Date();
-        disposisi.laporan_tambahan_status = "SUDAH";
-        
+        disposisi.laporan_tambahan_status = 'SUDAH';
+
         await disposisi.save();
 
         const populated = await Disposisi.findById(disposisi._id)
             .populate('nama_yang_dituju', 'name email')
             .populate('laporan_tambahan_by', 'name email');
-            
+
+        console.log('populated laporan_tambahan_by:', populated.laporan_tambahan_by);
+
         res.json({
             message: 'Laporan tambahan berhasil disimpan',
             disposisi: populated

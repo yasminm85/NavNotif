@@ -25,6 +25,10 @@ export default function DaftarNotifikasi() {
         laporan: "",
         file: null
     });
+    const [formTambahan, setFormTambahan] = useState({
+        laporan_tambahan: "",
+        file_tambahan: null
+    });
     const [errors, setErrors] = useState({});
     const [tasks, setTasks] = useState([]);
     const [currentTask, setCurrentTask] = useState(null);
@@ -55,16 +59,6 @@ export default function DaftarNotifikasi() {
     useEffect(() => {
         fetchTasks();
     }, []);
-
-    //validate form kalau ada laporan yang kosong belum diisi pas ngisi di form
-    const validateForm = () => {
-        let newErrors = {};
-
-        if (!form.laporan) newErrors.laporan = "Laporan wajib diisi.";
-
-        return newErrors;
-    };
-
 
     // template buat buka data detail dan ada di data table
     const detailBodyTemplate = (rowData) => {
@@ -102,6 +96,7 @@ export default function DaftarNotifikasi() {
     const handleChange = (field, value) => {
 
         setForm({ ...form, [field]: value });
+        setFormTambahan({ ...form, [field]: value });
         setErrors({ ...errors, [field]: "" });
     };
 
@@ -214,9 +209,11 @@ export default function DaftarNotifikasi() {
                 `http://localhost:3000/api/task/disposisi/${currentTask._id}/laporan`,
                 formData,
                 {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { Authorization: `Bearer ${token}` },
+                    "Content-Type": "multipart/form-data"
                 }
             );
+
 
             const updated = res.data.disposisi;
 
@@ -239,16 +236,19 @@ export default function DaftarNotifikasi() {
         if (!currentTaskTambahan) return;
 
         const formData = new FormData();
-        if (form.file) formData.append("laporan_tambahan_path", form.file);
+        if (form.file_tambahan) formData.append("laporan_tambahan_path", form.file_tambahan);
         formData.append("laporan_tambahan", laporanTextTambahan);
         try {
             const res = await axios.patch(
                 `http://localhost:3000/api/task/disposisi/${currentTaskTambahan._id}/laporan-tambahan`,
                 formData,
                 {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { Authorization: `Bearer ${token}` },
+                    "Content-Type": "multipart/form-data"
                 }
             );
+
+        console.log("UPDATED tambahan from API:", res.data.disposisi.laporan_tambahan_by);
 
             const updated = res.data.disposisi;
 
@@ -256,7 +256,7 @@ export default function DaftarNotifikasi() {
                 prev.map((t) => (t._id === updated._id ? updated : t))
             );
 
-            
+
 
             setShowDialogTambahan(false);
             setCurrentTaskTambahan(null);
@@ -304,13 +304,13 @@ export default function DaftarNotifikasi() {
 
                                 {/* File */}
                                 <div className="input_container">
-                                <input
-                                    id="fileUpload"
-                                    type="file"
-                                    className="w-full mb-3"
-                                    accept="application/pdf"
-                                    onChange={(e) => handleFileChange(e)}
-                                />
+                                    <input
+                                        id="fileUpload"
+                                        type="file"
+                                        className="w-full mb-3"
+                                        accept="application/pdf"
+                                        onChange={(e) => handleFileChange(e)}
+                                    />
                                 </div>
                                 {errors.file && <small className="p-error">{errors.file}</small>}
                             </div>
@@ -328,19 +328,19 @@ export default function DaftarNotifikasi() {
                                 <small className="text-gray-500 mb-2 block">Belum ada file laporan.</small>
                             )}
 
-                             <p>
-                                    <strong>Komentar atau Feedback EVP:</strong> {currentTask.komentar}
-                                </p>
+                            <p>
+                                <strong>Komentar atau Feedback EVP:</strong> {currentTask.komentar}
+                            </p>
 
                             <div className="flex justify-end gap-2 mt-3">
-                                {currentTask.laporan_status ==="SUDAH" ? (
-                                <Button
-                                    label="Kembali"
-                                    className="p-button-text"
-                                    onClick={() => setShowDialog(false)}
-                                />
-                                 ) : (
-                                <Button label="Simpan" onClick={handleSaveLaporan} />
+                                {currentTask.laporan_status == "SUDAH" ? (
+                                    <Button
+                                        label="Kembali"
+                                        className="p-button-text"
+                                        onClick={() => setShowDialog(false)}
+                                    />
+                                ) : (
+                                    <Button label="Simpan" onClick={handleSaveLaporan} />
                                 )}
                             </div>
                         </div>
@@ -379,13 +379,13 @@ export default function DaftarNotifikasi() {
 
                                 {/* File */}
                                 <div className="input_container">
-                                <input
-                                    id="laporan_tambahan_path"
-                                    type="file"
-                                    className="w-full mb-3"
-                                    accept="application/pdf"
-                                    onChange={(e) => handleFileChange(e)}
-                                />
+                                    <input
+                                        id="laporan_tambahan_path"
+                                        type="file"
+                                        className="w-full mb-3"
+                                        accept="application/pdf"
+                                        onChange={(e) => handleFileChange(e)}
+                                    />
                                 </div>
                                 {errors.file && <small className="p-error">{errors.file}</small>}
                             </div>
@@ -402,22 +402,21 @@ export default function DaftarNotifikasi() {
                             ) : (
                                 <small className="text-gray-500 mb-2 block">Belum ada file laporan.</small>
                             )}
-                            
+
 
                             <div className="flex justify-end gap-2 mt-3">
-
                                 {currentTaskTambahan?.laporan_tambahan ? (
-                                <Button
-                                    label="Kembali"
-                                    className="p-button-text"
-                                    onClick={() => setShowDialogTambahan(false)}
-                                />
-                            ) : (
-                                <Button
-                                    label="Simpan"
-                                    onClick={handleSaveLaporanTambahan}
-                                />
-                            )}
+                                    <Button
+                                        label="Kembali"
+                                        className="p-button-text"
+                                        onClick={() => setShowDialogTambahan(false)}
+                                    />
+                                ) : (
+                                    <Button
+                                        label="Simpan"
+                                        onClick={handleSaveLaporanTambahan}
+                                    />
+                                )}
 
                             </div>
                         </div>

@@ -16,19 +16,27 @@ import { Tag } from 'primereact/tag';
 
 export default function DashboardEVP() {
     const token = localStorage.getItem('token');
-    const [editMode, setEditMode] = useState(false);
     const [loading, setLoading] = useState(true);
     const [selectedLaporan, setSelectedLaporan] = useState("");
+    const [selectedLaporanTambahan, setSelectedLaporanTambahan] = useState("");
     const [showLaporan, setShowLaporan] = useState(false);
+    const [showLaporanTambahan, setShowLaporanTambahan] = useState(false);
     const [showDisposisi, setShowDisposisi] = useState([]);
-    const [errors, setErrors] = useState({});
     const [laporanPath, setLaporanPath] = useState(null);
+    const [laporanPathTambahan, setLaporanPathTambahan] = useState(null);
     const [laporanby, setLaporanBy] = useState("");
+    const [laporanbyTambahan, setLaporanByTambahan] = useState("");
     const [laporanat, setLaporanAt] = useState("");
+    const [laporanatTambahan, setLaporatAtTambahan] = useState("");
     const [komentarText, setKomentar] = useState("");
-    const [pegawaisel, setPegawai] = useState([]);
     const [currentTask, setCurrentTask] = useState(null);
+    const [currentTaskTambahan, setCurrentTaskTambahan] = useState(null);
     const [visible, setVisible] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [laporantype, setLaporanType] = useState("");
+    const [pegawaisel, setPegawai] = useState([]);
+
+
 
     // get data pegawai
     const fetchPegawai = async () => {
@@ -84,6 +92,26 @@ export default function DashboardEVP() {
                         setLaporanAt(rowData.laporan_at);
                         setKomentar(rowData.komentar);
                         setShowLaporan(true);
+                    }}
+                />
+            </div>
+        );
+    };
+
+    const laporanTambahanBodyTemplate = (rowData) => {
+        console.log(rowData);
+        return (
+            <div className="flex gap-2">
+                <Button
+                    icon="pi pi-folder"
+                    className="p-button-rounded p-button-help p-button-sm"
+                    onClick={() => {
+                        setCurrentTaskTambahan(rowData);
+                        setSelectedLaporanTambahan(rowData.laporan_tambahan);
+                        setLaporanPathTambahan(rowData.laporan_tambahan_path);
+                        setLaporanByTambahan(rowData.laporan_tambahan_by);
+                        setLaporatAtTambahan(rowData.laporan_tambahan_at);
+                        setShowLaporanTambahan(true);
                     }}
                 />
             </div>
@@ -263,6 +291,55 @@ export default function DashboardEVP() {
                     </div>
                 </Dialog>
 
+
+                {/* Laporan Tambahan*/}
+                <Dialog
+                    header="Laporan Disposisi"
+                    visible={showLaporanTambahan}
+                    modal
+                    style={{ width: "25rem" }}
+                    onHide={() => {
+                        setShowLaporanTambahan(false)
+                        setSelectedLaporanTambahan(null)
+                    }}
+                >
+                    {selectedLaporanTambahan ? (
+                        <div className="mt-3">
+                            <label className="block mb-2 font-semibold">Isi Laporan</label>
+                            <div className="relative">
+                                <InputTextarea
+                                    value={htmlToPlainText(selectedLaporanTambahan)}
+                                    disabled
+                                    rows={5}
+                                    cols={30}
+                                    style={{ whiteSpace: 'pre-wrap' }}
+                                />
+                                <Button
+                                    icon="pi pi-window-maximize"
+                                    className="p-button-text p-button-sm absolute top-2 right-2"
+                                    onClick={() => setVisible(true)}
+                                    tooltip="Lihat fullscreen"
+                                    tooltipOptions={{ position: 'left' }}
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <Typography color="error">Belum ada laporan yang ditulis.</Typography>
+                    )}
+                    {laporanPathTambahan ? (
+                        <Button
+                            label="Lihat File Laporan"
+                            icon="pi pi-file"
+                            className="p-button p-button-sm"
+                            onClick={() => window.open(`http://localhost:3000/${laporanPathTambahan}`, "_blank")}
+                        />
+                    ) : (
+                        <Typography color="error">Belum ada file laporan.</Typography>
+                    )}
+                    <Typography className='mt-3'>Ditulis Oleh: {laporanbyTambahan?.name ?? "-"}</Typography>
+                    <Typography className='mt-3'>Ditulis Tanggal: {formDate(laporanatTambahan) ?? "-"} - Jam: {formTimeLaporan(laporanatTambahan) ?? "-"}</Typography>
+                </Dialog>
+
                 <Dialog
                     header="Isi Laporan"
                     visible={visible}
@@ -295,7 +372,7 @@ export default function DashboardEVP() {
                     <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
                     <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
                     <Column header="Status Laporan" body={statusBodyTemplate} style={{ minWidth: '8rem' }} />
-
+                    <Column field="laporan_tambahan" header="Laporan Tambahan" body={laporanTambahanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
                     {/*  Action */}
                 </DataTable>
 

@@ -735,9 +735,6 @@ export default function Disposisi() {
                             onChange={(e) => setSelectedNotifOptions(e.value)}
                         />
                     </div>
-
-
-
                 </Dialog>
 
                 {/* DETAIL */}

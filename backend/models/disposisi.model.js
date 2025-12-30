@@ -126,8 +126,7 @@ const DisposisiSchema = mongoose.Schema(
         laporan_tambahan_at: {
             type: Date,
             default: null
-        }
-
+        },
     },
     {
         timestamps: true

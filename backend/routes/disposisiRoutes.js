@@ -23,15 +23,6 @@ router.get('/disposisi/tablechart', reportTable);
 //route new disposisi
 router.post('/disposisi', verifyToken, authorizationRoles('admin'), upload.single('file'), createDisposisi);
 
-// route disposisi specific
-router.get('/disposisi/:id', verifyToken, authorizationRoles('admin'), getDisposisis);
-
-// delete disposisi
-router.delete('/disposisi/:id', verifyToken, authorizationRoles('admin'), deleteDisposisi);
-
-// update disposisi
-router.patch('/disposisi/:id', verifyToken, authorizationRoles('admin'), upload.single('file'),updateDisposisi);
-
 // create dan update laporan
 router.patch('/disposisi/:id/laporan', verifyToken, authorizationRoles('pegawai', 'admin'), upload_laporan.single('laporan_file_path'), updateLaporan);
 
@@ -41,6 +32,14 @@ router.patch('/disposisi/:id/laporan-tambahan', verifyToken, authorizationRoles(
 // nambahin komentar
 router.patch('/disposisi/:id/komentar', verifyToken, authorizationRoles('EVP'), createKomentar);
 
+// route disposisi specific
+router.get('/disposisi/:id', verifyToken, authorizationRoles('admin'), getDisposisis);
+
+// delete disposisi
+router.delete('/disposisi/:id', verifyToken, authorizationRoles('admin'), deleteDisposisi);
+
+// update disposisi
+router.patch('/disposisi/:id', verifyToken, authorizationRoles('admin'), upload.single('file'),updateDisposisi);
 
 
 module.exports = router;
