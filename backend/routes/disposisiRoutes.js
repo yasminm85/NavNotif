@@ -18,7 +18,7 @@ router.get('/disposisi/count', verifyToken, authorizationRoles('admin'), getDisp
 
 router.get('/disposisi/barchart', statsDirektoratTotal);
 
-router.get('/disposisi/tablechart', reportTable);
+router.get('/disposisi/report-table', reportTable);
 
 //route new disposisi
 router.post('/disposisi', verifyToken, authorizationRoles('admin'), upload.single('file'), createDisposisi);

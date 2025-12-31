@@ -41,116 +41,116 @@ const getDisposisis = async (req, res) => {
 }
 
 const REMINDER_OFFSET_MINUTES = {
-  REMINDER_1H: -60,
-  REMINDER_30M: -30
+    REMINDER_1H: -60,
+    REMINDER_30M: -30
 };
 
 const createDisposisi = async (req, res) => {
-  try {
-    const filePath = req.file ? req.file.path : null;
-
-    const nama_yang_dituju = req.body.nama_yang_dituju ? JSON.parse(req.body.nama_yang_dituju) : [];
-    const direktorat = req.body.direktorat ? JSON.parse(req.body.direktorat) : [];
-    const divisi = req.body.divisi ? JSON.parse(req.body.divisi) : [];
-
-    let notificationOptions = [];
     try {
-      if (Array.isArray(req.body.notificationOptions)) {
-        notificationOptions = req.body.notificationOptions;
-      } else if (typeof req.body.notificationOptions === 'string' && req.body.notificationOptions.trim()) {
+        const filePath = req.file ? req.file.path : null;
+
+        const nama_yang_dituju = req.body.nama_yang_dituju ? JSON.parse(req.body.nama_yang_dituju) : [];
+        const direktorat = req.body.direktorat ? JSON.parse(req.body.direktorat) : [];
+        const divisi = req.body.divisi ? JSON.parse(req.body.divisi) : [];
+
+        let notificationOptions = [];
         try {
-          notificationOptions = JSON.parse(req.body.notificationOptions);
-        } catch {
-          notificationOptions = req.body.notificationOptions; 
+            if (Array.isArray(req.body.notificationOptions)) {
+                notificationOptions = req.body.notificationOptions;
+            } else if (typeof req.body.notificationOptions === 'string' && req.body.notificationOptions.trim()) {
+                try {
+                    notificationOptions = JSON.parse(req.body.notificationOptions);
+                } catch {
+                    notificationOptions = req.body.notificationOptions;
+                }
+            }
+        } catch (e) {
+            notificationOptions = [];
         }
-      }
-    } catch (e) {
-      notificationOptions = [];
-    }
 
-    if (!Array.isArray(notificationOptions)) {
-      notificationOptions = notificationOptions ? [String(notificationOptions).trim()] : [];
-    } else {
-      notificationOptions = notificationOptions.map((x) => String(x).trim());
-    }
+        if (!Array.isArray(notificationOptions)) {
+            notificationOptions = notificationOptions ? [String(notificationOptions).trim()] : [];
+        } else {
+            notificationOptions = notificationOptions.map((x) => String(x).trim());
+        }
 
-    console.log('tangggal:', req.body.tanggal);
-    console.log('jam_mulai:', req.body.jam_mulai);
-    console.log('notificationOptions RAW:', req.body.notificationOptions);
-    console.log('notificationOptions NORMALIZED:', notificationOptions);
+        console.log('tangggal:', req.body.tanggal);
+        console.log('jam_mulai:', req.body.jam_mulai);
+        console.log('notificationOptions RAW:', req.body.notificationOptions);
+        console.log('notificationOptions NORMALIZED:', notificationOptions);
 
-    const disposisi = await Disposisi.create({
-      nama_kegiatan: req.body.nama_kegiatan,
-      agenda_kegiatan: req.body.agenda_kegiatan,
-      nama_yang_dituju,
-      direktorat,
-      divisi,
-      tanggal: req.body.tanggal,
-      jam_mulai: req.body.jam_mulai,
-      jam_selesai: req.body.jam_selesai,
-      tempat: req.body.tempat,
-      catatan: req.body.catatan,
-      dresscode: req.body.dresscode,
-      file_path: filePath,
-      notificationOptions
-    });
+        const disposisi = await Disposisi.create({
+            nama_kegiatan: req.body.nama_kegiatan,
+            agenda_kegiatan: req.body.agenda_kegiatan,
+            nama_yang_dituju,
+            direktorat,
+            divisi,
+            tanggal: req.body.tanggal,
+            jam_mulai: req.body.jam_mulai,
+            jam_selesai: req.body.jam_selesai,
+            tempat: req.body.tempat,
+            catatan: req.body.catatan,
+            dresscode: req.body.dresscode,
+            file_path: filePath,
+            notificationOptions
+        });
 
-    let notifDocs = [];
+        let notifDocs = [];
 
-    if (Array.isArray(nama_yang_dituju) && nama_yang_dituju.length > 0) {
-      const now = new Date();
+        if (Array.isArray(nama_yang_dituju) && nama_yang_dituju.length > 0) {
+            const now = new Date();
 
-      notifDocs = nama_yang_dituju.map((userId) => ({
-        disposisi: disposisi._id,
-        user: userId,
-        notifType: 'ON_CREATE',
-        sendAt: now,
-        isDone: false
-      }));
-
-      if (notificationOptions.length > 0) {
-        const eventDate = new Date(req.body.jam_mulai);
-
-        if (!isNaN(eventDate.getTime())) {
-          const uniqueOptions = [...new Set(notificationOptions)];
-          const reminderDocs = [];
-
-          uniqueOptions.forEach((optKey) => {
-            const offset = REMINDER_OFFSET_MINUTES[optKey];
-            if (offset === undefined) return;
-
-            const reminderTime = new Date(eventDate.getTime() + offset * 60 * 1000);
-            if (isNaN(reminderTime.getTime())) return;
-
-            nama_yang_dituju.forEach((userId) => {
-              reminderDocs.push({
+            notifDocs = nama_yang_dituju.map((userId) => ({
                 disposisi: disposisi._id,
                 user: userId,
-                notifType: optKey,
-                sendAt: reminderTime,
+                notifType: 'ON_CREATE',
+                sendAt: now,
                 isDone: false
-              });
-            });
-          });
+            }));
 
-          notifDocs = notifDocs.concat(reminderDocs);
-        } else {
-          console.log('Invalid Jam Mulai', {
-            jam_mulai: req.body.jam_mulai
-          });
+            if (notificationOptions.length > 0) {
+                const eventDate = new Date(req.body.jam_mulai);
+
+                if (!isNaN(eventDate.getTime())) {
+                    const uniqueOptions = [...new Set(notificationOptions)];
+                    const reminderDocs = [];
+
+                    uniqueOptions.forEach((optKey) => {
+                        const offset = REMINDER_OFFSET_MINUTES[optKey];
+                        if (offset === undefined) return;
+
+                        const reminderTime = new Date(eventDate.getTime() + offset * 60 * 1000);
+                        if (isNaN(reminderTime.getTime())) return;
+
+                        nama_yang_dituju.forEach((userId) => {
+                            reminderDocs.push({
+                                disposisi: disposisi._id,
+                                user: userId,
+                                notifType: optKey,
+                                sendAt: reminderTime,
+                                isDone: false
+                            });
+                        });
+                    });
+
+                    notifDocs = notifDocs.concat(reminderDocs);
+                } else {
+                    console.log('Invalid Jam Mulai', {
+                        jam_mulai: req.body.jam_mulai
+                    });
+                }
+            }
+
+            if (notifDocs.length > 0) {
+                await Notification.insertMany(notifDocs);
+            }
         }
-      }
 
-      if (notifDocs.length > 0) {
-        await Notification.insertMany(notifDocs);
-      }
+        res.status(200).json(disposisi);
+    } catch (error) {
+        console.error('createDisposisi error:', error);
+        res.status(500).json({ message: error.message });
     }
-
-    res.status(200).json(disposisi);
-  } catch (error) {
-    console.error('createDisposisi error:', error);
-    res.status(500).json({ message: error.message });
-  }
 };
 
 
@@ -453,39 +453,107 @@ const statsDirektoratTotal = async (req, res) => {
 
 const reportTable = async (req, res) => {
     try {
-        const rows = await Disposisi.aggregate([
-            { $unwind: '$direktorat' },
-            { $unwind: '$divisi' },
-            {
-                $group: {
-                    _id: { dir: '$direktorat', div: '$divisi' },
-                    totalKegiatan: { $sum: 1 },
-                    belumMelapor: {
-                        $sum: { $cond: [{ $eq: ['$laporan_status', 'BELUM'] }, 1, 0] }
-                    },
-                    sudahMelapor: {
-                        $sum: { $cond: [{ $ne: ['$laporan_status', 'BELUM'] }, 1, 0] }
+        const now = new Date();
+
+        const [rows, direktoratList, divisiList] = await Promise.all([
+            Disposisi.aggregate([
+                {
+                    $addFields: {
+                        isPastOrToday: { $lte: ['$tanggal', now] }
+                    }
+                },
+                { $unwind: '$direktorat' },
+                { $unwind: '$divisi' },
+                {
+                    $group: {
+                        _id: { dir: '$direktorat', div: '$divisi' },
+                        totalKegiatan: { $sum: 1 },
+
+                        belumMelapor: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            '$isPastOrToday',
+                                            { $eq: ['$laporan_status', 'BELUM'] }
+                                        ]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        sudahMelapor: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            '$isPastOrToday',
+                                            { $ne: ['$laporan_status', 'BELUM'] }
+                                        ]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+
+                        belumMengikuti: {
+                            $sum: {
+                                $cond: [{ $not: ['$isPastOrToday'] }, 1, 0]
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        direktoratId: '$_id.dir',
+                        divisiId: '$_id.div',
+                        totalKegiatan: 1,
+                        belumMelapor: 1,
+                        sudahMelapor: 1,
+                        belumMengikuti: 1
                     }
                 }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    direktoratId: '$_id.dir',
-                    divisiId: '$_id.div',
-                    totalKegiatan: 1,
-                    belumMelapor: 1,
-                    sudahMelapor: 1
-                }
-            },
-            { $sort: { direktoratId: 1, divisiId: 1 } }
+            ]),
+            Direktorat.find().sort({ order: 1 }).lean(),
+            Divisi.find().sort({ order: 1 }).lean()
         ]);
 
-        res.json({ data: rows });
+        const statsMap = new Map(
+            rows.map(r => [`${r.direktoratId}__${r.divisiId}`, r])
+        );
+
+        const data = direktoratList.map(dir => {
+            const divisiByDir = divisiList.filter(v => v.direktoratId === dir._id);
+
+            return {
+                id: dir._id,
+                direktorat: dir.name,
+                expanded: true,
+                divisi: divisiByDir.map(div => {
+                    const key = `${dir._id}__${div._id}`;
+                    const stat = statsMap.get(key);
+
+                    return {
+                        id: div._id,
+                        nama: div.name,
+                        totalKegiatan: stat?.totalKegiatan ?? 0,
+                        sudahMelaporkan: stat?.sudahMelapor ?? 0,
+                        belumMelaporkan: stat?.belumMelapor ?? 0,
+                        belumMengikuti: stat?.belumMengikuti ?? 0
+                    };
+                })
+            };
+        });
+
+        res.json({ data });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 };
+
 
 
 

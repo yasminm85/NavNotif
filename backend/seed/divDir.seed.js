@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Direktorat = require('../models/direktorat.model');
 const Divisi = require('../models/divisi.model');
-const { Directions } = require('@mui/icons-material');
 require('dotenv').config();
 
 const DIREKTORAT = [
