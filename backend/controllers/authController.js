@@ -17,6 +17,7 @@ const register = async (req, res) => {
     }
 }
 
+// ambil semua user dari semua role 
 const getAllUser = async (req, res) => {
     try {
         const user = await User.find({});
@@ -59,7 +60,7 @@ const login = async (req, res) => {
     }
 };
 
-// dapatkan all user
+// dapatkan user berdasarkan token
 const getUserDetail = async (req, res) => {
     try {
         let token;
@@ -117,6 +118,7 @@ const getUserById = async (req, res) => {
     }
 }
 
+//update user
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;

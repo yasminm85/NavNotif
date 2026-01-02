@@ -23,7 +23,7 @@ const getMyNotifications = async (req, res) => {
       })
         .populate("disposisi")
         .sort({ sendAt: 1 })
-        .limit(20) // biar gak banjir
+        .limit(20) 
     ]);
 
     if (reminders.length > 0) {
@@ -39,8 +39,6 @@ const getMyNotifications = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 
 // menandakan bahwa notifikasi sudah diisi

@@ -36,17 +36,6 @@ const DIVISI = [
     { _id: 'LKM', name: 'Learning and Knowledge Management', direktoratId: 'DM', order: 6 },
 ];
 
-async function upsertMany(Model, docs) {
-    const ops = docs.map((doc) => ({
-        updateOne: {
-            filter: { _id: doc._id },
-            update: { $set: doc },
-            upsert: true
-        }
-    }));
-    return Model.bulkWrite(ops, { ordered: false });
-}
-
 async function main() {
     const uri = process.env.DB_CONNECTION;
     if (!uri) throw new Error('MONGO_URI undefined');

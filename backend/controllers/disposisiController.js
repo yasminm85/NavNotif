@@ -40,6 +40,7 @@ const getDisposisis = async (req, res) => {
     }
 }
 
+//membuat disposisi
 const REMINDER_OFFSET_MINUTES = {
     REMINDER_1H: -60,
     REMINDER_30M: -30
@@ -74,10 +75,10 @@ const createDisposisi = async (req, res) => {
             notificationOptions = notificationOptions.map((x) => String(x).trim());
         }
 
-        console.log('tangggal:', req.body.tanggal);
-        console.log('jam_mulai:', req.body.jam_mulai);
-        console.log('notificationOptions RAW:', req.body.notificationOptions);
-        console.log('notificationOptions NORMALIZED:', notificationOptions);
+        // console.log('tangggal:', req.body.tanggal);
+        // console.log('jam_mulai:', req.body.jam_mulai);
+        // console.log('notificationOptions rw:', req.body.notificationOptions);
+        // console.log('notificationOptions nrml:', notificationOptions);
 
         const disposisi = await Disposisi.create({
             nama_kegiatan: req.body.nama_kegiatan,
@@ -154,8 +155,6 @@ const createDisposisi = async (req, res) => {
 };
 
 
-
-
 //upate disposisi
 const updateDisposisi = async (req, res) => {
     try {
@@ -218,8 +217,6 @@ const updateDisposisi = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
-
 
 //delete disposisi
 const deleteDisposisi = async (req, res) => {
@@ -389,7 +386,6 @@ const updateLaporanTambahan = async (req, res) => {
 };
 
 // menambahkan komentar
-
 const createKomentar = async (req, res) => {
     try {
         const { id } = req.params;
@@ -419,7 +415,7 @@ const createKomentar = async (req, res) => {
     }
 };
 
-
+// buat di bar-chart total kegiatan sesuai direktorat
 const statsDirektoratTotal = async (req, res) => {
     try {
         const [rows, direktoratList, divisiList] = await Promise.all([
@@ -453,78 +449,97 @@ const statsDirektoratTotal = async (req, res) => {
 
 const reportTable = async (req, res) => {
     try {
+        const { month, year } = req.query;
+
+        let matchStage = {};
+
+        if (year && month) {
+            const y = Number(year);
+            const m = Number(month); 
+
+            const startDate = new Date(y, m - 1, 1, 0, 0, 0, 0);
+            const endExclusive = new Date(y, m, 1, 0, 0, 0, 0);
+
+            matchStage.tanggal = { $gte: startDate, $lt: endExclusive };
+        } else if (year) {
+            const y = Number(year);
+            const startDate = new Date(y, 0, 1, 0, 0, 0, 0);
+            const endExclusive = new Date(y + 1, 0, 1, 0, 0, 0, 0);
+
+            matchStage.tanggal = { $gte: startDate, $lt: endExclusive };
+        }
+
         const now = new Date();
 
-        const [rows, direktoratList, divisiList] = await Promise.all([
-            Disposisi.aggregate([
-                {
-                    $addFields: {
-                        isPastOrToday: { $lte: ['$tanggal', now] }
-                    }
-                },
-                { $unwind: '$direktorat' },
-                { $unwind: '$divisi' },
-                {
-                    $group: {
-                        _id: { dir: '$direktorat', div: '$divisi' },
-                        totalKegiatan: { $sum: 1 },
+        const pipeline = [
+            ...(Object.keys(matchStage).length ? [{ $match: matchStage }] : []),
+            {
+                $addFields: {
+                    isPastOrToday: { $lte: ['$tanggal', now] }
+                }
+            },
+            { $unwind: '$direktorat' },
+            { $unwind: '$divisi' },
+            {
+                $group: {
+                    _id: { dir: '$direktorat', div: '$divisi' },
+                    totalKegiatan: { $sum: 1 },
 
-                        belumMelapor: {
-                            $sum: {
-                                $cond: [
-                                    {
-                                        $and: [
-                                            '$isPastOrToday',
-                                            { $eq: ['$laporan_status', 'BELUM'] }
-                                        ]
-                                    },
-                                    1,
-                                    0
-                                ]
-                            }
-                        },
-                        sudahMelapor: {
-                            $sum: {
-                                $cond: [
-                                    {
-                                        $and: [
-                                            '$isPastOrToday',
-                                            { $ne: ['$laporan_status', 'BELUM'] }
-                                        ]
-                                    },
-                                    1,
-                                    0
-                                ]
-                            }
-                        },
-
-                        belumMengikuti: {
-                            $sum: {
-                                $cond: [{ $not: ['$isPastOrToday'] }, 1, 0]
-                            }
+                    belumMelapor: {
+                        $sum: {
+                            $cond: [
+                                {
+                                    $and: [
+                                        '$isPastOrToday',
+                                        { $eq: ['$laporan_status', 'BELUM'] }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
                         }
-                    }
-                },
-                {
-                    $project: {
-                        _id: 0,
-                        direktoratId: '$_id.dir',
-                        divisiId: '$_id.div',
-                        totalKegiatan: 1,
-                        belumMelapor: 1,
-                        sudahMelapor: 1,
-                        belumMengikuti: 1
+                    },
+                    sudahMelapor: {
+                        $sum: {
+                            $cond: [
+                                {
+                                    $and: [
+                                        '$isPastOrToday',
+                                        { $ne: ['$laporan_status', 'BELUM'] }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    belumMengikuti: {
+                        $sum: { $cond: [{ $not: ['$isPastOrToday'] }, 1, 0] }
                     }
                 }
-            ]),
+            },
+            {
+                $project: {
+                    _id: 0,
+                    direktoratId: '$_id.dir',
+                    divisiId: '$_id.div',
+                    totalKegiatan: 1,
+                    belumMelapor: 1,
+                    sudahMelapor: 1,
+                    belumMengikuti: 1
+                }
+            }
+        ];
+
+        const [rows, direktoratList, divisiList] = await Promise.all([
+            Disposisi.aggregate(pipeline),
             Direktorat.find().sort({ order: 1 }).lean(),
             Divisi.find().sort({ order: 1 }).lean()
         ]);
 
-        const statsMap = new Map(
-            rows.map(r => [`${r.direktoratId}__${r.divisiId}`, r])
-        );
+        const statsMap = new Map(rows.map(r => [`${r.direktoratId}__${r.divisiId}`, r]));
 
+        // nampilin dari seed buat direktorat dan divisi
         const data = direktoratList.map(dir => {
             const divisiByDir = divisiList.filter(v => v.direktoratId === dir._id);
 
@@ -548,18 +563,12 @@ const reportTable = async (req, res) => {
             };
         });
 
-        res.json({ data });
+        return res.json({ data });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error('Error reportTable:', err);
+        return res.status(500).json({ message: err.message });
     }
 };
-
-
-
-
-
-
-
 
 module.exports = {
     getDisposisi,

@@ -16,8 +16,10 @@ router.get('/disposisi/my', verifyToken, authorizationRoles('pegawai', 'admin'),
 // hitung total disposisi
 router.get('/disposisi/count', verifyToken, authorizationRoles('admin'), getDisposisiCount);
 
+//route bar chart
 router.get('/disposisi/barchart', statsDirektoratTotal);
 
+// route report table bawahnya si bar chart
 router.get('/disposisi/report-table', reportTable);
 
 //route new disposisi
