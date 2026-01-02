@@ -11,16 +11,203 @@
     font-weight: bold;
 }
 
-/* agenda selesai - laporan BELUM diisi */
 .row-laporan-belum {
     background-color: #FCDE70 !important; /* kuning */
     color: #856404;
     font-weight: bold;
 }
 
-/* agenda selesai - laporan SUDAH diisi */
 .row-laporan-sudah {
     background-color: #C0EBA6 !important; /* hijau */
     color: #065f46;
     font-weight: bold;
+}
+
+.card {
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #87CEEB 0%, #4682B4 50%, #191970 100%);
+    padding: 30px;
+}
+
+/* Style untuk MainCard */
+.card .MuiPaper-root,
+.card > div {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.card .MuiCardHeader-root {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white !important;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 30px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card .MuiCardHeader-title span {
+    color: white !important;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    letter-spacing: 2px;
+}
+
+.p-datatable {
+    border-radius: 0 0 20px 20px;
+    overflow: hidden;
+    font-size: 20px !important;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+    background: linear-gradient(to right, #1e3c72 0%, #2a5298 100%) !important;
+    color: white !important;
+    font-weight: 800 !important;
+    padding: 20px 15px !important;
+    border: none !important;
+    text-transform: uppercase;
+    font-size: 22px !important;
+    letter-spacing: 1.5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Body Table */
+.p-datatable .p-datatable-tbody > tr {
+    transition: all 0.3s ease;
+    border-left: 5px solid transparent;
+}
+
+.p-datatable .p-datatable-tbody > tr:nth-child(even) {
+    background-color: #f0f4f8 !important;
+}
+
+.p-datatable .p-datatable-tbody > tr:nth-child(odd) {
+    background-color: #ffffff !important;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+    padding: 18px 15px !important;
+    border: none !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    font-size: 20px !important;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+
+.row-ongoing {
+    background: linear-gradient(to right, #4299e1 0%, #3182ce 100%) !important;
+    color: white !important;
+    font-weight: 800 !important;
+    border-left: 8px solid #2c5282 !important;
+    animation: glow 2s ease-in-out infinite;
+    box-shadow: 0 4px 20px rgba(66, 153, 225, 0.5);
+}
+
+.row-ongoing td {
+    color: white !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes glow {
+    0%, 100% { 
+        box-shadow: 0 4px 20px rgba(66, 153, 225, 0.5);
+    }
+    50% { 
+        box-shadow: 0 4px 30px rgba(66, 153, 225, 0.8);
+    }
+}
+
+.row-reminder {
+    background: linear-gradient(to right, #48bb78 0%, #38a169 100%) !important;
+    color: white !important;
+    font-weight: 800 !important;
+    border-left: 8px solid #22543d !important;
+    animation: flash 1.5s ease-in-out infinite;
+    box-shadow: 0 4px 20px rgba(72, 187, 120, 0.6);
+}
+
+.row-reminder td {
+    color: white !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.row-laporan-belum {
+    background: linear-gradient(to right, #ed8936 0%, #dd6b20 100%) !important;
+    color: white !important;
+    font-weight: 800 !important;
+    border-left: 8px solid #c05621 !important;
+    box-shadow: 0 4px 15px rgba(237, 137, 54, 0.4);
+}
+
+.row-laporan-belum td {
+    color: white !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.row-laporan-sudah {
+    background: linear-gradient(to right, #68d391 0%, #48bb78 100%) !important;
+    color: white !important;
+    font-weight: 800 !important;
+    border-left: 8px solid #22543d !important;
+    box-shadow: 0 4px 15px rgba(104, 211, 145, 0.4);
+}
+
+.row-laporan-sudah td {
+    color: white !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.p-datatable .p-datatable-wrapper::-webkit-scrollbar {
+    width: 12px;
+}
+
+.p-datatable .p-datatable-wrapper::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+.p-datatable .p-datatable-wrapper::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #1e3c72, #2a5298);
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+}
+
+.p-datatable .p-datatable-wrapper::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #2a5298, #1e3c72);
+}
+
+.p-datatable .p-datatable-loading-overlay {
+    background: rgba(30, 60, 114, 0.9) !important;
+}
+
+.p-datatable .p-progress-spinner svg {
+    stroke: white !important;
+}
+
+//responsive buat tv
+@media (min-width: 1920px) {
+    .p-datatable {
+        font-size: 24px !important;
+    }
+    
+    .p-datatable .p-datatable-thead > tr > th {
+        font-size: 26px !important;
+        padding: 25px 20px !important;
+    }
+    
+    .p-datatable .p-datatable-tbody > tr > td {
+        font-size: 24px !important;
+        padding: 22px 20px !important;
+    }
+    
+    .card .MuiCardHeader-title span {
+        font-size: 38px !important;
+    }
 }
