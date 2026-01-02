@@ -44,15 +44,7 @@ const dashboard = {
       breadcrumbs: false
 
     },
-    {
-      id: 'daftar-display',
-      title: 'Daftar Display',
-      type: 'item',
-      url: '/daftar-display',
-      icon: ViewStreamIcon,
-      breadcrumbs: false
 
-    },
   ]
 };
 
