@@ -13,7 +13,6 @@ import alarmSound from './alarm-sound.mp3';
 
 export default function Disposisi() {
     const playedRemindersRef = useRef([]);
-    const token = localStorage.getItem('token');
     const [loading, setLoading] = useState(true);
     const [showDisposisi, setShowDisposisi] = useState([]);
     const [pageTitle, setPageTitle] = useState("AGENDA KEGIATAN");
@@ -156,7 +155,7 @@ export default function Disposisi() {
 
             const response = await axios.get(
                 'http://localhost:3000/api/task/disposisi',
-                { headers: { Authorization: `Bearer ${token}` } }
+                
             );
 
             const items = filterValidItems(response.data);

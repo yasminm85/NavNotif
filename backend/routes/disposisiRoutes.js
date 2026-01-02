@@ -9,7 +9,7 @@ const upload_laporan_tambahan = require('../middleware/uploadFileLaporanTambahan
 const { getDisposisi, getDisposisiCount, getDisposisis, createDisposisi, deleteDisposisi, getMyTasks, updateDisposisi, updateLaporan, createKomentar, statsDirektoratTotal, reportTable, updateLaporanTambahan } = require('../controllers/disposisiController');
 
 // route all disposisi
-router.get('/disposisi', verifyToken, authorizationRoles('admin', 'EVP'), getDisposisi);
+router.get('/disposisi', getDisposisi);
 
 router.get('/disposisi/my', verifyToken, authorizationRoles('pegawai', 'admin'),  getMyTasks);
 

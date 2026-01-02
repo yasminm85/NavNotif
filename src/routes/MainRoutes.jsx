@@ -66,14 +66,6 @@ const MainRoutes = {
       )
     },
     {
-      path: '/daftar-display',
-      element: (
-            <ProtectedRoute allowedRoles={['admin']} > 
-            <DaftarDisplay />
-            </ProtectedRoute>
-      )
-    },
-    {
       path: '/dashboard-pegawai',
       element: (
             <ProtectedRoute allowedRoles={['pegawai']} > 

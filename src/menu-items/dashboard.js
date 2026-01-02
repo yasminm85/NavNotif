@@ -50,7 +50,6 @@ const dashboard = {
       type: 'item',
       url: '/daftar-display',
       icon: ViewStreamIcon,
-      allowedRoles: ['admin'],  
       breadcrumbs: false
 
     },
