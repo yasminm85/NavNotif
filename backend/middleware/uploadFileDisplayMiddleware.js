@@ -16,7 +16,7 @@ const upload_file_display = multer ({
     fileFilter: function(req, display_path, callback) {
         if(
             display_path.mimetype == "image/png" ||
-            display_path.mimetype == "image/jpg" ||
+            display_path.mimetype == "image/jpeg" ||
             display_path.mimetype == "video/mp4" ||
             display_path.mimetype == "video/webm"
         ){

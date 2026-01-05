@@ -1,22 +1,28 @@
 const Display = require('../models/display.model')
 const DurationAgenda = require('../models/durationAgenda.model')
 
-const createMedia = async (req, res) => {
-
+const getAllMedia = async (req, res) => {
     try {
-        const display_path = req.file.path;
+        const display = await Display.find({});
+        res.status(200).json(display);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
 
-        if (!display_path) {
+const createMedia = async (req, res) => {
+    try {
+        console.log(req.file);
+        if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded.' });
         }
 
         const fileDetail = {
             filename: req.file.filename,
             mimetype: req.file.mimetype,
-            path: display_path,
+            path: req.file.path,
             duration: req.body.duration
-        }
-        // console.log('File uploaded:', fileDetail);
+        };
 
         const display = await Display.create(fileDetail);
 
@@ -24,12 +30,13 @@ const createMedia = async (req, res) => {
             message: 'File uploaded successfully',
             display
         });
+
     } catch (error) {
-        res.status(500).message({ message: error.message });
+        console.error(error);
+        res.status(500).json({ message: error.message });
     }
-
-
 };
+
 
 const createAgendaDuration = async (req, res) => {
     try {
@@ -75,5 +82,6 @@ module.exports = {
     createMedia,
     createAgendaDuration,
     deleteMedia,
-    deleteDuration
+    deleteDuration,
+    getAllMedia
 };

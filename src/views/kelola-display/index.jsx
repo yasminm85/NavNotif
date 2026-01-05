@@ -1,7 +1,7 @@
 // TVDisplayAdmin.js
 // Copy file ini ke project React Anda
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -16,6 +16,7 @@ import { FileUpload } from 'primereact/fileupload';
 import { Chip } from 'primereact/chip';
 import { Box, Grid2, Typography, Paper } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
+import axios from 'axios';
 
 // Import PrimeReact CSS - pastikan ini ada di index.js atau App.js
 import 'primereact/resources/themes/lara-light-blue/theme.css';
@@ -23,50 +24,63 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 
-export default function TVDisplayAdmin() {
+export default function KelolaDisplay() {
+    const token = localStorage.getItem('token');
     const [activeIndex, setActiveIndex] = useState(0);
-    
+    const [loading, setLoading] = useState(true);
+    const [media, setMedia] = useState([]);
     // ==================== MEDIA STATE ====================
-    const [media, setMedia] = useState([
-        { id: 1, type: 'image', name: 'banner-1.jpg', url: '/placeholder-image.jpg', duration: 10 },
-        { id: 2, type: 'video', name: 'promo.mp4', url: '/placeholder-video.mp4', duration: 15 },
-        { id: 3, type: 'image', name: 'info-grafis.png', url: '/placeholder-image.jpg', duration: 8 }
-    ]);
     const [showMediaDialog, setShowMediaDialog] = useState(false);
     const [editingMedia, setEditingMedia] = useState(null);
-    const [newMedia, setNewMedia] = useState({
-        type: 'image',
-        name: '',
-        duration: 5,
+    const [form, setForm] = useState({
+        duration: "",
         file: null
     });
+
+    const fetchMedia = async () => {
+        try {
+            setLoading(true);
+            const res = await axios.get('http://localhost:3000/api/media/getAll-media', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setMedia(res.data);
+        } catch (err) {
+            console.error('Error get media:', err.response?.data || err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchMedia();
+    }, []);
 
     // ==================== AGENDA SETTINGS STATE ====================
     const [agendaSettings, setAgendaSettings] = useState({
         enableRotation: true,
         modes: [
-            { 
-                id: 'kegiatan', 
-                name: 'Agenda Kegiatan', 
-                enabled: true, 
+            {
+                id: 'kegiatan',
+                name: 'Agenda Kegiatan',
+                enabled: true,
                 duration: 120,
                 description: 'Menampilkan agenda kegiatan 3 hari ke depan',
                 icon: 'pi-calendar',
                 color: '#2196F3'
             },
-            { 
-                id: 'hari_ini', 
-                name: 'Agenda Hari Ini', 
-                enabled: true, 
+            {
+                id: 'hari_ini',
+                name: 'Agenda Hari Ini',
+                enabled: true,
                 duration: 120,
                 description: 'Menampilkan agenda kegiatan hari ini',
                 icon: 'pi-bell',
                 color: '#FF9800'
             },
-            { 
-                id: 'selesai', 
-                name: 'Agenda Selesai', 
-                enabled: true, 
+            {
+                id: 'selesai',
+                name: 'Agenda Selesai',
+                enabled: true,
                 duration: 120,
                 description: 'Menampilkan agenda yang sudah selesai',
                 icon: 'pi-check-circle',
@@ -82,66 +96,42 @@ export default function TVDisplayAdmin() {
     ];
 
     // ==================== MEDIA HANDLERS ====================
-    const handleAddMedia = () => {
-        if (newMedia.name && newMedia.duration) {
-            const mediaItem = {
-                id: Date.now(),
-                type: newMedia.type,
-                name: newMedia.name,
-                url: newMedia.type === 'image' ? '/placeholder-image.jpg' : '/placeholder-video.mp4',
-                duration: parseInt(newMedia.duration),
-                file: newMedia.file
-            };
-            setMedia([...media, mediaItem]);
-            
-            // TODO: Upload file ke server
-            // if (newMedia.file) {
-            //     const formData = new FormData();
-            //     formData.append('file', newMedia.file);
-            //     formData.append('type', newMedia.type);
-            //     formData.append('duration', newMedia.duration);
-            //     axios.post('/api/media/upload', formData);
-            // }
-            
-            resetMediaForm();
-            setShowMediaDialog(false);
-        }
+    const handleAddMedia = async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append("display_path", form.file);
+        formData.append("duration", form.duration);
+        // console.log(form.file);
+        // console.log(form.duration);
+        await axios.post(
+            "http://localhost:3000/api/media/create-media",
+            formData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        setShowMediaDialog(false);
     };
 
+
     const handleEditMedia = (item) => {
-        setEditingMedia(item);
-        setNewMedia({
-            type: item.type,
-            name: item.name,
-            duration: item.duration,
-            file: null
-        });
+
         setShowMediaDialog(true);
     };
 
     const handleUpdateMedia = () => {
-        if (editingMedia && newMedia.name && newMedia.duration) {
-            setMedia(media.map(m => 
-                m.id === editingMedia.id 
-                    ? { ...m, name: newMedia.name, duration: parseInt(newMedia.duration) }
-                    : m
-            ));
-            
-            // TODO: Update media di server
-            // axios.put(`/api/media/${editingMedia.id}`, {
-            //     name: newMedia.name,
-            //     duration: newMedia.duration
-            // });
-            
-            resetMediaForm();
-            setShowMediaDialog(false);
-        }
+        setShowMediaDialog(false);
+
     };
 
     const handleDeleteMedia = (id) => {
         if (window.confirm('Yakin ingin menghapus media ini?')) {
             setMedia(media.filter(m => m.id !== id));
-            
+
             // TODO: Delete media dari server
             // axios.delete(`/api/media/${id}`);
         }
@@ -149,42 +139,46 @@ export default function TVDisplayAdmin() {
 
     const resetMediaForm = () => {
         setEditingMedia(null);
-        setNewMedia({ type: 'image', name: '', duration: 5, file: null });
+        // setNewMedia({ type: 'image', name: '', duration: 5, file: null });
     };
 
     const moveMediaUp = (rowData) => {
-        const index = media.findIndex(m => m.id === rowData.id);
-        if (index > 0) {
-            const newMedia = [...media];
-            [newMedia[index - 1], newMedia[index]] = [newMedia[index], newMedia[index - 1]];
-            setMedia(newMedia);
-            
-            // TODO: Update urutan di server
-            // axios.put('/api/media/reorder', { media: newMedia });
-        }
+        // const index = media.findIndex(m => m.id === rowData.id);
+        // if (index > 0) {
+        //     const newMedia = [...media];
+        //     [newMedia[index - 1], newMedia[index]] = [newMedia[index], newMedia[index - 1]];
+        //     setMedia(newMedia);
+
+        //     // TODO: Update urutan di server
+        //     // axios.put('/api/media/reorder', { media: newMedia });
+        // }
     };
 
     const moveMediaDown = (rowData) => {
-        const index = media.findIndex(m => m.id === rowData.id);
-        if (index < media.length - 1) {
-            const newMedia = [...media];
-            [newMedia[index], newMedia[index + 1]] = [newMedia[index + 1], newMedia[index]];
-            setMedia(newMedia);
-            
-            // TODO: Update urutan di server
-            // axios.put('/api/media/reorder', { media: newMedia });
-        }
+        // const index = media.findIndex(m => m.id === rowData.id);
+        // if (index < media.length - 1) {
+        //     const newMedia = [...media];
+        //     [newMedia[index], newMedia[index + 1]] = [newMedia[index + 1], newMedia[index]];
+        //     setMedia(newMedia);
+
+        //     // TODO: Update urutan di server
+        //     // axios.put('/api/media/reorder', { media: newMedia });
+        // }
     };
 
-    const handleFileSelect = (e) => {
-        if (e.files && e.files[0]) {
-            setNewMedia({
-                ...newMedia,
-                file: e.files[0],
-                name: e.files[0].name
-            });
-        }
+    const handleChange = (field, value) => {
+        setForm(prev => ({
+            ...prev,
+            [field]: value
+        }));
     };
+
+
+    const handleFileSelect = (e) => {
+        const file = e.files[0];
+        handleChange("file", file);
+    };
+
 
     // ==================== AGENDA HANDLERS ====================
     const handleToggleMode = (modeId) => {
@@ -207,7 +201,7 @@ export default function TVDisplayAdmin() {
 
     const handleSaveAgendaSettings = () => {
         console.log('Saving agenda settings:', agendaSettings);
-        
+
         // TODO: Implement API call to save settings
         // axios.put('/api/agenda-settings', agendaSettings)
         //     .then(response => {
@@ -216,19 +210,19 @@ export default function TVDisplayAdmin() {
         //     .catch(error => {
         //         alert('Gagal menyimpan pengaturan!');
         //     });
-        
+
         alert('Pengaturan agenda berhasil disimpan!');
     };
 
     // ==================== TEMPLATE FUNCTIONS ====================
     const typeBodyTemplate = (rowData) => {
         return (
-            <Chip 
-                label={rowData.type === 'image' ? 'Gambar' : 'Video'} 
-                icon={rowData.type === 'image' ? 'pi pi-image' : 'pi pi-video'}
-                style={{ 
-                    backgroundColor: rowData.type === 'image' ? '#E3F2FD' : '#FFF3E0',
-                    color: rowData.type === 'image' ? '#1976D2' : '#F57C00'
+            <Chip
+                label={rowData.mimetype === 'image/png' || 'image/jpeg' ? 'Gambar' : 'Video'}
+                icon={rowData.mimetype === 'image/png' || 'image/jpeg' ? 'pi pi-image' : 'pi pi-video'}
+                style={{
+                    backgroundColor: rowData.mimetype === 'image/png' || 'image/jpeg' ? '#E3F2FD' : '#FFF3E0',
+                    color: rowData.mimetype === 'image/png' || 'image/jpeg' ? '#1976D2' : '#F57C00'
                 }}
             />
         );
@@ -238,40 +232,40 @@ export default function TVDisplayAdmin() {
         return (
             <span>
                 <i className="pi pi-clock mr-2"></i>
-                {rowData.duration} detik
+                {rowData.duration} menit
             </span>
         );
     };
 
     const actionBodyTemplate = (rowData) => {
-        const index = media.findIndex(m => m.id === rowData.id);
+        // const index = media.findIndex(m => m.id === rowData.id);
         return (
             <div className="flex gap-2">
-                <Button 
-                    icon="pi pi-arrow-up" 
+                <Button
+                    icon="pi pi-arrow-up"
                     className="p-button-sm p-button-text p-button-secondary"
                     onClick={() => moveMediaUp(rowData)}
-                    disabled={index === 0}
+                    // disabled={index === 0}
                     tooltip="Pindah ke atas"
                     tooltipOptions={{ position: 'top' }}
                 />
-                <Button 
-                    icon="pi pi-arrow-down" 
+                <Button
+                    icon="pi pi-arrow-down"
                     className="p-button-sm p-button-text p-button-secondary"
                     onClick={() => moveMediaDown(rowData)}
-                    disabled={index === media.length - 1}
+                    // disabled={index === media.length - 1}
                     tooltip="Pindah ke bawah"
                     tooltipOptions={{ position: 'top' }}
                 />
-                <Button 
-                    icon="pi pi-pencil" 
+                <Button
+                    icon="pi pi-pencil"
                     className="p-button-sm p-button-info p-button-text"
                     onClick={() => handleEditMedia(rowData)}
                     tooltip="Edit"
                     tooltipOptions={{ position: 'top' }}
                 />
-                <Button 
-                    icon="pi pi-trash" 
+                <Button
+                    icon="pi pi-trash"
                     className="p-button-sm p-button-danger p-button-text"
                     onClick={() => handleDeleteMedia(rowData.id)}
                     tooltip="Hapus"
@@ -284,7 +278,7 @@ export default function TVDisplayAdmin() {
     // ==================== CALCULATIONS ====================
     const totalDuration = media.reduce((sum, item) => sum + item.duration, 0);
     const activeModes = agendaSettings.modes.filter(m => m.enabled);
-    const totalAgendaDuration = activeModes.reduce((sum, mode) => sum + mode.duration, 0);
+    // const totalAgendaDuration = activeModes.reduce((sum, mode) => sum + mode.duration, 0);
 
     // ==================== RENDER ====================
     return (
@@ -321,7 +315,7 @@ export default function TVDisplayAdmin() {
                                         Total Durasi
                                     </Typography>
                                     <Typography variant="h3" sx={{ mt: 1, color: '#388E3C' }}>
-                                        {totalDuration} detik
+                                        {totalDuration} Menit
                                     </Typography>
                                 </Paper>
                             </Grid2>
@@ -342,9 +336,9 @@ export default function TVDisplayAdmin() {
                         <Card>
                             <div className="flex justify-content-between align-items-center mb-3">
                                 <h3 className="m-0">Daftar Media</h3>
-                                <Button 
-                                    label="Tambah Media" 
-                                    icon="pi pi-plus" 
+                                <Button
+                                    label="Tambah Media"
+                                    icon="pi pi-plus"
                                     onClick={() => {
                                         resetMediaForm();
                                         setShowMediaDialog(true);
@@ -353,33 +347,33 @@ export default function TVDisplayAdmin() {
                                 />
                             </div>
 
-                            <DataTable 
+                            <DataTable
                                 value={media} 
-                                dataKey="id"
+                                dataKey="_id"
                                 emptyMessage="Belum ada media yang ditambahkan"
                                 stripedRows
                                 showGridlines
                             >
-                                <Column 
-                                    header="#" 
+                                <Column
+                                    header="#"
                                     body={(data, options) => options.rowIndex + 1}
                                     style={{ width: '60px' }}
                                 />
-                                <Column field="name" header="Nama File" />
-                                <Column 
-                                    field="type" 
-                                    header="Tipe" 
+                                <Column field="filename" header="Nama File" />
+                                <Column
+                                    field="mimetype"
+                                    header="Tipe"
                                     body={typeBodyTemplate}
                                     style={{ width: '150px' }}
                                 />
-                                <Column 
-                                    field="duration" 
-                                    header="Durasi" 
+                                <Column
+                                    field="duration"
+                                    header="Durasi"
                                     body={durationBodyTemplate}
                                     style={{ width: '150px' }}
                                 />
-                                <Column 
-                                    header="Aksi" 
+                                <Column
+                                    header="Aksi"
                                     body={actionBodyTemplate}
                                     style={{ width: '220px' }}
                                 />
@@ -409,7 +403,7 @@ export default function TVDisplayAdmin() {
                                         Total Durasi Rotasi
                                     </Typography>
                                     <Typography variant="h3" sx={{ mt: 1, color: '#388E3C' }}>
-                                        {Math.floor(totalAgendaDuration / 60)}:{(totalAgendaDuration % 60).toString().padStart(2, '0')}
+                                        {/* {Math.floor(totalAgendaDuration / 60)}:{(totalAgendaDuration % 60).toString().padStart(2, '0')} */}
                                     </Typography>
                                 </Paper>
                             </Grid2>
@@ -433,9 +427,9 @@ export default function TVDisplayAdmin() {
                                     <h3 className="mb-2">Rotasi Tampilan Agenda</h3>
                                     <p className="text-secondary m-0">Display akan berganti otomatis sesuai durasi yang diatur</p>
                                 </div>
-                                <InputSwitch 
+                                <InputSwitch
                                     checked={agendaSettings.enableRotation}
-                                    onChange={(e) => setAgendaSettings({...agendaSettings, enableRotation: e.value})}
+                                    onChange={(e) => setAgendaSettings({ ...agendaSettings, enableRotation: e.value })}
                                 />
                             </div>
                         </Card>
@@ -444,26 +438,26 @@ export default function TVDisplayAdmin() {
                         <Card className="mb-3">
                             <h3 className="mb-3">Mode Tampilan</h3>
                             {agendaSettings.modes.map((mode) => (
-                                <Card 
-                                    key={mode.id} 
-                                    className="mb-3" 
-                                    style={{ 
+                                <Card
+                                    key={mode.id}
+                                    className="mb-3"
+                                    style={{
                                         backgroundColor: mode.enabled ? '#f0f9ff' : '#f5f5f5',
                                         border: mode.enabled ? `2px solid ${mode.color}` : '1px solid #e0e0e0'
                                     }}
                                 >
                                     <Grid2 container spacing={2} alignItems="center">
                                         <Grid2 item xs={12} md={1}>
-                                            <div style={{ 
-                                                width: '48px', 
-                                                height: '48px', 
+                                            <div style={{
+                                                width: '48px',
+                                                height: '48px',
                                                 borderRadius: '50%',
                                                 backgroundColor: mode.color + '20',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center'
                                             }}>
-                                                <i className={`pi ${mode.icon}`} style={{ 
+                                                <i className={`pi ${mode.icon}`} style={{
                                                     fontSize: '1.5rem',
                                                     color: mode.color
                                                 }}></i>
@@ -478,7 +472,7 @@ export default function TVDisplayAdmin() {
                                         <Grid2 item xs={12} md={4}>
                                             <div className="flex align-items-center gap-2">
                                                 <i className="pi pi-clock" style={{ fontSize: '1rem' }}></i>
-                                                <InputNumber 
+                                                <InputNumber
                                                     value={mode.duration}
                                                     onValueChange={(e) => handleModeDurationChange(mode.id, e.value)}
                                                     disabled={!mode.enabled}
@@ -490,7 +484,7 @@ export default function TVDisplayAdmin() {
                                             </div>
                                         </Grid2>
                                         <Grid2 item xs={12} md={2} sx={{ textAlign: 'right' }}>
-                                            <InputSwitch 
+                                            <InputSwitch
                                                 checked={mode.enabled}
                                                 onChange={() => handleToggleMode(mode.id)}
                                             />
@@ -509,10 +503,10 @@ export default function TVDisplayAdmin() {
                             <div className="p-fluid" style={{ maxWidth: '500px' }}>
                                 <div className="field">
                                     <label htmlFor="alarmBefore">Alarm Sebelum Kegiatan (menit)</label>
-                                    <InputNumber 
+                                    <InputNumber
                                         id="alarmBefore"
                                         value={agendaSettings.alarmBeforeMinutes}
-                                        onValueChange={(e) => setAgendaSettings({...agendaSettings, alarmBeforeMinutes: e.value})}
+                                        onValueChange={(e) => setAgendaSettings({ ...agendaSettings, alarmBeforeMinutes: e.value })}
                                         min={5}
                                         step={5}
                                         suffix=" menit"
@@ -523,9 +517,9 @@ export default function TVDisplayAdmin() {
                         </Card>
 
                         {/* Save Button */}
-                        <Button 
-                            label="Simpan Pengaturan Agenda" 
-                            icon="pi pi-save" 
+                        <Button
+                            label="Simpan Pengaturan Agenda"
+                            icon="pi pi-save"
                             onClick={handleSaveAgendaSettings}
                             className="p-button-success p-button-lg"
                         />
@@ -544,26 +538,26 @@ export default function TVDisplayAdmin() {
                 }}
                 footer={
                     <div>
-                        <Button 
-                            label="Batal" 
-                            icon="pi pi-times" 
+                        <Button
+                            label="Batal"
+                            icon="pi pi-times"
                             onClick={() => {
                                 setShowMediaDialog(false);
                                 resetMediaForm();
                             }}
                             className="p-button-text"
                         />
-                        <Button 
-                            label={editingMedia ? 'Update' : 'Tambah'} 
-                            icon="pi pi-check" 
+                        <Button
+                            label={editingMedia ? 'Update' : 'Tambah'}
+                            icon="pi pi-check"
                             onClick={editingMedia ? handleUpdateMedia : handleAddMedia}
-                            disabled={!newMedia.name || !newMedia.duration}
+                        // disabled={!newMedia.name || !newMedia.duration}
                         />
                     </div>
                 }
             >
                 <div className="p-fluid">
-                    <div className="field">
+                    {/* <div className="field">
                         <label htmlFor="type">Tipe Media</label>
                         <Dropdown
                             id="type"
@@ -572,14 +566,14 @@ export default function TVDisplayAdmin() {
                             onChange={(e) => setNewMedia({...newMedia, type: e.value})}
                             disabled={editingMedia !== null}
                         />
-                    </div>
+                    </div> */}
 
                     <div className="field">
                         <label htmlFor="duration">Durasi Tampilan (detik)</label>
                         <InputNumber
                             id="duration"
-                            value={newMedia.duration}
-                            onValueChange={(e) => setNewMedia({...newMedia, duration: e.value})}
+                            value={form.duration}
+                            onChange={(e) => handleChange("duration", e.value)}
                             min={1}
                             placeholder="Contoh: 10"
                         />
@@ -591,11 +585,10 @@ export default function TVDisplayAdmin() {
                             <label>Upload File</label>
                             <FileUpload
                                 mode="basic"
-                                name="file"
                                 accept="image/*,video/*"
                                 maxFileSize={50000000}
                                 chooseLabel="Pilih File"
-                                onSelect={handleFileSelect}
+                                onSelect={(e) => handleFileSelect(e)}
                                 auto={false}
                             />
                             <small className="text-secondary">Maksimal ukuran file: 50MB</small>

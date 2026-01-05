@@ -1,9 +1,12 @@
 const express = require('express');
 const verifyToken = require('../middleware/authMiddleware');
 const authorizationRoles = require('../middleware/roleMiddleware');
-const {createMedia, createAgendaDuration, deleteMedia, deleteDuration } = require('../controllers/displayController');
+const {createMedia, createAgendaDuration, deleteMedia, deleteDuration, getAllMedia } = require('../controllers/displayController');
 const upload_display = require('../middleware/uploadFileDisplayMiddleware')
 const router = express.Router();
+
+// route get all media
+router.get('/getAll-media', verifyToken, authorizationRoles('admin'), getAllMedia);
 
 // route create media
 router.post('/create-media', verifyToken, authorizationRoles('admin'), upload_display.single('display_path'), createMedia);
