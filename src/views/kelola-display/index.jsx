@@ -216,17 +216,21 @@ export default function KelolaDisplay() {
 
     // ==================== TEMPLATE FUNCTIONS ====================
     const typeBodyTemplate = (rowData) => {
+        const isImage = rowData.mimetype?.startsWith('image/');
+        const isVideo = rowData.mimetype?.startsWith('video/');
+
         return (
             <Chip
-                label={rowData.mimetype === 'image/png' || 'image/jpeg' ? 'Gambar' : 'Video'}
-                icon={rowData.mimetype === 'image/png' || 'image/jpeg' ? 'pi pi-image' : 'pi pi-video'}
+                label={isImage ? 'Gambar' : 'Video'}
+                icon={isImage ? 'pi pi-image' : 'pi pi-video'}
                 style={{
-                    backgroundColor: rowData.mimetype === 'image/png' || 'image/jpeg' ? '#E3F2FD' : '#FFF3E0',
-                    color: rowData.mimetype === 'image/png' || 'image/jpeg' ? '#1976D2' : '#F57C00'
+                    backgroundColor: isImage ? '#E3F2FD' : '#FFF3E0',
+                    color: isImage ? '#1976D2' : '#F57C00'
                 }}
             />
         );
     };
+
 
     const durationBodyTemplate = (rowData) => {
         return (
@@ -236,6 +240,8 @@ export default function KelolaDisplay() {
             </span>
         );
     };
+
+    
 
     const actionBodyTemplate = (rowData) => {
         // const index = media.findIndex(m => m.id === rowData.id);
@@ -348,14 +354,16 @@ export default function KelolaDisplay() {
                             </div>
 
                             <DataTable
-                                value={media} 
+                                value={media}
+                                paginator
+                                rows={5}
                                 dataKey="_id"
                                 emptyMessage="Belum ada media yang ditambahkan"
                                 stripedRows
                                 showGridlines
                             >
                                 <Column
-                                    header="#"
+                                    header="No"
                                     body={(data, options) => options.rowIndex + 1}
                                     style={{ width: '60px' }}
                                 />
