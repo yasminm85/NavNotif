@@ -1,4 +1,5 @@
 const Display = require('../models/display.model')
+const DurationAgenda = require('../models/durationAgenda.model')
 
 const createMedia = async (req, res) => {
     const display_path = req.file.path;
@@ -13,7 +14,7 @@ const createMedia = async (req, res) => {
         path: display_path,
         duration: req.body.duration
     }
-    console.log('File uploaded:', fileDetail);
+    // console.log('File uploaded:', fileDetail);
 
     const display = await Display.create(fileDetail);
 
@@ -24,6 +25,16 @@ const createMedia = async (req, res) => {
 
 };
 
+const createAgendaDuration = async (req, res) => {
+    try {
+        const agenda = await DurationAgenda.create(req.body);
+        res.status(200).json(agenda);
+    } catch (error) {
+        res.status(500).message({ message: error.message});
+    }
+}
+
 module.exports = {
-    createMedia
+    createMedia,
+    createAgendaDuration
 };
