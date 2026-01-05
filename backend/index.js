@@ -10,6 +10,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const disposisiRoutes = require('./routes/disposisiRoutes');
 const notifRoutes = require('./routes/notifRoutes');
+const displayRoutes = require('./routes/displayRoutes');
 
 const app = express();
 
@@ -38,6 +39,10 @@ app.use(
 );
 
 app.use('/uploads', express.static('uploads'));
+app.use('/uploads/laporan', express.static('uploads/laporan'));
+app.use('/uploads/tambahan', express.static('uploads/tambahan'));
+app.use('/uploads/display', express.static('uploads/display'));
+
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'Nav Notif API is running' });
@@ -48,6 +53,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/task', disposisiRoutes);
 app.use('/api/notif', notifRoutes);
+app.use('/api/media', displayRoutes);
 
 
 // DB Connection

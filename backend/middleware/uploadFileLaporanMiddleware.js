@@ -2,7 +2,7 @@ const path = require('path')
 const multer = require('multer')
 
 const storage = multer.diskStorage({
-    destination: function(req, fiqle, cb) {
+    destination: function(req, file, cb) {
         cb(null, 'uploads/laporan/')
     },
     filename: function(req, laporan_file_path, cb) {

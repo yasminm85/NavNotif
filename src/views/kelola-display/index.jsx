@@ -14,7 +14,7 @@ import { TabView, TabPanel } from 'primereact/tabview';
 import { InputSwitch } from 'primereact/inputswitch';
 import { FileUpload } from 'primereact/fileupload';
 import { Chip } from 'primereact/chip';
-import { Box, Grid, Typography, Paper } from '@mui/material';
+import { Box, Grid2, Typography, Paper } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
 
 // Import PrimeReact CSS - pastikan ini ada di index.js atau App.js
@@ -302,8 +302,8 @@ export default function TVDisplayAdmin() {
                     {/* ==================== TAB 1: KELOLA MEDIA ==================== */}
                     <TabPanel header="Kelola Media" leftIcon="pi pi-image mr-2">
                         {/* Summary Cards */}
-                        <Grid container spacing={2} sx={{ mb: 3 }}>
-                            <Grid item xs={12} md={4}>
+                        <Grid2 container spacing={2} sx={{ mb: 3 }}>
+                            <Grid2 item xs={12} md={4}>
                                 <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#e3f2fd' }}>
                                     <Typography variant="h6" color="text.secondary">
                                         <i className="pi pi-image mr-2"></i>
@@ -313,8 +313,8 @@ export default function TVDisplayAdmin() {
                                         {media.length}
                                     </Typography>
                                 </Paper>
-                            </Grid>
-                            <Grid item xs={12} md={4}>
+                            </Grid2>
+                            <Grid2 item xs={12} md={4}>
                                 <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#e8f5e9' }}>
                                     <Typography variant="h6" color="text.secondary">
                                         <i className="pi pi-clock mr-2"></i>
@@ -324,8 +324,8 @@ export default function TVDisplayAdmin() {
                                         {totalDuration} detik
                                     </Typography>
                                 </Paper>
-                            </Grid>
-                            <Grid item xs={12} md={4}>
+                            </Grid2>
+                            <Grid2 item xs={12} md={4}>
                                 <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#f3e5f5' }}>
                                     <Typography variant="h6" color="text.secondary">
                                         <i className="pi pi-replay mr-2"></i>
@@ -335,8 +335,8 @@ export default function TVDisplayAdmin() {
                                         {Math.floor(totalDuration / 60)}:{(totalDuration % 60).toString().padStart(2, '0')}
                                     </Typography>
                                 </Paper>
-                            </Grid>
-                        </Grid>
+                            </Grid2>
+                        </Grid2>
 
                         {/* Media Table */}
                         <Card>
@@ -390,8 +390,8 @@ export default function TVDisplayAdmin() {
                     {/* ==================== TAB 2: PENGATURAN AGENDA ==================== */}
                     <TabPanel header="Pengaturan Agenda" leftIcon="pi pi-calendar mr-2">
                         {/* Summary Cards */}
-                        <Grid container spacing={2} sx={{ mb: 3 }}>
-                            <Grid item xs={12} md={4}>
+                        <Grid2 container spacing={2} sx={{ mb: 3 }}>
+                            <Grid2 item xs={12} md={4}>
                                 <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#e3f2fd' }}>
                                     <Typography variant="h6" color="text.secondary">
                                         <i className="pi pi-list mr-2"></i>
@@ -401,8 +401,8 @@ export default function TVDisplayAdmin() {
                                         {activeModes.length}
                                     </Typography>
                                 </Paper>
-                            </Grid>
-                            <Grid item xs={12} md={4}>
+                            </Grid2>
+                            <Grid2 item xs={12} md={4}>
                                 <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#e8f5e9' }}>
                                     <Typography variant="h6" color="text.secondary">
                                         <i className="pi pi-clock mr-2"></i>
@@ -412,8 +412,8 @@ export default function TVDisplayAdmin() {
                                         {Math.floor(totalAgendaDuration / 60)}:{(totalAgendaDuration % 60).toString().padStart(2, '0')}
                                     </Typography>
                                 </Paper>
-                            </Grid>
-                            <Grid item xs={12} md={4}>
+                            </Grid2>
+                            <Grid2 item xs={12} md={4}>
                                 <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#f3e5f5' }}>
                                     <Typography variant="h6" color="text.secondary">
                                         <i className="pi pi-sync mr-2"></i>
@@ -423,8 +423,8 @@ export default function TVDisplayAdmin() {
                                         {agendaSettings.enableRotation ? 'ON' : 'OFF'}
                                     </Typography>
                                 </Paper>
-                            </Grid>
-                        </Grid>
+                            </Grid2>
+                        </Grid2>
 
                         {/* Rotation Toggle */}
                         <Card className="mb-3">
@@ -452,8 +452,8 @@ export default function TVDisplayAdmin() {
                                         border: mode.enabled ? `2px solid ${mode.color}` : '1px solid #e0e0e0'
                                     }}
                                 >
-                                    <Grid container spacing={2} alignItems="center">
-                                        <Grid item xs={12} md={1}>
+                                    <Grid2 container spacing={2} alignItems="center">
+                                        <Grid2 item xs={12} md={1}>
                                             <div style={{ 
                                                 width: '48px', 
                                                 height: '48px', 
@@ -468,14 +468,14 @@ export default function TVDisplayAdmin() {
                                                     color: mode.color
                                                 }}></i>
                                             </div>
-                                        </Grid>
-                                        <Grid item xs={12} md={5}>
+                                        </Grid2>
+                                        <Grid2 item xs={12} md={5}>
                                             <Typography variant="h6" sx={{ mb: 1 }}>{mode.name}</Typography>
                                             <Typography variant="body2" color="text.secondary">
                                                 {mode.description}
                                             </Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={4}>
+                                        </Grid2>
+                                        <Grid2 item xs={12} md={4}>
                                             <div className="flex align-items-center gap-2">
                                                 <i className="pi pi-clock" style={{ fontSize: '1rem' }}></i>
                                                 <InputNumber 
@@ -488,14 +488,14 @@ export default function TVDisplayAdmin() {
                                                     style={{ width: '150px' }}
                                                 />
                                             </div>
-                                        </Grid>
-                                        <Grid item xs={12} md={2} sx={{ textAlign: 'right' }}>
+                                        </Grid2>
+                                        <Grid2 item xs={12} md={2} sx={{ textAlign: 'right' }}>
                                             <InputSwitch 
                                                 checked={mode.enabled}
                                                 onChange={() => handleToggleMode(mode.id)}
                                             />
-                                        </Grid>
-                                    </Grid>
+                                        </Grid2>
+                                    </Grid2>
                                 </Card>
                             ))}
                         </Card>
