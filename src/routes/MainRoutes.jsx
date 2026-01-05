@@ -22,8 +22,8 @@ const DaftarNotifikasi = Loadable(lazy(() => import('views/daftar-notifikasi')))
 // halaman kelola user
 const DaftarUser = Loadable(lazy(() => import('views/users')));
 
-// halaman daftar display 
-const DaftarDisplay = Loadable(lazy(() => import('views/daftar-display')));
+// halaman kelola display 
+const KelolaDisplay = Loadable(lazy(() => import('views/kelola-display')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -62,6 +62,14 @@ const MainRoutes = {
       element: (
             <ProtectedRoute allowedRoles={['admin']} > 
             <DaftarUser />
+            </ProtectedRoute>
+      )
+    },
+    {
+      path: '/kelola-display',
+      element: (
+            <ProtectedRoute allowedRoles={['admin']} > 
+            <KelolaDisplay />
             </ProtectedRoute>
       )
     },

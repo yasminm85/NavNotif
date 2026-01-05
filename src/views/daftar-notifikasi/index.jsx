@@ -4,8 +4,6 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { FileUpload } from '@mui/icons-material';
 import { Editor } from 'primereact/editor';
 
 import 'primereact/resources/themes/lara-light-blue/theme.css';

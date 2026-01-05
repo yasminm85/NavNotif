@@ -22,7 +22,6 @@ const dashboard = {
       icon: icons.IconDashboard,
       allowedRoles: ['admin'],   
       breadcrumbs: false
-
     },
     {
       id: 'disposisi',
@@ -32,7 +31,6 @@ const dashboard = {
       icon: AssignmentIcon,
       allowedRoles: ['admin'],  
       breadcrumbs: false
-
     },
     {
       id: 'user',
@@ -42,7 +40,15 @@ const dashboard = {
       icon: ManageAccounts,
       allowedRoles: ['admin'],  
       breadcrumbs: false
-
+    },
+    {
+      id: 'kelola-display',
+      title: 'Kelola Display',
+      type: 'item',
+      url: '/kelola-display',
+      icon: ViewStreamIcon,
+      allowedRoles: ['admin'],  
+      breadcrumbs: false
     },
 
   ]
