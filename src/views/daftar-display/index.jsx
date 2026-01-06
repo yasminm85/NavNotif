@@ -230,12 +230,10 @@ export default function Disposisi() {
         }
     };
 
-    // ===================== AMBIL FILTER DARI KELOLA DISPLAY =====================
+    // ================= GET FILTER (KELOLA DISPLAY) =================
     const getDisplayDuration = async () => {
         try {
-            const res = await axios.get(
-                'http://localhost:3000/api/media/get-duration'
-            );
+            const res = await axios.get('http://localhost:3000/api/media/get-duration');
 
             if (!res.data?.agenda_selesai_start || !res.data?.agenda_selesai_end) return;
 
@@ -246,27 +244,37 @@ export default function Disposisi() {
             end.setHours(23, 59, 59, 999);
 
             setAgendaSelesaiFilter({ startDate: start, endDate: end });
-
         } catch (err) {
-            console.error('Gagal ambil filter agenda selesai', err);
+            console.error("Gagal ambil filter agenda selesai", err);
         }
     };
 
-    // ===================== INIT =====================
+    // ================= INIT FILTER + AUTO SYNC =================
     useEffect(() => {
         getDisplayDuration();
+        const interval = setInterval(getDisplayDuration, 10000);
+        return () => clearInterval(interval);
     }, []);
 
-    // 🔑 AMBIL DATA SETELAH FILTER SIAP
+
+    // ================= DATA UPDATE SETELAH FILTER SIAP =================
     useEffect(() => {
         if (!agendaSelesaiFilter.startDate) return;
 
         getDataDisposisi();
         const interval = setInterval(getDataDisposisi, 10000);
-
         return () => clearInterval(interval);
     }, [agendaSelesaiFilter]);
 
+    useEffect(() => {
+        getDisplayDuration(); // pertama load
+
+        const interval = setInterval(() => {
+            getDisplayDuration(); // 🔥 cek perubahan dari admin
+        }, 10000); // tiap 10 detik
+
+        return () => clearInterval(interval);
+    }, []);
 
     // ---------------------------- FORMATTER ----------------------------
     const formDate = (date) => {
@@ -286,16 +294,15 @@ export default function Disposisi() {
         });
     };
 
-    // ---------------------------- AUTO SCROLL ----------------------------
+
+    // ================= AUTO SCROLL =================
     useEffect(() => {
-        if (!showDisposisi || showDisposisi.length <= rows) return;
+        if (showDisposisi.length <= rows) return;
 
         const interval = setInterval(() => {
             setShowDisposisi(prev => {
-                if (!prev || prev.length <= rows) return prev;
                 const list = [...prev];
-                const firstItem = list.shift();
-                list.push(firstItem);
+                list.push(list.shift());
                 return list;
             });
         }, scrollSpeed);
