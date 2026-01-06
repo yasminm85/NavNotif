@@ -293,29 +293,13 @@ export default function Disposisi() {
         return () => clearInterval(interval);
     }, []);
 
-    // useEffect(() => {
-    //     if (mode === MODE.TODAY) return;
-
-    //     const duration =
-    //         mode === MODE.KEGIATAN
-    //             ? 2 * 60 * 1000
-    //             : 2 * 60 * 1000;
-
-    //     const timer = setTimeout(() => {
-    //         setMode(prev =>
-    //             prev === MODE.KEGIATAN ? MODE.SELESAI : MODE.KEGIATAN
-    //         );
-    //     }, duration);
-
-    //     return () => clearTimeout(timer);
-    // }, [mode]);
     useEffect(() => {
         if (mode === MODE.TODAY) return;
 
         const duration =
             mode === MODE.KEGIATAN
-                ? displayDuration.kegiatan * 1000
-                : displayDuration.selesai * 1000;
+                ? 2 * 60 * 1000
+                : 2 * 60 * 1000;
 
         const timer = setTimeout(() => {
             setMode(prev =>
@@ -324,7 +308,23 @@ export default function Disposisi() {
         }, duration);
 
         return () => clearTimeout(timer);
-    }, [mode, displayDuration]);
+    }, [mode]);
+    // useEffect(() => {
+    //     if (mode === MODE.TODAY) return;
+
+    //     const duration =
+    //         mode === MODE.KEGIATAN
+    //             ? displayDuration.kegiatan * 1000
+    //             : displayDuration.selesai * 1000;
+
+    //     const timer = setTimeout(() => {
+    //         setMode(prev =>
+    //             prev === MODE.KEGIATAN ? MODE.SELESAI : MODE.KEGIATAN
+    //         );
+    //     }, duration);
+
+    //     return () => clearTimeout(timer);
+    // }, [mode, displayDuration]);
 
 
     useEffect(() => {

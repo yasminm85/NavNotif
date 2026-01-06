@@ -19,6 +19,7 @@ import MainCard from 'ui-component/cards/MainCard';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { Calendar } from 'primereact/calendar';
 
 // Import PrimeReact CSS - pastikan ini ada di index.js atau App.js
 import 'primereact/resources/themes/lara-light-blue/theme.css';
@@ -55,6 +56,12 @@ export default function KelolaDisplay() {
     useEffect(() => {
         fetchMedia();
     }, []);
+
+    const [agendaSelesaiFilter, setAgendaSelesaiFilter] = useState({
+        startDate: null,
+        endDate: null
+    });
+
 
     // ==================== AGENDA SETTINGS ====================
 
@@ -93,7 +100,7 @@ export default function KelolaDisplay() {
     });
 
     // ==================== GET AGENDA DURATION ====================
-    const fetchAgendaDuration = async () => {
+    const fetchAgendaSelesaiFilter = async () => {
         try {
             const res = await axios.get(
                 'http://localhost:3000/api/media/get-duration',
@@ -102,22 +109,23 @@ export default function KelolaDisplay() {
 
             if (!res.data) return;
 
-            setAgendaSettings(prev => ({
-                ...prev,
-                modes: prev.modes.map(mode => {
-                    if (mode.id === 'kegiatan')
-                        return { ...mode, duration: res.data.agenda_kegiatan_duration ?? mode.duration };
-                    if (mode.id === 'hari_ini')
-                        return { ...mode, duration: res.data.agenda_hariini_duration ?? mode.duration };
-                    if (mode.id === 'selesai')
-                        return { ...mode, duration: res.data.agenda_selesai ?? mode.duration };
-                    return mode;
-                })
-            }));
+            setAgendaSelesaiFilter({
+                startDate: res.data.agenda_selesai_start
+                    ? new Date(res.data.agenda_selesai_start)
+                    : null,
+                endDate: res.data.agenda_selesai_end
+                    ? new Date(res.data.agenda_selesai_end)
+                    : null
+            });
         } catch (err) {
-            console.error('Gagal ambil pengaturan agenda', err);
+            console.error('Gagal ambil filter agenda selesai', err);
         }
     };
+
+    useEffect(() => {
+        fetchAgendaSelesaiFilter();
+    }, []);
+
 
     const mediaTypes = [
         { label: 'Gambar (JPG, PNG, GIF)', value: 'image' },
@@ -213,34 +221,55 @@ export default function KelolaDisplay() {
 
 
     // ==================== SAVE AGENDA ====================
-    const handleSaveAgendaSettings = async () => {
-        try {
-            const payload = {
-                agenda_kegiatan_duration: agendaSettings.modes.find(m => m.id === 'kegiatan')?.duration,
-                agenda_hariini_duration: agendaSettings.modes.find(m => m.id === 'hari_ini')?.duration,
-                agenda_selesai: agendaSettings.modes.find(m => m.id === 'selesai')?.duration
-            };
+    // const handleSaveAgendaSettings = async () => {
+    //     await axios.post('http://localhost:3000/api/media/create-duration', {
+    //     });
+    // };
 
+    const handleSaveAgendaSettings = async () => {
+        const { startDate, endDate } = agendaSelesaiFilter;
+
+        if (!startDate || !endDate) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Tanggal belum lengkap',
+                text: 'Pilih tanggal mulai dan tanggal akhir terlebih dahulu'
+            });
+            return;
+        }
+
+        try {
             await axios.post(
                 'http://localhost:3000/api/media/create-duration',
-                payload,
-                { headers: { Authorization: `Bearer ${token}` } }
+                {
+                    agenda_selesai_start: startDate.toISOString(),
+                    agenda_selesai_end: endDate.toISOString()
+                },
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
             );
 
-            await fetchAgendaDuration(); // 🔄 sync ulang dari DB
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Pengaturan agenda selesai berhasil disimpan'
+            });
 
-            alert('Pengaturan agenda berhasil disimpan');
-        } catch (err) {
-            console.error('Gagal menyimpan agenda', err);
-            alert('Gagal menyimpan pengaturan agenda');
+            fetchAgendaSelesaiFilter();
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal menyimpan',
+                text: 'Terjadi kesalahan saat menyimpan data'
+            });
         }
     };
-
 
     // ==================== USE EFFECT ====================
     useEffect(() => {
         fetchMedia();              // media tetap
-        fetchAgendaDuration();     // ⬅️ INI KUNCI NYA
+        fetchAgendaSelesaiFilter();     // ⬅️ INI KUNCI NYA
     }, []);
     // ==================== TEMPLATE FUNCTIONS ====================
     const typeBodyTemplate = (rowData) => {
@@ -395,147 +424,65 @@ export default function KelolaDisplay() {
 
                     {/* ==================== TAB 2: PENGATURAN AGENDA ==================== */}
                     <TabPanel header="Pengaturan Agenda" leftIcon="pi pi-calendar mr-2">
-                        {/* Summary Cards */}
-                        <Grid container spacing={2} sx={{ mb: 3 }}>
-                            <Grid item xs={12} md={4}>
-                                <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#e3f2fd' }}>
-                                    <Typography variant="h6" color="text.secondary">
-                                        <i className="pi pi-list mr-2"></i>
-                                        Mode Aktif
-                                    </Typography>
-                                    <Typography variant="h3" sx={{ mt: 1, color: '#1976D2' }}>
-                                        {activeModes.length}
-                                    </Typography>
-                                </Paper>
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                                <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#e8f5e9' }}>
-                                    <Typography variant="h6" color="text.secondary">
-                                        <i className="pi pi-clock mr-2"></i>
-                                        Total Durasi Rotasi
-                                    </Typography>
-                                    <Typography variant="h3" sx={{ mt: 1, color: '#388E3C' }}>
-                                        {/* {Math.floor(totalAgendaDuration / 60)}:{(totalAgendaDuration % 60).toString().padStart(2, '0')} */}
-                                    </Typography>
-                                </Paper>
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                                <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#f3e5f5' }}>
-                                    <Typography variant="h6" color="text.secondary">
-                                        <i className="pi pi-sync mr-2"></i>
-                                        Rotasi Otomatis
-                                    </Typography>
-                                    <Typography variant="h3" sx={{ mt: 1, color: '#7B1FA2' }}>
-                                        {agendaSettings.enableRotation ? 'ON' : 'OFF'}
-                                    </Typography>
-                                </Paper>
-                            </Grid>
-                        </Grid>
 
-                        {/* Rotation Toggle */}
                         <Card className="mb-3">
-                            <div className="flex justify-content-between align-items-center">
-                                <div>
-                                    <h3 className="mb-2">Rotasi Tampilan Agenda</h3>
-                                    <p className="text-secondary m-0">Display akan berganti otomatis sesuai durasi yang diatur</p>
-                                </div>
-                                <InputSwitch
-                                    checked={agendaSettings.enableRotation}
-                                    onChange={(e) => setAgendaSettings({ ...agendaSettings, enableRotation: e.value })}
-                                />
-                            </div>
+                            <Typography variant="h4" sx={{ mb: 1 }}>
+                                Filter Agenda Selesai untuk TV
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                Tentukan agenda selesai yang akan ditampilkan di layar TV berdasarkan rentang tanggal
+                            </Typography>
                         </Card>
 
-                        {/* Mode Settings */}
                         <Card className="mb-3">
-                            <h3 className="mb-3">Mode Tampilan</h3>
-                            {agendaSettings.modes.map((mode) => (
-                                <Card
-                                    key={mode.id}
-                                    className="mb-3"
-                                    style={{
-                                        backgroundColor: mode.enabled ? '#f0f9ff' : '#f5f5f5',
-                                        border: mode.enabled ? `2px solid ${mode.color}` : '1px solid #e0e0e0'
-                                    }}
-                                >
-                                    <Grid container spacing={2} alignItems="center">
-                                        <Grid item xs={12} md={1}>
-                                            <div style={{
-                                                width: '48px',
-                                                height: '48px',
-                                                borderRadius: '50%',
-                                                backgroundColor: mode.color + '20',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                <i className={`pi ${mode.icon}`} style={{
-                                                    fontSize: '1.5rem',
-                                                    color: mode.color
-                                                }}></i>
-                                            </div>
-                                        </Grid>
-                                        <Grid item xs={12} md={5}>
-                                            <Typography variant="h6" sx={{ mb: 1 }}>{mode.name}</Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {mode.description}
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={4}>
-                                            <div className="flex align-items-center gap-2">
-                                                <i className="pi pi-clock" style={{ fontSize: '1rem' }}></i>
-                                                <InputNumber
-                                                    value={mode.duration}
-                                                    onValueChange={(e) => handleModeDurationChange(mode.id, e.value)}
-                                                    disabled={!mode.enabled}
-                                                    min={30}
-                                                    step={30}
-                                                    suffix=" detik"
-                                                    style={{ width: '150px' }}
-                                                />
-                                            </div>
-                                        </Grid>
-                                        <Grid item xs={12} md={2} sx={{ textAlign: 'right' }}>
-                                            <InputSwitch
-                                                checked={mode.enabled}
-                                                onChange={() => handleToggleMode(mode.id)}
-                                            />
-                                        </Grid>
-                                    </Grid>
-                                </Card>
-                            ))}
-                        </Card>
-
-                        {/* Alarm Settings */}
-                        <Card className="mb-3">
-                            <h3 className="mb-3">
-                                <i className="pi pi-bell mr-2"></i>
-                                Pengaturan Alarm
-                            </h3>
-                            <div className="p-fluid" style={{ maxWidth: '500px' }}>
-                                <div className="field">
-                                    <label htmlFor="alarmBefore">Alarm Sebelum Kegiatan (menit)</label>
-                                    <InputNumber
-                                        id="alarmBefore"
-                                        value={agendaSettings.alarmBeforeMinutes}
-                                        onValueChange={(e) => setAgendaSettings({ ...agendaSettings, alarmBeforeMinutes: e.value })}
-                                        min={5}
-                                        step={5}
-                                        suffix=" menit"
+                            <div className="p-fluid grid">
+                                <div className="field col-12 md:col-6">
+                                    <label>Tanggal Mulai</label>
+                                    <Calendar
+                                        value={agendaSelesaiFilter.startDate}
+                                        onChange={(e) =>
+                                            setAgendaSelesaiFilter(prev => ({
+                                                ...prev,
+                                                startDate: e.value
+                                            }))
+                                        }
+                                        dateFormat="dd/mm/yy"
+                                        showIcon
+                                        placeholder="Pilih tanggal mulai"
                                     />
-                                    <small className="text-secondary">Alarm akan berbunyi X menit sebelum kegiatan dimulai</small>
+                                </div>
+
+                                <div className="field col-12 md:col-6">
+                                    <label>Tanggal Akhir</label>
+                                    <Calendar
+                                        value={agendaSelesaiFilter.endDate}
+                                        onChange={(e) =>
+                                            setAgendaSelesaiFilter(prev => ({
+                                                ...prev,
+                                                endDate: e.value
+                                            }))
+                                        }
+                                        dateFormat="dd/mm/yy"
+                                        showIcon
+                                        minDate={agendaSelesaiFilter.startDate}
+                                        placeholder="Pilih tanggal akhir"
+                                    />
                                 </div>
                             </div>
+
+                            <small className="text-secondary">
+                                * Hanya agenda selesai dalam rentang ini yang akan ditampilkan di TV
+                            </small>
                         </Card>
 
-                        {/* Save Button */}
                         <Button
-                            label="Simpan Pengaturan Agenda"
+                            label="Simpan Pengaturan"
                             icon="pi pi-save"
-                            onClick={handleSaveAgendaSettings}
                             className="p-button-success p-button-lg"
+                            onClick={handleSaveAgendaSettings}
                         />
                     </TabPanel>
+
                 </TabView>
             </MainCard>
 
