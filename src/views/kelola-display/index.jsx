@@ -67,26 +67,10 @@ export default function KelolaDisplay() {
     });
 
 
-    // ==================== DATE FORMATTER (SAFE) ====================
-
-    // Pastikan parsing tanggal TANPA geser timezone
-    const parseLocalDate = (value) => {
-        if (!value) return null;
-
-        // kalau format YYYY-MM-DD
-        if (typeof value === "string" && value.length === 10) {
-            const [y, m, d] = value.split("-");
-            return new Date(y, m - 1, d);
-        }
-
-        return new Date(value);
-    };
-
+    // ---------------------------- FORMATTER ----------------------------
     const formDate = (date) => {
-        const d = parseLocalDate(date);
-        if (!d) return "";
-
-        return d.toLocaleDateString("id-ID", {
+        if (!date) return "";
+        return new Date(date).toLocaleDateString("id-ID", {
             day: "2-digit",
             month: "short",
             year: "numeric"
@@ -95,16 +79,11 @@ export default function KelolaDisplay() {
 
     const formTime = (date) => {
         if (!date) return "Selesai";
-
-        const d = new Date(date);
-        if (isNaN(d.getTime())) return "Selesai";
-
-        return d.toLocaleTimeString("id-ID", {
+        return new Date(date).toLocaleTimeString("id-ID", {
             hour: "2-digit",
-            minute: "2-digit"
+            minute: "2-digit",
         });
     };
-
 
 
     // ==================== AGENDA SETTINGS ====================

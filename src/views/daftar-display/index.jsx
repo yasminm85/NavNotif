@@ -181,11 +181,9 @@ export default function Disposisi() {
                 return tanggal >= today && tanggal <= threeDaysLater;
             });
 
-            // const selesai = items.filter(i => i.isSelesai);
             const selesai = items.filter(item => {
                 if (!item.isSelesai) return false;
                 if (!agendaSelesaiFilter.startDate || !agendaSelesaiFilter.endDate) return false;
-                if (!item.tanggal) return false;
 
                 const tgl = new Date(item.tanggal);
                 tgl.setHours(0, 0, 0, 0);
@@ -239,7 +237,6 @@ export default function Disposisi() {
                 'http://localhost:3000/api/media/get-duration'
             );
 
-            console.log(res);
             if (!res.data?.agenda_selesai_start || !res.data?.agenda_selesai_end) return;
 
             const start = new Date(res.data.agenda_selesai_start);
@@ -254,13 +251,22 @@ export default function Disposisi() {
             console.error('Gagal ambil filter agenda selesai', err);
         }
     };
+
+    // ===================== INIT =====================
     useEffect(() => {
-        const init = async () => {
-            await getDisplayDuration();
-            await getDataDisposisi();
-        };
-        init();
+        getDisplayDuration();
     }, []);
+
+    // 🔑 AMBIL DATA SETELAH FILTER SIAP
+    useEffect(() => {
+        if (!agendaSelesaiFilter.startDate) return;
+
+        getDataDisposisi();
+        const interval = setInterval(getDataDisposisi, 10000);
+
+        return () => clearInterval(interval);
+    }, [agendaSelesaiFilter]);
+
 
     // ---------------------------- FORMATTER ----------------------------
     const formDate = (date) => {
