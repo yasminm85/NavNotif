@@ -32,6 +32,10 @@ export default function KelolaDisplay() {
     const [activeIndex, setActiveIndex] = useState(0);
     const [loading, setLoading] = useState(true);
     const [media, setMedia] = useState([]);
+    const [previewCount, setPreviewCount] = useState(0);
+    const [agendaSelesaiList, setAgendaSelesaiList] = useState([]);
+
+
     // ==================== MEDIA STATE ====================
     const [showMediaDialog, setShowMediaDialog] = useState(false);
     const [form, setForm] = useState({
@@ -61,6 +65,46 @@ export default function KelolaDisplay() {
         startDate: null,
         endDate: null
     });
+
+
+    // ==================== DATE FORMATTER (SAFE) ====================
+
+    // Pastikan parsing tanggal TANPA geser timezone
+    const parseLocalDate = (value) => {
+        if (!value) return null;
+
+        // kalau format YYYY-MM-DD
+        if (typeof value === "string" && value.length === 10) {
+            const [y, m, d] = value.split("-");
+            return new Date(y, m - 1, d);
+        }
+
+        return new Date(value);
+    };
+
+    const formDate = (date) => {
+        const d = parseLocalDate(date);
+        if (!d) return "";
+
+        return d.toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        });
+    };
+
+    const formTime = (date) => {
+        if (!date) return "Selesai";
+
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return "Selesai";
+
+        return d.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+    };
+
 
 
     // ==================== AGENDA SETTINGS ====================
@@ -99,38 +143,81 @@ export default function KelolaDisplay() {
         alarmBeforeMinutes: 30
     });
 
+    const fetchAgendaSelesai = async () => {
+        try {
+            const res = await axios.get(
+                'http://localhost:3000/api/task/disposisi',
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            const now = new Date();
+
+            const selesai = res.data.filter(item => {
+
+                if (!item.tanggal) return false;
+
+                const tgl = new Date(item.tanggal);
+                tgl.setHours(23, 59, 59, 999);
+
+                return tgl < now;
+            });
+            setAgendaSelesaiList(selesai);
+        } catch (err) {
+            console.error('Gagal ambil agenda selesai', err);
+        }
+    };
+
+    useEffect(() => {
+        fetchAgendaSelesai();
+    }, []);
+
+    useEffect(() => {
+        if (!agendaSelesaiFilter.startDate || !agendaSelesaiFilter.endDate) {
+            setPreviewCount(0);
+            return;
+        }
+
+        const start = new Date(agendaSelesaiFilter.startDate);
+        const end = new Date(agendaSelesaiFilter.endDate);
+
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+
+        const total = agendaSelesaiList.filter(item => {
+            if (!item.tanggal) return false;
+
+            const tgl = new Date(item.tanggal);
+            tgl.setHours(0, 0, 0, 0);
+
+            return tgl >= start && tgl <= end;
+        }).length;
+
+        setPreviewCount(total);
+    }, [agendaSelesaiFilter, agendaSelesaiList]);
+
     // ==================== GET AGENDA DURATION ====================
     const fetchAgendaSelesaiFilter = async () => {
         try {
             const res = await axios.get(
                 'http://localhost:3000/api/media/get-duration',
-                { headers: { Authorization: `Bearer ${token}` } }
+                // { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            if (!res.data) return;
+            if (!res.data?.agenda_selesai_start || !res.data?.agenda_selesai_end) return;
 
             setAgendaSelesaiFilter({
-                startDate: res.data.agenda_selesai_start
-                    ? new Date(res.data.agenda_selesai_start)
-                    : null,
-                endDate: res.data.agenda_selesai_end
-                    ? new Date(res.data.agenda_selesai_end)
-                    : null
+                startDate: new Date(res.data.agenda_selesai_start),
+                endDate: new Date(res.data.agenda_selesai_end)
             });
         } catch (err) {
             console.error('Gagal ambil filter agenda selesai', err);
         }
     };
 
-    useEffect(() => {
-        fetchAgendaSelesaiFilter();
-    }, []);
-
-
-    const mediaTypes = [
-        { label: 'Gambar (JPG, PNG, GIF)', value: 'image' },
-        { label: 'Video (MP4, WebM)', value: 'video' }
-    ];
+    // const mediaTypes = [
+    //     { label: 'Gambar (JPG, PNG, GIF)', value: 'image' },
+    //     { label: 'Video (MP4, WebM)', value: 'video' }
+    // ];
 
     // ==================== MEDIA HANDLERS ====================
     const handleAddMedia = async (e) => {
@@ -200,32 +287,27 @@ export default function KelolaDisplay() {
     };
 
 
-    // ==================== AGENDA HANDLERS ====================
-    const handleToggleMode = (modeId) => {
-        setAgendaSettings({
-            ...agendaSettings,
-            modes: agendaSettings.modes.map(mode =>
-                mode.id === modeId ? { ...mode, enabled: !mode.enabled } : mode
-            )
-        });
-    };
-
-    const handleModeDurationChange = (modeId, duration) => {
-        setAgendaSettings({
-            ...agendaSettings,
-            modes: agendaSettings.modes.map(mode =>
-                mode.id === modeId ? { ...mode, duration: parseInt(duration) } : mode
-            )
-        });
-    };
-
-
-    // ==================== SAVE AGENDA ====================
-    // const handleSaveAgendaSettings = async () => {
-    //     await axios.post('http://localhost:3000/api/media/create-duration', {
+    // // ==================== AGENDA HANDLERS ====================
+    // const handleToggleMode = (modeId) => {
+    //     setAgendaSettings({
+    //         ...agendaSettings,
+    //         modes: agendaSettings.modes.map(mode =>
+    //             mode.id === modeId ? { ...mode, enabled: !mode.enabled } : mode
+    //         )
     //     });
     // };
 
+    // const handleModeDurationChange = (modeId, duration) => {
+    //     setAgendaSettings({
+    //         ...agendaSettings,
+    //         modes: agendaSettings.modes.map(mode =>
+    //             mode.id === modeId ? { ...mode, duration: parseInt(duration) } : mode
+    //         )
+    //     });
+    // };
+
+
+    // ==================== SAVE AGENDA ====================
     const handleSaveAgendaSettings = async () => {
         const { startDate, endDate } = agendaSelesaiFilter;
 
@@ -238,12 +320,16 @@ export default function KelolaDisplay() {
             return;
         }
 
+        // 🔑 SIMPAN DATE ONLY (ANTI TIMEZONE)
+        const start = startDate.toISOString().split('T')[0];
+        const end = endDate.toISOString().split('T')[0];
+
         try {
             await axios.post(
                 'http://localhost:3000/api/media/create-duration',
                 {
-                    agenda_selesai_start: startDate.toISOString(),
-                    agenda_selesai_end: endDate.toISOString()
+                    agenda_selesai_start: start,
+                    agenda_selesai_end: end
                 },
                 {
                     headers: { Authorization: `Bearer ${token}` }
@@ -474,6 +560,32 @@ export default function KelolaDisplay() {
                                 * Hanya agenda selesai dalam rentang ini yang akan ditampilkan di TV
                             </small>
                         </Card>
+
+                        <Card className="mb-3" style={{ background: '#f0fdf4', border: '1px solid #86efac' }}>
+                            <div className="flex align-items-center justify-content-between">
+                                <div>
+                                    <Typography variant="h6" sx={{ color: '#166534' }}>
+                                        Preview Agenda Selesai
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Jumlah agenda selesai yang akan ditampilkan di TV
+                                    </Typography>
+                                </div>
+
+                                <div style={{ textAlign: 'center' }}>
+                                    <Typography variant="h2" sx={{ color: '#16a34a', fontWeight: 'bold' }}>
+                                        {previewCount}
+                                    </Typography>
+                                    <small>Agenda</small>
+                                </div>
+                            </div>
+                        </Card>
+
+                        {previewCount === 0 && (
+                            <small style={{ color: 'red' }}>
+                                ⚠ Tidak ada agenda selesai dalam rentang tanggal ini
+                            </small>
+                        )}
 
                         <Button
                             label="Simpan Pengaturan"

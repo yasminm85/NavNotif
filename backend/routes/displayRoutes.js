@@ -9,13 +9,13 @@ const router = express.Router();
 router.get('/getAll-media', verifyToken, authorizationRoles('admin'), getAllMedia);
 
 // route create media
-router.post('/create-media', upload_display.single('display_path'), verifyToken, authorizationRoles('admin'), createMedia);
+router.post('/create-media', verifyToken, authorizationRoles('admin'), upload_display.single('display_path'), createMedia);
 
 // route create duration
 router.post('/create-duration', verifyToken, authorizationRoles('admin'), createAgendaDuration);
 
-// route get duration (dipakai daftar display)
-router.get('/get-duration', verifyToken, authorizationRoles('admin'), getAgendaDuration);
+// route get duration 
+router.get('/get-duration', getAgendaDuration);
 
 // route delete media
 router.delete('/delete-media/:id', verifyToken, authorizationRoles('admin'), deleteMedia);

@@ -30,6 +30,10 @@ export default function Disposisi() {
     const [agendaKegiatan, setAgendaKegiatan] = useState([]);
     const [agendaSelesai, setAgendaSelesai] = useState([]);
     const [hasActiveReminder, setHasActiveReminder] = useState(false);
+    const [agendaSelesaiFilter, setAgendaSelesaiFilter] = useState({
+        startDate: null,
+        endDate: null
+    });
 
     // ---------------------------- CHECK REMINDER ----------------------------
     const checkReminderActive = (items) => {
@@ -177,7 +181,21 @@ export default function Disposisi() {
                 return tanggal >= today && tanggal <= threeDaysLater;
             });
 
-            const selesai = items.filter(i => i.isSelesai);
+            // const selesai = items.filter(i => i.isSelesai);
+            const selesai = items.filter(item => {
+                if (!item.isSelesai) return false;
+                if (!agendaSelesaiFilter.startDate || !agendaSelesaiFilter.endDate) return false;
+                if (!item.tanggal) return false;
+
+                const tgl = new Date(item.tanggal);
+                tgl.setHours(0, 0, 0, 0);
+
+                return (
+                    tgl >= agendaSelesaiFilter.startDate &&
+                    tgl <= agendaSelesaiFilter.endDate
+                );
+            });
+
 
             setAgendaKegiatan(sortNormal(kegiatan));
             setAgendaSelesai(sortNormal(selesai));
@@ -214,33 +232,35 @@ export default function Disposisi() {
         }
     };
 
-    const [displayDuration, setDisplayDuration] = useState({
-        kegiatan: 2,
-        hariini: 2,
-        selesai: 2
-    });
-
+    // ===================== AMBIL FILTER DARI KELOLA DISPLAY =====================
     const getDisplayDuration = async () => {
         try {
             const res = await axios.get(
                 'http://localhost:3000/api/media/get-duration'
             );
 
-            setDisplayDuration({
-                kegiatan: res.data.agenda_kegiatan_duration,
-                hariini: res.data.agenda_hariini_duration,
-                selesai: res.data.agenda_selesai
-            });
+            console.log(res);
+            if (!res.data?.agenda_selesai_start || !res.data?.agenda_selesai_end) return;
+
+            const start = new Date(res.data.agenda_selesai_start);
+            const end = new Date(res.data.agenda_selesai_end);
+
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+
+            setAgendaSelesaiFilter({ startDate: start, endDate: end });
+
         } catch (err) {
-            console.error('Gagal ambil duration', err);
+            console.error('Gagal ambil filter agenda selesai', err);
         }
     };
-
     useEffect(() => {
-        getDisplayDuration();
-        getDataDisposisi();
+        const init = async () => {
+            await getDisplayDuration();
+            await getDataDisposisi();
+        };
+        init();
     }, []);
-
 
     // ---------------------------- FORMATTER ----------------------------
     const formDate = (date) => {
@@ -309,22 +329,6 @@ export default function Disposisi() {
 
         return () => clearTimeout(timer);
     }, [mode]);
-    // useEffect(() => {
-    //     if (mode === MODE.TODAY) return;
-
-    //     const duration =
-    //         mode === MODE.KEGIATAN
-    //             ? displayDuration.kegiatan * 1000
-    //             : displayDuration.selesai * 1000;
-
-    //     const timer = setTimeout(() => {
-    //         setMode(prev =>
-    //             prev === MODE.KEGIATAN ? MODE.SELESAI : MODE.KEGIATAN
-    //         );
-    //     }, duration);
-
-    //     return () => clearTimeout(timer);
-    // }, [mode, displayDuration]);
 
 
     useEffect(() => {
