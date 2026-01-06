@@ -1,5 +1,7 @@
 const Display = require('../models/display.model')
 const DurationAgenda = require('../models/durationAgenda.model')
+const fs = require('fs');
+const path = require('path');
 
 const getAllMedia = async (req, res) => {
     try {
@@ -12,27 +14,38 @@ const getAllMedia = async (req, res) => {
 
 const createMedia = async (req, res) => {
     try {
-        console.log(req.file);
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded.' });
         }
 
-        const fileDetail = {
+        const display = await Display.create({
             filename: req.file.filename,
             mimetype: req.file.mimetype,
             path: req.file.path,
             duration: req.body.duration
-        };
+        });
 
-        const display = await Display.create(fileDetail);
+        const ext = path.extname(req.file.originalname);
+        const newFilename = `media-${display.id}${ext}`;
+        const newPath = path.join('uploads/display', newFilename);
 
-        res.status(200).json({
+        fs.renameSync(req.file.path, newPath);
+
+        display.filename = newFilename;
+        display.path = newPath;
+        await display.save();
+
+        res.status(201).json({
             message: 'File uploaded successfully',
             display
         });
 
     } catch (error) {
         console.error(error);
+        if (req.file?.path && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+
         res.status(500).json({ message: error.message });
     }
 };
@@ -45,6 +58,7 @@ const getAgendaDuration = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 const createAgendaDuration = async (req, res) => {
     try {

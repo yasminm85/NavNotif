@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/getAll-media', verifyToken, authorizationRoles('admin'), getAllMedia);
 
 // route create media
-router.post('/create-media', verifyToken, authorizationRoles('admin'), upload_display.single('display_path'), createMedia);
+router.post('/create-media', upload_display.single('display_path'), verifyToken, authorizationRoles('admin'), createMedia);
 
 // route create duration
 router.post('/create-duration', verifyToken, authorizationRoles('admin'), createAgendaDuration);

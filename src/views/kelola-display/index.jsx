@@ -14,9 +14,11 @@ import { TabView, TabPanel } from 'primereact/tabview';
 import { InputSwitch } from 'primereact/inputswitch';
 import { FileUpload } from 'primereact/fileupload';
 import { Chip } from 'primereact/chip';
-import { Box, Grid2, Typography, Paper } from '@mui/material';
+import { Box, Typography, Paper } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
+import Grid from '@mui/material/Grid';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 // Import PrimeReact CSS - pastikan ini ada di index.js atau App.js
 import 'primereact/resources/themes/lara-light-blue/theme.css';
@@ -131,7 +133,7 @@ export default function KelolaDisplay() {
         formData.append("duration", form.duration);
         // console.log(form.file);
         // console.log(form.duration);
-        await axios.post(
+        let response = await axios.post(
             "http://localhost:3000/api/media/create-media",
             formData,
             {
@@ -140,12 +142,40 @@ export default function KelolaDisplay() {
                 }
             }
         );
-
+        setMedia(prev => [...prev, response.data.display]);
         setShowMediaDialog(false);
     };
 
     const handleDeleteMedia = (id) => {
-        console.log(id);
+        Swal.fire({
+            title: 'Apakah Yakin Dihapus?',
+            text: "Tidak bisa akses data lagi!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Hapus!'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await axios.delete(`http://localhost:3000/api/media/delete-media/${id}`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    Swal.fire(
+                        'Deleted!',
+                        'Data Disposisi berhasil dihapus.',
+                        'success'
+                    );
+                    setMedia((prev) => prev.filter((item) => item._id != id));
+                } catch (error) {
+                    Swal.fire(
+                        'Error!',
+                        'Gagal Mengahapus Disposisi.',
+                        'error'
+                    );
+                }
+            }
+        });
     };
 
     const handleChange = (field, value) => {
@@ -242,6 +272,7 @@ export default function KelolaDisplay() {
 
 
     const actionBodyTemplate = (rowData) => {
+        console.log(rowData._id);
         return (
             <div className="flex gap-2">
                 <Button
@@ -276,8 +307,8 @@ export default function KelolaDisplay() {
                     {/* Kelola Media */}
                     <TabPanel header="Kelola Media" leftIcon="pi pi-image mr-2">
                         {/* Summary Cards */}
-                        <Grid2 container spacing={2} sx={{ mb: 3 }}>
-                            <Grid2 item xs={12} md={4}>
+                        <Grid container spacing={2} sx={{ mb: 3 }}>
+                            <Grid item xs={12} md={4}>
                                 <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#e3f2fd' }}>
                                     <Typography variant="h6" color="text.secondary">
                                         <i className="pi pi-image mr-2"></i>
@@ -287,8 +318,8 @@ export default function KelolaDisplay() {
                                         {media.length}
                                     </Typography>
                                 </Paper>
-                            </Grid2>
-                            <Grid2 item xs={12} md={4}>
+                            </Grid>
+                            <Grid item xs={12} md={4}>
                                 <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#e8f5e9' }}>
                                     <Typography variant="h6" color="text.secondary">
                                         <i className="pi pi-clock mr-2"></i>
@@ -298,8 +329,8 @@ export default function KelolaDisplay() {
                                         {totalDuration} Menit
                                     </Typography>
                                 </Paper>
-                            </Grid2>
-                            <Grid2 item xs={12} md={4}>
+                            </Grid>
+                            <Grid item xs={12} md={4}>
                                 <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#f3e5f5' }}>
                                     <Typography variant="h6" color="text.secondary">
                                         <i className="pi pi-replay mr-2"></i>
@@ -309,8 +340,8 @@ export default function KelolaDisplay() {
                                         {Math.floor(totalDuration / 60)}:{(totalDuration % 60).toString().padStart(2, '0')}
                                     </Typography>
                                 </Paper>
-                            </Grid2>
-                        </Grid2>
+                            </Grid>
+                        </Grid>
 
                         {/* Kelola Media Table */}
                         <Card>
@@ -320,7 +351,6 @@ export default function KelolaDisplay() {
                                     label="Tambah Media"
                                     icon="pi pi-plus"
                                     onClick={() => {
-                                        resetMediaForm();
                                         setShowMediaDialog(true);
                                     }}
                                     className="p-button-success"
@@ -366,8 +396,8 @@ export default function KelolaDisplay() {
                     {/* ==================== TAB 2: PENGATURAN AGENDA ==================== */}
                     <TabPanel header="Pengaturan Agenda" leftIcon="pi pi-calendar mr-2">
                         {/* Summary Cards */}
-                        <Grid2 container spacing={2} sx={{ mb: 3 }}>
-                            <Grid2 item xs={12} md={4}>
+                        <Grid container spacing={2} sx={{ mb: 3 }}>
+                            <Grid item xs={12} md={4}>
                                 <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#e3f2fd' }}>
                                     <Typography variant="h6" color="text.secondary">
                                         <i className="pi pi-list mr-2"></i>
@@ -377,8 +407,8 @@ export default function KelolaDisplay() {
                                         {activeModes.length}
                                     </Typography>
                                 </Paper>
-                            </Grid2>
-                            <Grid2 item xs={12} md={4}>
+                            </Grid>
+                            <Grid item xs={12} md={4}>
                                 <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#e8f5e9' }}>
                                     <Typography variant="h6" color="text.secondary">
                                         <i className="pi pi-clock mr-2"></i>
@@ -388,8 +418,8 @@ export default function KelolaDisplay() {
                                         {/* {Math.floor(totalAgendaDuration / 60)}:{(totalAgendaDuration % 60).toString().padStart(2, '0')} */}
                                     </Typography>
                                 </Paper>
-                            </Grid2>
-                            <Grid2 item xs={12} md={4}>
+                            </Grid>
+                            <Grid item xs={12} md={4}>
                                 <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#f3e5f5' }}>
                                     <Typography variant="h6" color="text.secondary">
                                         <i className="pi pi-sync mr-2"></i>
@@ -399,8 +429,8 @@ export default function KelolaDisplay() {
                                         {agendaSettings.enableRotation ? 'ON' : 'OFF'}
                                     </Typography>
                                 </Paper>
-                            </Grid2>
-                        </Grid2>
+                            </Grid>
+                        </Grid>
 
                         {/* Rotation Toggle */}
                         <Card className="mb-3">
@@ -428,8 +458,8 @@ export default function KelolaDisplay() {
                                         border: mode.enabled ? `2px solid ${mode.color}` : '1px solid #e0e0e0'
                                     }}
                                 >
-                                    <Grid2 container spacing={2} alignItems="center">
-                                        <Grid2 item xs={12} md={1}>
+                                    <Grid container spacing={2} alignItems="center">
+                                        <Grid item xs={12} md={1}>
                                             <div style={{
                                                 width: '48px',
                                                 height: '48px',
@@ -444,14 +474,14 @@ export default function KelolaDisplay() {
                                                     color: mode.color
                                                 }}></i>
                                             </div>
-                                        </Grid2>
-                                        <Grid2 item xs={12} md={5}>
+                                        </Grid>
+                                        <Grid item xs={12} md={5}>
                                             <Typography variant="h6" sx={{ mb: 1 }}>{mode.name}</Typography>
                                             <Typography variant="body2" color="text.secondary">
                                                 {mode.description}
                                             </Typography>
-                                        </Grid2>
-                                        <Grid2 item xs={12} md={4}>
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
                                             <div className="flex align-items-center gap-2">
                                                 <i className="pi pi-clock" style={{ fontSize: '1rem' }}></i>
                                                 <InputNumber
@@ -464,14 +494,14 @@ export default function KelolaDisplay() {
                                                     style={{ width: '150px' }}
                                                 />
                                             </div>
-                                        </Grid2>
-                                        <Grid2 item xs={12} md={2} sx={{ textAlign: 'right' }}>
+                                        </Grid>
+                                        <Grid item xs={12} md={2} sx={{ textAlign: 'right' }}>
                                             <InputSwitch
                                                 checked={mode.enabled}
                                                 onChange={() => handleToggleMode(mode.id)}
                                             />
-                                        </Grid2>
-                                    </Grid2>
+                                        </Grid>
+                                    </Grid>
                                 </Card>
                             ))}
                         </Card>
@@ -516,7 +546,6 @@ export default function KelolaDisplay() {
                 style={{ width: '500px' }}
                 onHide={() => {
                     setShowMediaDialog(false);
-                    resetMediaForm();
                 }}
                 footer={
                     <div>
@@ -525,7 +554,6 @@ export default function KelolaDisplay() {
                             icon="pi pi-times"
                             onClick={() => {
                                 setShowMediaDialog(false);
-                                resetMediaForm();
                             }}
                             className="p-button-text"
                         />
@@ -539,7 +567,7 @@ export default function KelolaDisplay() {
             >
                 <div className="p-fluid">
                     <div className="field">
-                        <label htmlFor="duration">Durasi Tampilan (detik)</label>
+                        <label htmlFor="duration">Durasi Tampilan (menit)</label>
                         <InputNumber
                             id="duration"
                             value={form.duration}
