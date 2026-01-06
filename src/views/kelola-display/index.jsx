@@ -31,7 +31,6 @@ export default function KelolaDisplay() {
     const [media, setMedia] = useState([]);
     // ==================== MEDIA STATE ====================
     const [showMediaDialog, setShowMediaDialog] = useState(false);
-    const [editingMedia, setEditingMedia] = useState(null);
     const [form, setForm] = useState({
         duration: "",
         file: null
@@ -117,53 +116,8 @@ export default function KelolaDisplay() {
         setShowMediaDialog(false);
     };
 
-
-    const handleEditMedia = (item) => {
-
-        setShowMediaDialog(true);
-    };
-
-    const handleUpdateMedia = () => {
-        setShowMediaDialog(false);
-
-    };
-
     const handleDeleteMedia = (id) => {
-        if (window.confirm('Yakin ingin menghapus media ini?')) {
-            setMedia(media.filter(m => m.id !== id));
-
-            // TODO: Delete media dari server
-            // axios.delete(`/api/media/${id}`);
-        }
-    };
-
-    const resetMediaForm = () => {
-        setEditingMedia(null);
-        // setNewMedia({ type: 'image', name: '', duration: 5, file: null });
-    };
-
-    const moveMediaUp = (rowData) => {
-        // const index = media.findIndex(m => m.id === rowData.id);
-        // if (index > 0) {
-        //     const newMedia = [...media];
-        //     [newMedia[index - 1], newMedia[index]] = [newMedia[index], newMedia[index - 1]];
-        //     setMedia(newMedia);
-
-        //     // TODO: Update urutan di server
-        //     // axios.put('/api/media/reorder', { media: newMedia });
-        // }
-    };
-
-    const moveMediaDown = (rowData) => {
-        // const index = media.findIndex(m => m.id === rowData.id);
-        // if (index < media.length - 1) {
-        //     const newMedia = [...media];
-        //     [newMedia[index], newMedia[index + 1]] = [newMedia[index + 1], newMedia[index]];
-        //     setMedia(newMedia);
-
-        //     // TODO: Update urutan di server
-        //     // axios.put('/api/media/reorder', { media: newMedia });
-        // }
+        console.log(id);
     };
 
     const handleChange = (field, value) => {
@@ -244,36 +198,12 @@ export default function KelolaDisplay() {
     
 
     const actionBodyTemplate = (rowData) => {
-        // const index = media.findIndex(m => m.id === rowData.id);
         return (
             <div className="flex gap-2">
                 <Button
-                    icon="pi pi-arrow-up"
-                    className="p-button-sm p-button-text p-button-secondary"
-                    onClick={() => moveMediaUp(rowData)}
-                    // disabled={index === 0}
-                    tooltip="Pindah ke atas"
-                    tooltipOptions={{ position: 'top' }}
-                />
-                <Button
-                    icon="pi pi-arrow-down"
-                    className="p-button-sm p-button-text p-button-secondary"
-                    onClick={() => moveMediaDown(rowData)}
-                    // disabled={index === media.length - 1}
-                    tooltip="Pindah ke bawah"
-                    tooltipOptions={{ position: 'top' }}
-                />
-                <Button
-                    icon="pi pi-pencil"
-                    className="p-button-sm p-button-info p-button-text"
-                    onClick={() => handleEditMedia(rowData)}
-                    tooltip="Edit"
-                    tooltipOptions={{ position: 'top' }}
-                />
-                <Button
                     icon="pi pi-trash"
                     className="p-button-sm p-button-danger p-button-text"
-                    onClick={() => handleDeleteMedia(rowData.id)}
+                    onClick={() => handleDeleteMedia(rowData._id)}
                     tooltip="Hapus"
                     tooltipOptions={{ position: 'top' }}
                 />
@@ -299,7 +229,7 @@ export default function KelolaDisplay() {
                 </Typography>
 
                 <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
-                    {/* ==================== TAB 1: KELOLA MEDIA ==================== */}
+                    {/* Kelola Media */}
                     <TabPanel header="Kelola Media" leftIcon="pi pi-image mr-2">
                         {/* Summary Cards */}
                         <Grid2 container spacing={2} sx={{ mb: 3 }}>
@@ -338,7 +268,7 @@ export default function KelolaDisplay() {
                             </Grid2>
                         </Grid2>
 
-                        {/* Media Table */}
+                        {/* Kelola Media Table */}
                         <Card>
                             <div className="flex justify-content-between align-items-center mb-3">
                                 <h3 className="m-0">Daftar Media</h3>
@@ -535,9 +465,9 @@ export default function KelolaDisplay() {
                 </TabView>
             </MainCard>
 
-            {/* ==================== DIALOG ADD/EDIT MEDIA ==================== */}
+            {/* Dialog atau Pop Up Tambah Media */}
             <Dialog
-                header={editingMedia ? 'Edit Media' : 'Tambah Media Baru'}
+                header='Tambah Media Baru'
                 visible={showMediaDialog}
                 style={{ width: '500px' }}
                 onHide={() => {
@@ -556,26 +486,14 @@ export default function KelolaDisplay() {
                             className="p-button-text"
                         />
                         <Button
-                            label={editingMedia ? 'Update' : 'Tambah'}
+                            label= 'Tambah'
                             icon="pi pi-check"
-                            onClick={editingMedia ? handleUpdateMedia : handleAddMedia}
-                        // disabled={!newMedia.name || !newMedia.duration}
+                            onClick={handleAddMedia}
                         />
                     </div>
                 }
             >
                 <div className="p-fluid">
-                    {/* <div className="field">
-                        <label htmlFor="type">Tipe Media</label>
-                        <Dropdown
-                            id="type"
-                            value={newMedia.type}
-                            options={mediaTypes}
-                            onChange={(e) => setNewMedia({...newMedia, type: e.value})}
-                            disabled={editingMedia !== null}
-                        />
-                    </div> */}
-
                     <div className="field">
                         <label htmlFor="duration">Durasi Tampilan (detik)</label>
                         <InputNumber
@@ -588,7 +506,7 @@ export default function KelolaDisplay() {
                         <small className="text-secondary">Berapa lama media ini akan ditampilkan</small>
                     </div>
 
-                    {!editingMedia && (
+                    
                         <div className="field">
                             <label>Upload File</label>
                             <FileUpload
@@ -601,9 +519,9 @@ export default function KelolaDisplay() {
                             />
                             <small className="text-secondary">Maksimal ukuran file: 50MB</small>
                         </div>
-                    )}
                 </div>
             </Dialog>
+            {/* End Dialog Tambah Media */}
         </Box>
     );
 }
