@@ -37,15 +37,39 @@ const createMedia = async (req, res) => {
     }
 };
 
+const getAgendaDuration = async (req, res) => {
+    try {
+        const duration = await DurationAgenda.findOne().sort({ createdAt: -1 });
+        res.status(200).json(duration);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
 const createAgendaDuration = async (req, res) => {
     try {
-        const agenda = await DurationAgenda.create(req.body);
+        console.log('BODY:', req.body); // 👈 TAMBAH INI
+        const agenda = await DurationAgenda.findOneAndUpdate(
+            {},
+            req.body,
+            { new: true, upsert: true }
+        );
         res.status(200).json(agenda);
     } catch (error) {
-        res.status(500).message({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
-}
+};
+
+
+
+// const createAgendaDuration = async (req, res) => {
+//     try {
+//         const agenda = await DurationAgenda.create(req.body);
+//         res.status(200).json(agenda);
+//     } catch (error) {
+//         res.status(500).message({ message: error.message });
+//     }
+// }
 
 const deleteMedia = async (req, res) => {
     try {
@@ -83,5 +107,6 @@ module.exports = {
     createAgendaDuration,
     deleteMedia,
     deleteDuration,
-    getAllMedia
+    getAllMedia,
+    getAgendaDuration
 };

@@ -54,7 +54,8 @@ export default function KelolaDisplay() {
         fetchMedia();
     }, []);
 
-    // ==================== AGENDA SETTINGS STATE ====================
+    // ==================== AGENDA SETTINGS ====================
+
     const [agendaSettings, setAgendaSettings] = useState({
         enableRotation: true,
         modes: [
@@ -88,6 +89,33 @@ export default function KelolaDisplay() {
         ],
         alarmBeforeMinutes: 30
     });
+
+    // ==================== GET AGENDA DURATION ====================
+    const fetchAgendaDuration = async () => {
+        try {
+            const res = await axios.get(
+                'http://localhost:3000/api/media/get-duration',
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (!res.data) return;
+
+            setAgendaSettings(prev => ({
+                ...prev,
+                modes: prev.modes.map(mode => {
+                    if (mode.id === 'kegiatan')
+                        return { ...mode, duration: res.data.agenda_kegiatan_duration ?? mode.duration };
+                    if (mode.id === 'hari_ini')
+                        return { ...mode, duration: res.data.agenda_hariini_duration ?? mode.duration };
+                    if (mode.id === 'selesai')
+                        return { ...mode, duration: res.data.agenda_selesai ?? mode.duration };
+                    return mode;
+                })
+            }));
+        } catch (err) {
+            console.error('Gagal ambil pengaturan agenda', err);
+        }
+    };
 
     const mediaTypes = [
         { label: 'Gambar (JPG, PNG, GIF)', value: 'image' },
@@ -153,21 +181,37 @@ export default function KelolaDisplay() {
         });
     };
 
-    const handleSaveAgendaSettings = () => {
-        console.log('Saving agenda settings:', agendaSettings);
 
-        // TODO: Implement API call to save settings
-        // axios.put('/api/agenda-settings', agendaSettings)
-        //     .then(response => {
-        //         alert('Pengaturan agenda berhasil disimpan!');
-        //     })
-        //     .catch(error => {
-        //         alert('Gagal menyimpan pengaturan!');
-        //     });
+    // ==================== SAVE AGENDA ====================
+    const handleSaveAgendaSettings = async () => {
+        try {
+            const payload = {
+                agenda_kegiatan_duration: agendaSettings.modes.find(m => m.id === 'kegiatan')?.duration,
+                agenda_hariini_duration: agendaSettings.modes.find(m => m.id === 'hari_ini')?.duration,
+                agenda_selesai: agendaSettings.modes.find(m => m.id === 'selesai')?.duration
+            };
 
-        alert('Pengaturan agenda berhasil disimpan!');
+            await axios.post(
+                'http://localhost:3000/api/media/create-duration',
+                payload,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            await fetchAgendaDuration(); // 🔄 sync ulang dari DB
+
+            alert('Pengaturan agenda berhasil disimpan');
+        } catch (err) {
+            console.error('Gagal menyimpan agenda', err);
+            alert('Gagal menyimpan pengaturan agenda');
+        }
     };
 
+
+    // ==================== USE EFFECT ====================
+    useEffect(() => {
+        fetchMedia();              // media tetap
+        fetchAgendaDuration();     // ⬅️ INI KUNCI NYA
+    }, []);
     // ==================== TEMPLATE FUNCTIONS ====================
     const typeBodyTemplate = (rowData) => {
         const isImage = rowData.mimetype?.startsWith('image/');
@@ -195,7 +239,7 @@ export default function KelolaDisplay() {
         );
     };
 
-    
+
 
     const actionBodyTemplate = (rowData) => {
         return (
@@ -486,7 +530,7 @@ export default function KelolaDisplay() {
                             className="p-button-text"
                         />
                         <Button
-                            label= 'Tambah'
+                            label='Tambah'
                             icon="pi pi-check"
                             onClick={handleAddMedia}
                         />
@@ -506,19 +550,19 @@ export default function KelolaDisplay() {
                         <small className="text-secondary">Berapa lama media ini akan ditampilkan</small>
                     </div>
 
-                    
-                        <div className="field">
-                            <label>Upload File</label>
-                            <FileUpload
-                                mode="basic"
-                                accept="image/*,video/*"
-                                maxFileSize={50000000}
-                                chooseLabel="Pilih File"
-                                onSelect={(e) => handleFileSelect(e)}
-                                auto={false}
-                            />
-                            <small className="text-secondary">Maksimal ukuran file: 50MB</small>
-                        </div>
+
+                    <div className="field">
+                        <label>Upload File</label>
+                        <FileUpload
+                            mode="basic"
+                            accept="image/*,video/*"
+                            maxFileSize={50000000}
+                            chooseLabel="Pilih File"
+                            onSelect={(e) => handleFileSelect(e)}
+                            auto={false}
+                        />
+                        <small className="text-secondary">Maksimal ukuran file: 50MB</small>
+                    </div>
                 </div>
             </Dialog>
             {/* End Dialog Tambah Media */}
