@@ -265,27 +265,6 @@ export default function KelolaDisplay() {
     };
 
 
-    // // ==================== AGENDA HANDLERS ====================
-    // const handleToggleMode = (modeId) => {
-    //     setAgendaSettings({
-    //         ...agendaSettings,
-    //         modes: agendaSettings.modes.map(mode =>
-    //             mode.id === modeId ? { ...mode, enabled: !mode.enabled } : mode
-    //         )
-    //     });
-    // };
-
-    // const handleModeDurationChange = (modeId, duration) => {
-    //     setAgendaSettings({
-    //         ...agendaSettings,
-    //         modes: agendaSettings.modes.map(mode =>
-    //             mode.id === modeId ? { ...mode, duration: parseInt(duration) } : mode
-    //         )
-    //     });
-    // };
-
-
-
     // ==================== SAVE AGENDA ====================
     const handleSaveAgendaSettings = async () => {
         const { startDate, endDate } = agendaSelesaiFilter;
@@ -333,8 +312,8 @@ export default function KelolaDisplay() {
 
     // ==================== USE EFFECT ====================
     useEffect(() => {
-        fetchMedia();           
-        fetchAgendaSelesaiFilter();    
+        fetchMedia();
+        fetchAgendaSelesaiFilter();
     }, []);
 
     // Template Function
@@ -506,7 +485,7 @@ export default function KelolaDisplay() {
                                         value={agendaSelesaiFilter.startDate}
                                         onChange={(e) => {
                                             const d = new Date(e.value);
-                                            d.setHours(12, 0, 0, 0); 
+                                            d.setHours(12, 0, 0, 0);
                                             setAgendaSelesaiFilter(prev => ({
                                                 ...prev,
                                                 startDate: d
@@ -525,7 +504,7 @@ export default function KelolaDisplay() {
                                         value={agendaSelesaiFilter.endDate}
                                         onChange={(e) => {
                                             const d = new Date(e.value);
-                                            d.setHours(12, 0, 0, 0); 
+                                            d.setHours(12, 0, 0, 0);
                                             setAgendaSelesaiFilter(prev => ({
                                                 ...prev,
                                                 endDate: d
@@ -553,6 +532,12 @@ export default function KelolaDisplay() {
                                     <Typography variant="body2" color="text.secondary">
                                         Jumlah agenda selesai yang akan ditampilkan di TV
                                     </Typography>
+
+                                    {previewCount === 0 && (
+                                        <small style={{ color: 'red' }}>
+                                            ⚠ Tidak ada agenda selesai dalam rentang tanggal ini
+                                        </small>
+                                    )}
                                 </div>
 
                                 <div style={{ textAlign: 'center' }}>
@@ -564,11 +549,6 @@ export default function KelolaDisplay() {
                             </div>
                         </Card>
 
-                        {previewCount === 0 && (
-                            <small style={{ color: 'red' }}>
-                                ⚠ Tidak ada agenda selesai dalam rentang tanggal ini
-                            </small>
-                        )}
 
                         <Button
                             label="Simpan Pengaturan"

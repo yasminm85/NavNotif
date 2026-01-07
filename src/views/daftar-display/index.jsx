@@ -232,17 +232,14 @@ export default function Disposisi() {
                 );
                 newReminders.forEach(item => triggerAlarm(item));
             } else {
-                // Reminder selesai
                 setHasActiveReminder(false);
 
-                // Hanya ganti mode kalau sebelumnya TODAY
                 setMode(prevMode => {
                     if (prevMode === MODE.TODAY) {
                         setPageTitle("AGENDA KEGIATAN");
                         setShowDisposisi(sortNormal(kegiatan));
                         return MODE.KEGIATAN;
                     }
-                    // Kalau mode lain (MEDIA, SELESAI) tetap biarkan jalan
                     return prevMode;
                 });
             }
@@ -315,10 +312,8 @@ export default function Disposisi() {
             return;
         }
 
-        // Jangan set timer untuk MEDIA (handled separately)
         if (mode === MODE.MEDIA) return;
 
-        // Timer untuk mode KEGIATAN dan SELESAI (2 menit)
         const duration = 2 * 60 * 1000;
 
         const timer = setTimeout(() => {
@@ -515,8 +510,6 @@ export default function Disposisi() {
         );
     }
 
-    // TABLE MODE (KEGIATAN, SELESAI, TODAY)
-    console.log("📊 Entering TABLE MODE");
     return (
         <div className="card">
             <MainCard title={
