@@ -20,13 +20,13 @@ export default function Disposisi() {
     const rows = 5;
     const scrollSpeed = 3000;
     const MODE = {
-        TODAY: 'TODAY',
-        KEGIATAN: 'KEGIATAN',
-        SELESAI: 'SELESAI'
+        TODAY: 'TODAY',      
+        KEGIATAN: 'KEGIATAN', 
+        SELESAI: 'SELESAI',   
+        MEDIA: 'MEDIA'        
     };
 
     const [mode, setMode] = useState(MODE.KEGIATAN);
-
     const [agendaKegiatan, setAgendaKegiatan] = useState([]);
     const [agendaSelesai, setAgendaSelesai] = useState([]);
     const [hasActiveReminder, setHasActiveReminder] = useState(false);
@@ -34,6 +34,34 @@ export default function Disposisi() {
         startDate: null,
         endDate: null
     });
+    const [mediaList, setMediaList] = useState([]);
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+    const mediaTimerRef = useRef(null); 
+
+    const getMediaType = (mimetype) => {
+        if (!mimetype) return 'unknown';
+        if (mimetype.startsWith('image/')) return 'image';
+        if (mimetype.startsWith('video/')) return 'video';
+        return 'unknown';
+    };
+
+    const goToNextMedia = () => {
+        
+        if (mediaTimerRef.current) {
+            clearTimeout(mediaTimerRef.current);
+            mediaTimerRef.current = null;
+        }
+
+        setCurrentMediaIndex(prev => {
+            const nextIndex = prev + 1;
+            if (nextIndex < mediaList.length) {
+                return nextIndex;
+            } else {
+                setMode(MODE.KEGIATAN);
+                return 0;
+            }
+        });
+    };
 
     // ---------------------------- CHECK REMINDER ----------------------------
     const checkReminderActive = (items) => {
@@ -125,9 +153,7 @@ export default function Disposisi() {
 
     const playAlarmSound = () => {
         const audio = new Audio(alarmSound);
-
         audio.play().catch(err => console.log("Audio play error:", err));
-
         setTimeout(() => {
             audio.pause();
             audio.currentTime = 0;
@@ -135,14 +161,11 @@ export default function Disposisi() {
     };
 
     const triggerAlarm = (item) => {
-        const now = new Date();
-
         if (playedRemindersRef.current.includes(item._id)) {
             return;
         }
 
         playAlarmSound();
-
         playedRemindersRef.current.push(item._id);
 
         setPlayedReminders(prev => {
@@ -157,13 +180,8 @@ export default function Disposisi() {
         try {
             setLoading(true);
 
-            const response = await axios.get(
-                'http://localhost:3000/api/task/disposisi',
-
-            );
-
+            const response = await axios.get('http://localhost:3000/api/task/disposisi');
             const items = filterValidItems(response.data);
-
             const reminders = checkReminderActive(items);
 
             const kegiatan = items.filter(item => {
@@ -194,34 +212,40 @@ export default function Disposisi() {
                 );
             });
 
-
             setAgendaKegiatan(sortNormal(kegiatan));
             setAgendaSelesai(sortNormal(selesai));
 
             if (reminders.length > 0) {
+                
+                if (mediaTimerRef.current) {
+                    clearTimeout(mediaTimerRef.current);
+                    mediaTimerRef.current = null;
+                }
+
                 setMode(MODE.TODAY);
                 setPageTitle("AGENDA KEGIATAN HARI INI");
                 setShowDisposisi(sortNormal(reminders));
+                setHasActiveReminder(true);
 
                 const newReminders = reminders.filter(
                     r => !playedReminders.includes(r._id)
                 );
                 newReminders.forEach(item => triggerAlarm(item));
-                // return; 
             } else {
+                // Reminder selesai
                 setHasActiveReminder(false);
 
-                // ⬇️ INI KUNCI NYA
+                // Hanya ganti mode kalau sebelumnya TODAY
                 setMode(prevMode => {
                     if (prevMode === MODE.TODAY) {
                         setPageTitle("AGENDA KEGIATAN");
                         setShowDisposisi(sortNormal(kegiatan));
                         return MODE.KEGIATAN;
                     }
+                    // Kalau mode lain (MEDIA, SELESAI) tetap biarkan jalan
                     return prevMode;
                 });
             }
-
 
         } catch (err) {
             console.error("Error mengambil data disposisi", err);
@@ -242,23 +266,33 @@ export default function Disposisi() {
 
             start.setHours(0, 0, 0, 0);
             end.setHours(23, 59, 59, 999);
-            console.log(start.setHours(0, 0, 0, 0));
-            console.log(end.setHours(23, 59, 59, 999));
             setAgendaSelesaiFilter({ startDate: start, endDate: end });
         } catch (err) {
             console.error("Gagal ambil filter agenda selesai", err);
         }
     };
 
-    // ================= INIT FILTER + AUTO SYNC =================
+    // GET DATA MEDIA
+    const getMedia = async () => {
+        try {
+            const res = await axios.get('http://localhost:3000/api/media/getAll-media');
+
+            setMediaList(res.data || []);
+        } catch (err) {
+            console.error("Gagal ambil media", err);
+        }
+    };
+
+    // ================= INIT =================
     useEffect(() => {
         getDisplayDuration();
+        getMedia();
+        
         const interval = setInterval(getDisplayDuration, 10000);
         return () => clearInterval(interval);
     }, []);
 
-
-    // ================= DATA UPDATE SETELAH FILTER SIAP =================
+    // ================= DATA UPDATE SETIAP 10 DETIK (CEK REMINDER) =================
     useEffect(() => {
         if (!agendaSelesaiFilter.startDate) return;
 
@@ -267,14 +301,103 @@ export default function Disposisi() {
         return () => clearInterval(interval);
     }, [agendaSelesaiFilter]);
 
+    // ---------------------------- AUTO UPDATE DATA ----------------------------
     useEffect(() => {
-        getDisplayDuration(); // pertama load
+        const saved = localStorage.getItem("playedReminders");
+        if (saved) {
+            setPlayedReminders(JSON.parse(saved));
+        }
+    }, []);
+
+    // ================= MODE ROTATION (KEGIATAN ↔ SELESAI ↔ MEDIA) =================
+    useEffect(() => {        
+        if (mode === MODE.TODAY) {
+            return;
+        }
+
+        // Jangan set timer untuk MEDIA (handled separately)
+        if (mode === MODE.MEDIA) return;
+
+        // Timer untuk mode KEGIATAN dan SELESAI (2 menit)
+        const duration = 2 * 60 * 1000;
+
+        const timer = setTimeout(() => {
+            setMode(prev => {
+                if (prev === MODE.KEGIATAN) {
+                    return MODE.SELESAI;
+                }
+                if (prev === MODE.SELESAI) {
+                    setCurrentMediaIndex(0); 
+                    return MODE.MEDIA;
+                }
+                return prev;
+            });
+        }, duration);
+
+        return () => clearTimeout(timer);
+    }, [mode]);
+
+    useEffect(() => {
+        if (mode !== MODE.MEDIA || mediaList.length === 0) return;
+
+        const currentMedia = mediaList[currentMediaIndex];
+        const mediaType = getMediaType(currentMedia.mimetype);
+
+        if (mediaType === 'image') {
+            const duration = currentMedia.duration * 60 * 1000; 
+
+            mediaTimerRef.current = setTimeout(() => {
+                goToNextMedia();
+            }, duration);
+
+            return () => {
+                if (mediaTimerRef.current) {
+                    clearTimeout(mediaTimerRef.current);
+                    mediaTimerRef.current = null;
+                }
+            };
+        }
+    }, [mode, currentMediaIndex, mediaList]);
+
+    // ================= UPDATE PAGE TITLE & DATA =================
+    useEffect(() => {
+        if (mode === MODE.TODAY) {
+            setPageTitle("AGENDA KEGIATAN HARI INI");
+            return;
+        }
+
+        if (mode === MODE.KEGIATAN) {
+            setPageTitle("AGENDA KEGIATAN");
+            setShowDisposisi(agendaKegiatan);
+        }
+
+        if (mode === MODE.SELESAI) {
+            setPageTitle("AGENDA SELESAI");
+            setShowDisposisi(agendaSelesai);
+        }
+    }, [mode, agendaKegiatan, agendaSelesai]);
+
+    // ================= AUTO SCROLL =================
+    useEffect(() => {
+        if (showDisposisi.length <= rows) return;
 
         const interval = setInterval(() => {
-            getDisplayDuration(); // 🔥 cek perubahan dari admin
-        }, 10000); // tiap 10 detik
+            setShowDisposisi(prev => {
+                const list = [...prev];
+                list.push(list.shift());
+                return list;
+            });
+        }, scrollSpeed);
 
         return () => clearInterval(interval);
+    }, [showDisposisi]);
+
+    useEffect(() => {
+        return () => {
+            if (mediaTimerRef.current) {
+                clearTimeout(mediaTimerRef.current);
+            }
+        };
     }, []);
 
     // ---------------------------- FORMATTER ----------------------------
@@ -295,80 +418,105 @@ export default function Disposisi() {
         });
     };
 
-
-    // ================= AUTO SCROLL =================
-    useEffect(() => {
-        if (showDisposisi.length <= rows) return;
-
-        const interval = setInterval(() => {
-            setShowDisposisi(prev => {
-                const list = [...prev];
-                list.push(list.shift());
-                return list;
-            });
-        }, scrollSpeed);
-
-        return () => clearInterval(interval);
-    }, [showDisposisi]);
-
-
-    // ---------------------------- AUTO UPDATE DATA ----------------------------
-    useEffect(() => {
-        const saved = localStorage.getItem("playedReminders");
-        if (saved) {
-            setPlayedReminders(JSON.parse(saved));
-        }
-
-        getDataDisposisi();
-        const interval = setInterval(() => {
-            getDataDisposisi();
-        }, 10000);
-
-        return () => clearInterval(interval);
-    }, []);
-
-    useEffect(() => {
-        if (mode === MODE.TODAY) return;
-
-        const duration =
-            mode === MODE.KEGIATAN
-                ? 2 * 60 * 1000
-                : 2 * 60 * 1000;
-
-        const timer = setTimeout(() => {
-            setMode(prev =>
-                prev === MODE.KEGIATAN ? MODE.SELESAI : MODE.KEGIATAN
-            );
-        }, duration);
-
-        return () => clearTimeout(timer);
-    }, [mode]);
-
-
-    useEffect(() => {
-        if (mode === MODE.TODAY) {
-            setPageTitle("AGENDA KEGIATAN HARI INI");
-            return;
-        }
-
-        if (mode === MODE.KEGIATAN) {
-            setPageTitle("AGENDA KEGIATAN");
-            setShowDisposisi(agendaKegiatan);
-        }
-
-        if (mode === MODE.SELESAI) {
-            setPageTitle("AGENDA SELESAI");
-            setShowDisposisi(agendaSelesai);
-        }
-    }, [mode, agendaKegiatan, agendaSelesai]);
-
     // ---------------------------- SORT NORMAL ----------------------------
     const sortNormal = (items) => {
         return items.sort((a, b) => new Date(a.jam_mulai) - new Date(b.jam_mulai));
     };
 
-
     // ---------------------------- RENDER ----------------------------
+    
+    // FULLSCREEN MEDIA MODE
+    if (mode === MODE.MEDIA) {
+        
+        if (mediaList.length === 0) {
+            setTimeout(() => setMode(MODE.KEGIATAN), 100);
+            return null;
+        }
+        
+        const currentMedia = mediaList[currentMediaIndex];
+        const mediaType = getMediaType(currentMedia.mimetype);
+        const mediaPath = `uploads/display/${currentMedia.filename}`;
+        const mediaUrl = `http://localhost:3000/${mediaPath}`;
+        
+        return (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                backgroundColor: '#000',
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                {mediaType === "image" ? (
+                    <img
+                        src={mediaUrl}
+                        alt="Display"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain'
+                        }}
+                        onLoad={() => console.log("Image loaded successfully")}
+                        onError={(e) => {
+                            console.error("Image load error:", e);
+                            console.error("Failed URL:", mediaUrl);
+                            goToNextMedia();
+                        }}
+                    />
+                ) : mediaType === "video" ? (
+                    <video
+                        key={currentMedia._id}
+                        src={mediaUrl}
+                        autoPlay
+                        muted
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain'
+                        }}
+                        onLoadedData={() => console.log("Video loaded successfully")}
+                        onEnded={() => {
+                            console.log("Video finished playing");
+                            goToNextMedia();
+                        }}
+                        onError={(e) => {
+                            console.error("Video load error:", e);
+                            console.error("Failed URL:", mediaUrl);
+                            goToNextMedia();
+                        }}
+                    />
+                ) : (
+                    <div style={{ color: 'white', fontSize: '20px' }}>
+                        Format media tidak didukung: {currentMedia.mimetype}
+                    </div>
+                )}
+                
+                {/* Debug Info */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: 20,
+                    left: 20,
+                    color: 'white',
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    padding: '10px',
+                    borderRadius: '5px',
+                    fontSize: '14px'
+                }}>
+                    {mediaType === 'image' 
+                        ? `Image ${currentMediaIndex + 1}/${mediaList.length} - ${currentMedia.duration}s`
+                        : `Video ${currentMediaIndex + 1}/${mediaList.length}`
+                    }
+                </div>
+            </div>
+        );
+    }
+
+    // TABLE MODE (KEGIATAN, SELESAI, TODAY)
+    console.log("📊 Entering TABLE MODE");
     return (
         <div className="card">
             <MainCard title={

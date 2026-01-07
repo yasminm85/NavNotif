@@ -6,7 +6,7 @@ const upload_display = require('../middleware/uploadFileDisplayMiddleware')
 const router = express.Router();
 
 // route get all media
-router.get('/getAll-media', verifyToken, authorizationRoles('admin'), getAllMedia);
+router.get('/getAll-media', getAllMedia);
 
 // route create media
 router.post('/create-media', verifyToken, authorizationRoles('admin'), upload_display.single('display_path'), createMedia);
