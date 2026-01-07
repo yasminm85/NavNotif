@@ -284,7 +284,7 @@ export default function KelolaDisplay() {
     //     });
     // };
 
-    
+
 
     // ==================== SAVE AGENDA ====================
     const handleSaveAgendaSettings = async () => {
@@ -333,10 +333,10 @@ export default function KelolaDisplay() {
 
     // ==================== USE EFFECT ====================
     useEffect(() => {
-        fetchMedia();              // media tetap
-        fetchAgendaSelesaiFilter();     // ⬅️ INI KUNCI NYA
+        fetchMedia();           
+        fetchAgendaSelesaiFilter();    
     }, []);
-    
+
     // Template Function
     const typeBodyTemplate = (rowData) => {
         const isImage = rowData.mimetype?.startsWith('image/');
@@ -504,28 +504,33 @@ export default function KelolaDisplay() {
                                     <label>Tanggal Mulai</label>
                                     <Calendar
                                         value={agendaSelesaiFilter.startDate}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
+                                            const d = new Date(e.value);
+                                            d.setHours(12, 0, 0, 0); 
                                             setAgendaSelesaiFilter(prev => ({
                                                 ...prev,
-                                                startDate: e.value
-                                            }))
-                                        }
+                                                startDate: d
+                                            }));
+                                        }}
                                         dateFormat="dd/mm/yy"
                                         showIcon
                                         placeholder="Pilih tanggal mulai"
                                     />
+
                                 </div>
 
                                 <div className="field col-12 md:col-6">
                                     <label>Tanggal Akhir</label>
                                     <Calendar
                                         value={agendaSelesaiFilter.endDate}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
+                                            const d = new Date(e.value);
+                                            d.setHours(12, 0, 0, 0); 
                                             setAgendaSelesaiFilter(prev => ({
                                                 ...prev,
-                                                endDate: e.value
-                                            }))
-                                        }
+                                                endDate: d
+                                            }));
+                                        }}
                                         dateFormat="dd/mm/yy"
                                         showIcon
                                         minDate={agendaSelesaiFilter.startDate}
