@@ -1,5 +1,3 @@
-// TVDisplayAdmin.js
-// Copy file ini ke project React Anda
 
 import React, { useState, useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
@@ -191,11 +189,6 @@ export default function KelolaDisplay() {
             console.error('Gagal ambil filter agenda selesai', err);
         }
     };
-
-    // const mediaTypes = [
-    //     { label: 'Gambar (JPG, PNG, GIF)', value: 'image' },
-    //     { label: 'Video (MP4, WebM)', value: 'video' }
-    // ];
 
     // Media Handlers
     const handleAddMedia = async (e) => {
@@ -526,7 +519,7 @@ export default function KelolaDisplay() {
                         <Card className="mb-3" style={{ background: '#f0fdf4', border: '1px solid #86efac' }}>
                             <div className="flex align-items-center justify-content-between">
                                 <div>
-                                    <Typography variant="h6" sx={{ color: '#166534' }}>
+                                    <Typography variant="h3" sx={{ color: '#42a267ff' }}>
                                         Preview Agenda Selesai
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
