@@ -242,7 +242,8 @@ export default function Disposisi() {
 
             start.setHours(0, 0, 0, 0);
             end.setHours(23, 59, 59, 999);
-
+            console.log(start.setHours(0, 0, 0, 0));
+            console.log(end.setHours(23, 59, 59, 999));
             setAgendaSelesaiFilter({ startDate: start, endDate: end });
         } catch (err) {
             console.error("Gagal ambil filter agenda selesai", err);
@@ -380,8 +381,6 @@ export default function Disposisi() {
                     loading={loading}
                     rows={rows}
                     paginator={false}
-                    scrollable
-                    scrollHeight="430px"
                     dataKey="_id"
                     rowClassName={(row) => {
                         if (mode === MODE.SELESAI) {

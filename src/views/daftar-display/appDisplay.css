@@ -191,6 +191,55 @@
     stroke: white !important;
 }
 
+
+/* ===== FIX UNTUK TV - NO SCROLL, AUTO ROTATE ===== */
+.p-datatable .p-datatable-wrapper {
+    height: 430px !important;
+    overflow: hidden !important;
+}
+
+.p-datatable .p-datatable-tbody {
+    overflow: hidden !important;
+}
+
+.p-datatable-scrollable .p-datatable-wrapper {
+    overflow: hidden !important;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+    padding: 18px 15px !important;
+    border: none !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    font-size: 20px !important;
+    font-weight: 500;
+    color: #2d3748;
+    
+    white-space: normal !important;  
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    line-height: 1.4 !important;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+    background: linear-gradient(to right, #1e3c72 0%, #2a5298 100%) !important;
+    color: white !important;
+    font-weight: 800 !important;
+    padding: 20px 15px !important;
+    border: none !important;
+    text-transform: uppercase;
+    font-size: 22px !important;
+    letter-spacing: 1.5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    
+    white-space: normal !important;
+    word-wrap: break-word !important;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+    max-width: 300px; 
+    min-width: 100px;
+}
+
 //responsive buat tv
 @media (min-width: 1920px) {
     .p-datatable {

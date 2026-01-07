@@ -87,7 +87,6 @@ export default function KelolaDisplay() {
 
 
     // ==================== AGENDA SETTINGS ====================
-
     const [agendaSettings, setAgendaSettings] = useState({
         enableRotation: true,
         modes: [
@@ -198,7 +197,7 @@ export default function KelolaDisplay() {
     //     { label: 'Video (MP4, WebM)', value: 'video' }
     // ];
 
-    // ==================== MEDIA HANDLERS ====================
+    // Media Handlers
     const handleAddMedia = async (e) => {
         e.preventDefault();
 
@@ -337,7 +336,8 @@ export default function KelolaDisplay() {
         fetchMedia();              // media tetap
         fetchAgendaSelesaiFilter();     // ⬅️ INI KUNCI NYA
     }, []);
-    // ==================== TEMPLATE FUNCTIONS ====================
+    
+    // Template Function
     const typeBodyTemplate = (rowData) => {
         const isImage = rowData.mimetype?.startsWith('image/');
         const isVideo = rowData.mimetype?.startsWith('video/');
@@ -381,12 +381,10 @@ export default function KelolaDisplay() {
         );
     };
 
-    // ==================== CALCULATIONS ====================
     const totalDuration = media.reduce((sum, item) => sum + item.duration, 0);
     const activeModes = agendaSettings.modes.filter(m => m.enabled);
     // const totalAgendaDuration = activeModes.reduce((sum, mode) => sum + mode.duration, 0);
 
-    // ==================== RENDER ====================
     return (
         <Box sx={{ p: 3 }}>
             <MainCard title={
