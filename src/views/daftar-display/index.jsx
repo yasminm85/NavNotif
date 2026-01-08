@@ -36,7 +36,8 @@ export default function Disposisi() {
     });
     const [mediaList, setMediaList] = useState([]);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-    const mediaTimerRef = useRef(null); 
+    const mediaTimerRef = useRef(null);
+    const mediaListLengthRef = useRef(0);
 
     const getMediaType = (mimetype) => {
         if (!mimetype) return 'unknown';
@@ -55,9 +56,11 @@ export default function Disposisi() {
         setCurrentMediaIndex(prev => {
             const nextIndex = prev + 1;
             if (nextIndex < mediaList.length) {
+                console.log(`Moving to media ${nextIndex + 1}/${mediaList.length}`);
                 return nextIndex;
             } else {
-                setMode(MODE.KEGIATAN);
+                console.log('All media finished, switching to KEGIATAN mode');
+                setTimeout(() => setMode(MODE.KEGIATAN), 100);
                 return 0;
             }
         });
@@ -273,8 +276,25 @@ export default function Disposisi() {
     const getMedia = async () => {
         try {
             const res = await axios.get('http://localhost:3000/api/media/getAll-media');
-
-            setMediaList(res.data || []);
+            const newMediaList = res.data || [];
+            
+            // Cek apakah media list berubah
+            if (newMediaList.length !== mediaListLengthRef.current) {
+                console.log('Media list updated:', newMediaList.length);
+                mediaListLengthRef.current = newMediaList.length;
+                
+                // Jika sedang di mode MEDIA dan index tidak valid, reset
+                if (mode === MODE.MEDIA && currentMediaIndex >= newMediaList.length) {
+                    setCurrentMediaIndex(0);
+                    // Clear timer untuk restart
+                    if (mediaTimerRef.current) {
+                        clearTimeout(mediaTimerRef.current);
+                        mediaTimerRef.current = null;
+                    }
+                }
+            }
+            
+            setMediaList(newMediaList);
         } catch (err) {
             console.error("Gagal ambil media", err);
         }
@@ -285,8 +305,13 @@ export default function Disposisi() {
         getDisplayDuration();
         getMedia();
         
-        const interval = setInterval(getDisplayDuration, 10000);
-        return () => clearInterval(interval);
+        const intervalDuration = setInterval(getDisplayDuration, 10000);
+        const intervalMedia = setInterval(getMedia, 10000);
+        
+        return () => {
+            clearInterval(intervalDuration);
+            clearInterval(intervalMedia);
+        };
     }, []);
 
     // ================= DATA UPDATE SETIAP 10 DETIK (CEK REMINDER) =================
@@ -332,27 +357,44 @@ export default function Disposisi() {
         return () => clearTimeout(timer);
     }, [mode]);
 
+    // ================= MEDIA TIMER - DIPERBAIKI =================
     useEffect(() => {
         if (mode !== MODE.MEDIA || mediaList.length === 0) return;
 
         const currentMedia = mediaList[currentMediaIndex];
+        
+        // Validasi media exists
+        if (!currentMedia) {
+            console.log('Current media not found, resetting index');
+            setCurrentMediaIndex(0);
+            return;
+        }
+        
         const mediaType = getMediaType(currentMedia.mimetype);
 
         if (mediaType === 'image') {
-            const duration = currentMedia.duration * 60 * 1000; 
+            // PERBAIKAN: duration sudah dalam menit, jadi cukup * 60 * 1000 untuk convert ke ms
+            // Tapi di database duration = 1 berarti 1 MENIT bukan 1 detik
+            const durationInMs = currentMedia.duration * 60 * 1000; // 1 menit = 60000 ms
+            console.log(`Setting timer for image ${currentMediaIndex + 1}: ${currentMedia.duration} menit (${durationInMs}ms)`);
 
             mediaTimerRef.current = setTimeout(() => {
+                console.log('Image timer finished, going to next');
                 goToNextMedia();
-            }, duration);
+            }, durationInMs);
 
             return () => {
                 if (mediaTimerRef.current) {
+                    console.log('Cleaning up timer');
                     clearTimeout(mediaTimerRef.current);
                     mediaTimerRef.current = null;
                 }
             };
         }
-    }, [mode, currentMediaIndex, mediaList]);
+        
+        // Video akan otomatis pindah lewat onEnded event
+        console.log(`Displaying video ${currentMediaIndex + 1}, will auto-advance on video end`);
+    }, [mode, currentMediaIndex, mediaList.length]); // UBAH: gunakan mediaList.length bukan mediaList
 
     // ================= UPDATE PAGE TITLE & DATA =================
     useEffect(() => {
@@ -429,6 +471,17 @@ export default function Disposisi() {
         }
         
         const currentMedia = mediaList[currentMediaIndex];
+        
+        // Validasi currentMedia exists
+        if (!currentMedia) {
+            console.log('No current media, switching to KEGIATAN mode');
+            setTimeout(() => {
+                setMode(MODE.KEGIATAN);
+                setCurrentMediaIndex(0);
+            }, 100);
+            return null;
+        }
+        
         const mediaType = getMediaType(currentMedia.mimetype);
         const mediaPath = `uploads/display/${currentMedia.filename}`;
         const mediaUrl = `http://localhost:3000/${mediaPath}`;
@@ -490,7 +543,7 @@ export default function Disposisi() {
                     </div>
                 )}
                 
-                {/* Debug Info */}
+                {/* Debug Info - Uncomment untuk debugging */}
                 {/* <div style={{
                     position: 'absolute',
                     bottom: 20,
@@ -499,12 +552,18 @@ export default function Disposisi() {
                     backgroundColor: 'rgba(0,0,0,0.7)',
                     padding: '10px',
                     borderRadius: '5px',
-                    fontSize: '14px'
-                    }}>
-                    {mediaType === 'image' 
-                        ? `Image ${currentMediaIndex + 1}/${mediaList.length} - ${currentMedia.duration}s`
-                        : `Video ${currentMediaIndex + 1}/${mediaList.length}`
-                    }
+                    fontSize: '14px',
+                    fontFamily: 'monospace'
+                }}>
+                    <div>Media: {currentMediaIndex + 1}/{mediaList.length}</div>
+                    <div>Type: {mediaType}</div>
+                    <div>File: {currentMedia.filename}</div>
+                    {mediaType === 'image' && (
+                        <div>Duration: {currentMedia.duration} menit ({currentMedia.duration * 60} detik)</div>
+                    )}
+                    <div style={{marginTop: '5px', fontSize: '12px', opacity: 0.7}}>
+                        Timer akan otomatis pindah ke media berikutnya
+                    </div>
                 </div> */}
             </div>
         );

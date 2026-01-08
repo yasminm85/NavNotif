@@ -229,14 +229,14 @@ export default function KelolaDisplay() {
                     });
                     Swal.fire(
                         'Deleted!',
-                        'Data Disposisi berhasil dihapus.',
+                        'Data Media berhasil dihapus.',
                         'success'
                     );
                     setMedia((prev) => prev.filter((item) => item._id != id));
                 } catch (error) {
                     Swal.fire(
                         'Error!',
-                        'Gagal Mengahapus Disposisi.',
+                        'Gagal Mengahapus Media.',
                         'error'
                     );
                 }
