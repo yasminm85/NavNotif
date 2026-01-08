@@ -491,7 +491,7 @@ export default function Disposisi() {
                 )}
                 
                 {/* Debug Info */}
-                <div style={{
+                {/* <div style={{
                     position: 'absolute',
                     bottom: 20,
                     left: 20,
@@ -500,12 +500,12 @@ export default function Disposisi() {
                     padding: '10px',
                     borderRadius: '5px',
                     fontSize: '14px'
-                }}>
+                    }}>
                     {mediaType === 'image' 
                         ? `Image ${currentMediaIndex + 1}/${mediaList.length} - ${currentMedia.duration}s`
                         : `Video ${currentMediaIndex + 1}/${mediaList.length}`
                     }
-                </div>
+                </div> */}
             </div>
         );
     }

@@ -33,7 +33,7 @@ export default function DashboardEVP() {
     const [visible, setVisible] = useState(false);
     const [visible2, setVisible2] = useState(false);
     const [errors, setErrors] = useState({});
-    
+
 
 
     //get all data disposisi
@@ -217,7 +217,7 @@ export default function DashboardEVP() {
                         setSelectedLaporan(null)
                     }}
                 >
-                    
+
                     {selectedLaporan ? (
                         <div className="mt-3">
                             <label className="block mb-2 font-semibold">Isi Laporan</label>
@@ -229,7 +229,7 @@ export default function DashboardEVP() {
                                     cols={30}
                                     style={{ whiteSpace: 'pre-wrap' }}
                                 />
-                                
+
                                 <Button
                                     icon="pi pi-window-maximize"
                                     className="p-button-text p-button-sm absolute top-2 right-2"
@@ -259,15 +259,21 @@ export default function DashboardEVP() {
                         <label className="block mb-2 font-semibold">Berikan Komentar atau Feedback</label>
                         <InputTextarea
                             rows={5}
-                            className={`w-full ${errors.komentar ? "p-invalid" : ""}`}
+                            className={`w-full ${errors.komentar ? "p-invalid" : ""} mb-3`}
                             value={komentarText || ""}
                             onChange={(e) => setKomentar(e.target.value)}
                             placeholder="Tuliskan komentar laporan di sini..."
                         />
-                        <div className="flex justify-end mt-2">
+                        { komentarText && komentarText.length > 0 ? (
+                            <div className="flex justify-end mt-2">
+                                <Button label="Kembali" onClick={() => setShowLaporan(false)} />
+
+                            </div>
+                        ) : (
                             <Button label="Kirim" onClick={handleSendComment} />
-                        </div>
+                        )}
                     </div>
+
                 </Dialog>
 
 
