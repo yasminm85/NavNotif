@@ -205,9 +205,8 @@
 }
 
 
-/* ===== FIX UNTUK TV - NO SCROLL, AUTO ROTATE ===== */
 .p-datatable .p-datatable-wrapper {
-    height: 430px !important;
+    height: calc(95vh - 60px - 92px - 30px) !important;
     overflow: hidden !important;
 }
 
@@ -282,7 +281,6 @@
     object-fit: contain;
 }
 
-/* ================== FADE (SUDAH ADA, DIPERKUAT) ================== */
 .fade-in {
     opacity: 1;
     transition: opacity 0.8s ease;
@@ -293,7 +291,6 @@
     transition: opacity 0.8s ease;
 }
 
-/* ================== KEN BURNS ================== */
 .kenburns {
     width: 100%;
     height: 100%;
@@ -390,3 +387,27 @@
     }
 }
 
+@keyframes blink-warning {
+    0%, 100% {
+        background-color: #ef4444 !important;
+        opacity: 1;
+    }
+    50% {
+        background-color: #fca5a5 !important;
+        opacity: 0.8;
+    }
+}
+
+.row-upcoming-blink {
+    background: linear-gradient(to right, #ef4444 0%, #dc2626 100%) !important;
+    animation: blink-warning 1s ease-in-out infinite !important;
+    color: white !important;
+    font-weight: 800 !important;
+    border-left: 8px solid #991b1b !important;
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6) !important;
+}
+
+.row-upcoming-blink td {
+    color: white !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
