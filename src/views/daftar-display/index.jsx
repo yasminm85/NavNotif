@@ -12,6 +12,8 @@ import './appDisplay.css';
 import alarmSound from './alarm-sound.mp3';
 
 export default function Disposisi() {
+
+    const [isTransitioning, setIsTransitioning] = useState(false);
     const playedRemindersRef = useRef([]);
     const [loading, setLoading] = useState(true);
     const [showDisposisi, setShowDisposisi] = useState([]);
@@ -20,10 +22,10 @@ export default function Disposisi() {
     const rows = 5;
     const scrollSpeed = 3000;
     const MODE = {
-        TODAY: 'TODAY',      
-        KEGIATAN: 'KEGIATAN', 
-        SELESAI: 'SELESAI',   
-        MEDIA: 'MEDIA'        
+        TODAY: 'TODAY',
+        KEGIATAN: 'KEGIATAN',
+        SELESAI: 'SELESAI',
+        MEDIA: 'MEDIA'
     };
 
     const [mode, setMode] = useState(MODE.KEGIATAN);
@@ -38,6 +40,10 @@ export default function Disposisi() {
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const mediaTimerRef = useRef(null);
     const mediaListLengthRef = useRef(0);
+    const [orientation, setOrientation] = useState("landscape");
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [nextIndex, setNextIndex] = useState(null);
+    const [isMorphing, setIsMorphing] = useState(false);
 
     const getMediaType = (mimetype) => {
         if (!mimetype) return 'unknown';
@@ -47,25 +53,37 @@ export default function Disposisi() {
     };
 
     const goToNextMedia = () => {
-        
         if (mediaTimerRef.current) {
             clearTimeout(mediaTimerRef.current);
             mediaTimerRef.current = null;
         }
 
-        setCurrentMediaIndex(prev => {
-            const nextIndex = prev + 1;
-            if (nextIndex < mediaList.length) {
-                console.log(`Moving to media ${nextIndex + 1}/${mediaList.length}`);
-                return nextIndex;
-            } else {
-                console.log('All media finished, switching to KEGIATAN mode');
-                setTimeout(() => setMode(MODE.KEGIATAN), 100);
-                return 0;
-            }
-        });
+        setIsTransitioning(true);
+
+        setTimeout(() => {
+            setCurrentMediaIndex(prev => {
+                const nextIndex = prev + 1;
+                if (nextIndex < mediaList.length) {
+                    return nextIndex;
+                } else {
+                    setTimeout(() => setMode(MODE.KEGIATAN), 100);
+                    return 0;
+                }
+            });
+
+            setIsTransitioning(false);
+        }, 800); // durasi transisi
     };
 
+    const detectOrientation = (e) => {
+        const img = e.target;
+        const next =
+            img.naturalWidth > img.naturalHeight ? "landscape" : "portrait";
+
+        setOrientation(prev => (prev === next ? prev : next));
+    };
+
+    
     // ---------------------------- CHECK REMINDER ----------------------------
     const checkReminderActive = (items) => {
         const now = new Date();
@@ -219,7 +237,7 @@ export default function Disposisi() {
             setAgendaSelesai(sortNormal(selesai));
 
             if (reminders.length > 0) {
-                
+
                 if (mediaTimerRef.current) {
                     clearTimeout(mediaTimerRef.current);
                     mediaTimerRef.current = null;
@@ -277,12 +295,12 @@ export default function Disposisi() {
         try {
             const res = await axios.get('http://localhost:3000/api/media/getAll-media');
             const newMediaList = res.data || [];
-            
+
             // Cek apakah media list berubah
             if (newMediaList.length !== mediaListLengthRef.current) {
                 console.log('Media list updated:', newMediaList.length);
                 mediaListLengthRef.current = newMediaList.length;
-                
+
                 // Jika sedang di mode MEDIA dan index tidak valid, reset
                 if (mode === MODE.MEDIA && currentMediaIndex >= newMediaList.length) {
                     setCurrentMediaIndex(0);
@@ -293,7 +311,7 @@ export default function Disposisi() {
                     }
                 }
             }
-            
+
             setMediaList(newMediaList);
         } catch (err) {
             console.error("Gagal ambil media", err);
@@ -304,10 +322,10 @@ export default function Disposisi() {
     useEffect(() => {
         getDisplayDuration();
         getMedia();
-        
+
         const intervalDuration = setInterval(getDisplayDuration, 10000);
         const intervalMedia = setInterval(getMedia, 10000);
-        
+
         return () => {
             clearInterval(intervalDuration);
             clearInterval(intervalMedia);
@@ -332,7 +350,7 @@ export default function Disposisi() {
     }, []);
 
     // ================= MODE ROTATION (KEGIATAN ↔ SELESAI ↔ MEDIA) =================
-    useEffect(() => {        
+    useEffect(() => {
         if (mode === MODE.TODAY) {
             return;
         }
@@ -347,7 +365,7 @@ export default function Disposisi() {
                     return MODE.SELESAI;
                 }
                 if (prev === MODE.SELESAI) {
-                    setCurrentMediaIndex(0); 
+                    setCurrentMediaIndex(0);
                     return MODE.MEDIA;
                 }
                 return prev;
@@ -362,14 +380,14 @@ export default function Disposisi() {
         if (mode !== MODE.MEDIA || mediaList.length === 0) return;
 
         const currentMedia = mediaList[currentMediaIndex];
-        
+
         // Validasi media exists
         if (!currentMedia) {
             console.log('Current media not found, resetting index');
             setCurrentMediaIndex(0);
             return;
         }
-        
+
         const mediaType = getMediaType(currentMedia.mimetype);
 
         if (mediaType === 'image') {
@@ -391,11 +409,10 @@ export default function Disposisi() {
                 }
             };
         }
-        
+
         // Video akan otomatis pindah lewat onEnded event
         console.log(`Displaying video ${currentMediaIndex + 1}, will auto-advance on video end`);
-    }, [mode, currentMediaIndex, mediaList.length]); // UBAH: gunakan mediaList.length bukan mediaList
-
+    }, [mode, currentMediaIndex, mediaList.length]);
     // ================= UPDATE PAGE TITLE & DATA =================
     useEffect(() => {
         if (mode === MODE.TODAY) {
@@ -461,17 +478,22 @@ export default function Disposisi() {
     };
 
     // ---------------------------- RENDER ----------------------------
-    
-    // FULLSCREEN MEDIA MODE
+    const [panDirection, setPanDirection] = useState("pan-right");
+
+    useEffect(() => {
+        setPanDirection(Math.random() > 0.5 ? "pan-right" : "pan-left");
+    }, [currentMediaIndex]);
+
+
     if (mode === MODE.MEDIA) {
-        
+
         if (mediaList.length === 0) {
             setTimeout(() => setMode(MODE.KEGIATAN), 100);
             return null;
         }
-        
+
         const currentMedia = mediaList[currentMediaIndex];
-        
+
         // Validasi currentMedia exists
         if (!currentMedia) {
             console.log('No current media, switching to KEGIATAN mode');
@@ -481,66 +503,52 @@ export default function Disposisi() {
             }, 100);
             return null;
         }
-        
+
         const mediaType = getMediaType(currentMedia.mimetype);
         const mediaPath = `uploads/display/${currentMedia.filename}`;
         const mediaUrl = `http://localhost:3000/${mediaPath}`;
-        
+
         return (
-            <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                backgroundColor: '#000',
-                zIndex: 9999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-            }}>
-                {mediaType === "image" ? (
-                    <img
-                        src={mediaUrl}
-                        alt="Display"
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'contain'
-                        }}
-                        onLoad={() => console.log("Image loaded successfully")}
-                        onError={(e) => {
-                            console.error("Image load error:", e);
-                            console.error("Failed URL:", mediaUrl);
-                            goToNextMedia();
-                        }}
-                    />
-                ) : mediaType === "video" ? (
-                    <video
-                        key={currentMedia._id}
-                        src={mediaUrl}
-                        autoPlay
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'contain'
-                        }}
-                        onLoadedData={() => console.log("Video loaded successfully")}
-                        onEnded={() => {
-                            console.log("Video finished playing");
-                            goToNextMedia();
-                        }}
-                        onError={(e) => {
-                            console.error("Video load error:", e);
-                            console.error("Failed URL:", mediaUrl);
-                            goToNextMedia();
-                        }}
-                    />
-                ) : (
-                    <div style={{ color: 'white', fontSize: '20px' }}>
-                        Format media tidak didukung: {currentMedia.mimetype}
-                    </div>
-                )}
+            <div
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    backgroundColor: '#000',
+                    zIndex: 9999,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
+            >
+                <div className={`media-wrapper ${isTransitioning ? "fade-out" : "fade-in"}`}>
+                    {mediaType === "image" ? (
+                        <img
+                            src={mediaUrl}
+                            alt="Display"
+                            className={`kenburns-pan ${orientation} ${panDirection}`}
+                            style={{ "--pan-duration": `${currentMedia.duration * 60}s` }}
+                            onLoad={detectOrientation}
+                            onError={goToNextMedia}
+                        />
+
+
+                    ) : mediaType === "video" ? (
+                        <video
+                            key={currentMedia._id}
+                            src={mediaUrl}
+                            autoPlay
+                            onEnded={goToNextMedia}
+                            onError={() => goToNextMedia()}
+                        />
+                    ) : (
+                        <div style={{ color: 'white' }}>
+                            Format media tidak didukung
+                        </div>
+                    )}
+                </div>
             </div>
         );
     }

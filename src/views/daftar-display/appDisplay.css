@@ -6,19 +6,22 @@
 
 /* Warna hijau untuk baris yang sedang diingatkan */
 .row-reminder {
-    background-color: #d4edda !important; /* Hijau muda */
+    background-color: #d4edda !important;
+    /* Hijau muda */
     color: #155724 !important;
     font-weight: bold;
 }
 
 .row-laporan-belum {
-    background-color: #FCDE70 !important; /* kuning */
+    background-color: #FCDE70 !important;
+    /* kuning */
     color: #856404;
     font-weight: bold;
 }
 
 .row-laporan-sudah {
-    background-color: #C0EBA6 !important; /* hijau */
+    background-color: #C0EBA6 !important;
+    /* hijau */
     color: #065f46;
     font-weight: bold;
 }
@@ -31,7 +34,7 @@
 
 /* Style untuk MainCard */
 .card .MuiPaper-root,
-.card > div {
+.card>div {
     background: rgba(255, 255, 255, 0.98) !important;
     border-radius: 20px !important;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
@@ -60,7 +63,7 @@
     font-size: 20px !important;
 }
 
-.p-datatable .p-datatable-thead > tr > th {
+.p-datatable .p-datatable-thead>tr>th {
     background: linear-gradient(to right, #1e3c72 0%, #2a5298 100%) !important;
     color: white !important;
     font-weight: 800 !important;
@@ -73,20 +76,20 @@
 }
 
 /* Body Table */
-.p-datatable .p-datatable-tbody > tr {
+.p-datatable .p-datatable-tbody>tr {
     transition: all 0.3s ease;
     border-left: 5px solid transparent;
 }
 
-.p-datatable .p-datatable-tbody > tr:nth-child(even) {
+.p-datatable .p-datatable-tbody>tr:nth-child(even) {
     background-color: #f0f4f8 !important;
 }
 
-.p-datatable .p-datatable-tbody > tr:nth-child(odd) {
+.p-datatable .p-datatable-tbody>tr:nth-child(odd) {
     background-color: #ffffff !important;
 }
 
-.p-datatable .p-datatable-tbody > tr > td {
+.p-datatable .p-datatable-tbody>tr>td {
     padding: 18px 15px !important;
     border: none !important;
     border-bottom: 2px solid #dee2e6 !important;
@@ -111,10 +114,13 @@
 }
 
 @keyframes glow {
-    0%, 100% { 
+
+    0%,
+    100% {
         box-shadow: 0 4px 20px rgba(66, 153, 225, 0.5);
     }
-    50% { 
+
+    50% {
         box-shadow: 0 4px 30px rgba(66, 153, 225, 0.8);
     }
 }
@@ -134,8 +140,15 @@
 }
 
 @keyframes flash {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.8; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
 }
 
 .row-laporan-belum {
@@ -206,21 +219,21 @@
     overflow: hidden !important;
 }
 
-.p-datatable .p-datatable-tbody > tr > td {
+.p-datatable .p-datatable-tbody>tr>td {
     padding: 18px 15px !important;
     border: none !important;
     border-bottom: 2px solid #dee2e6 !important;
     font-size: 20px !important;
     font-weight: 500;
     color: #2d3748;
-    
-    white-space: normal !important;  
+
+    white-space: normal !important;
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     line-height: 1.4 !important;
 }
 
-.p-datatable .p-datatable-thead > tr > th {
+.p-datatable .p-datatable-thead>tr>th {
     background: linear-gradient(to right, #1e3c72 0%, #2a5298 100%) !important;
     color: white !important;
     font-weight: 800 !important;
@@ -230,13 +243,13 @@
     font-size: 22px !important;
     letter-spacing: 1.5px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    
+
     white-space: normal !important;
     word-wrap: break-word !important;
 }
 
-.p-datatable .p-datatable-tbody > tr > td {
-    max-width: 300px; 
+.p-datatable .p-datatable-tbody>tr>td {
+    max-width: 300px;
     min-width: 100px;
 }
 
@@ -256,24 +269,124 @@
     object-fit: contain;
 }
 
+.media-wrapper {
+    width: 100%;
+    height: 100%;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
 
-//responsive buat tv
-@media (min-width: 1920px) {
-    .p-datatable {
-        font-size: 24px !important;
+.media-wrapper img,
+.media-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* ================== FADE (SUDAH ADA, DIPERKUAT) ================== */
+.fade-in {
+    opacity: 1;
+    transition: opacity 0.8s ease;
+}
+
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+/* ================== KEN BURNS ================== */
+.kenburns {
+    width: 100%;
+    height: 100%;
+    animation: kenburnsZoom linear forwards;
+    animation-duration: var(--kenburns-duration, 50s);
+}
+
+/* LANDSCAPE */
+.kenburns.landscape {
+    object-fit: cover;
+}
+
+/* PORTRAIT */
+.kenburns.portrait {
+    object-fit: contain;
+    background-color: black;
+}
+
+/* Zoom IN */
+@keyframes kenburnsZoom {
+    from {
+        transform: scale(1) translate(0, 0);
     }
-    
-    .p-datatable .p-datatable-thead > tr > th {
-        font-size: 26px !important;
-        padding: 25px 20px !important;
-    }
-    
-    .p-datatable .p-datatable-tbody > tr > td {
-        font-size: 24px !important;
-        padding: 22px 20px !important;
-    }
-    
-    .card .MuiCardHeader-title span {
-        font-size: 38px !important;
+
+    to {
+        transform: scale(1.15) translate(-20px, -20px);
     }
 }
+
+/* Zoom OUT (selang-seling) */
+.kenburns.reverse {
+    animation-name: kenburnsZoomOut;
+}
+
+@keyframes kenburnsZoomOut {
+    from {
+        transform: scale(1.15) translate(-20px, -20px);
+    }
+
+    to {
+        transform: scale(1) translate(0, 0);
+    }
+}
+
+/* ================== PAN KEN BURNS ================== */
+
+.kenburns-pan {
+    width: 110%;
+    /* LEBIH BESAR dari layar */
+    height: 110%;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    animation-duration: var(--pan-duration, 60s);
+}
+
+/* LANDSCAPE */
+.kenburns-pan.landscape {
+    object-fit: cover;
+}
+
+/* PORTRAIT */
+.kenburns-pan.portrait {
+    object-fit: contain;
+    background: black;
+}
+
+/* Geser KIRI → KANAN */
+.pan-right {
+    animation-name: panRight;
+}
+
+/* Geser KANAN → KIRI */
+.pan-left {
+    animation-name: panLeft;
+}
+
+@keyframes panRight {
+    from {
+        transform: translateX(-5%) scale(1.1);
+    }
+
+    to {
+        transform: translateX(5%) scale(1.1);
+    }
+}
+
+@keyframes panLeft {
+    from {
+        transform: translateX(5%) scale(1.1);
+    }
+
+    to {
+        transform: translateX(-5%) scale(1.1);
+    }
+}
+
