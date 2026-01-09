@@ -520,7 +520,6 @@ export default function Disposisi() {
                         key={currentMedia._id}
                         src={mediaUrl}
                         autoPlay
-                        muted
                         style={{
                             width: '100%',
                             height: '100%',
@@ -617,7 +616,7 @@ export default function Disposisi() {
                 >
                     <Column field="nama_kegiatan" header="Nama Kegiatan" />
                     <Column
-                        header="Nama Pegawai"
+                        header="Pegawai  Yang Ditugaskan"
                         body={(row) =>
                             row.nama_yang_dituju && row.nama_yang_dituju.length > 0
                                 ? row.nama_yang_dituju.map(p => p.name).join(", ")
