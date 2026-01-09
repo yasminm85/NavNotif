@@ -319,6 +319,7 @@ const updateLaporan = async (req, res) => {
     }
 };
 
+//buat laporan tambahan
 const updateLaporanTambahan = async (req, res) => {
     try {
         const { id } = req.params;
@@ -447,6 +448,7 @@ const statsDirektoratTotal = async (req, res) => {
     }
 };
 
+// buat di table report bawahnya bar-chart
 const reportTable = async (req, res) => {
     try {
         const { month, year } = req.query;

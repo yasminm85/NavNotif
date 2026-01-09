@@ -3,6 +3,7 @@ const DurationAgenda = require('../models/durationAgenda.model')
 const fs = require('fs');
 const path = require('path');
 
+// dapatin semua gambar atau video
 const getAllMedia = async (req, res) => {
     try {
         const display = await Display.find({});
@@ -12,6 +13,7 @@ const getAllMedia = async (req, res) => {
     }
 }
 
+// nambahin gambar atau video
 const createMedia = async (req, res) => {
     try {
         if (!req.file) {
@@ -50,6 +52,7 @@ const createMedia = async (req, res) => {
     }
 };
 
+// dapatin durasi dari agenda
 const getAgendaDuration = async (req, res) => {
     try {
         const duration = await DurationAgenda.findOne().sort({ createdAt: -1 });
@@ -60,6 +63,7 @@ const getAgendaDuration = async (req, res) => {
 };
 
 
+// buat agenda baru
 const createAgendaDuration = async (req, res) => {
     try {
         console.log('BODY:', req.body); 
@@ -75,6 +79,7 @@ const createAgendaDuration = async (req, res) => {
 };
 
 
+// hapus gambar atau video
 const deleteMedia = async (req, res) => {
     try {
         const { id } = req.params;
@@ -103,26 +108,10 @@ const deleteMedia = async (req, res) => {
     }
 };
 
-const deleteDuration = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const agenda = await DurationAgenda.findByIdAndDelete(id);
-
-        if (!agenda) {
-            return res.status(404).json({ message: "Duration not found" });
-        }
-        res.status(200).json({ message: "Duration succesfully delete" });
-    } catch (error) {
-        res.status(500).message({ message: error.message });
-    }
-}
-
 module.exports = {
     createMedia,
     createAgendaDuration,
     deleteMedia,
-    deleteDuration,
     getAllMedia,
     getAgendaDuration
 };

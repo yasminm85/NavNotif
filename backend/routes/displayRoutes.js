@@ -1,7 +1,7 @@
 const express = require('express');
 const verifyToken = require('../middleware/authMiddleware');
 const authorizationRoles = require('../middleware/roleMiddleware');
-const {createMedia, createAgendaDuration, deleteMedia, deleteDuration, getAllMedia, getAgendaDuration } = require('../controllers/displayController');
+const {createMedia, createAgendaDuration, deleteMedia, getAllMedia, getAgendaDuration } = require('../controllers/displayController');
 const upload_display = require('../middleware/uploadFileDisplayMiddleware')
 const router = express.Router();
 
@@ -19,9 +19,6 @@ router.get('/get-duration', getAgendaDuration);
 
 // route delete media
 router.delete('/delete-media/:id', verifyToken, authorizationRoles('admin'), deleteMedia);
-
-// router delete duration
-router.delete('/delete-duration/:id', verifyToken, authorizationRoles('admin'), deleteDuration);
 
 
 

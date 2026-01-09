@@ -1,4 +1,3 @@
-// index.js
 require('dotenv').config();
 
 const express = require('express');
@@ -6,6 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
+// routes initialize
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const disposisiRoutes = require('./routes/disposisiRoutes');
@@ -38,15 +38,11 @@ app.use(
   })
 );
 
+// upload 
 app.use('/uploads', express.static('uploads'));
 app.use('/uploads/laporan', express.static('uploads/laporan'));
 app.use('/uploads/tambahan', express.static('uploads/tambahan'));
 app.use('/uploads/display', express.static('uploads/display'));
-
-
-app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'Nav Notif API is running' });
-});
 
 // Routes
 app.use('/api/auth', authRoutes);
