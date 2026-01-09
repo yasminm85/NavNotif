@@ -541,29 +541,6 @@ export default function Disposisi() {
                         Format media tidak didukung: {currentMedia.mimetype}
                     </div>
                 )}
-                
-                {/* Debug Info - Uncomment untuk debugging */}
-                {/* <div style={{
-                    position: 'absolute',
-                    bottom: 20,
-                    left: 20,
-                    color: 'white',
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                    padding: '10px',
-                    borderRadius: '5px',
-                    fontSize: '14px',
-                    fontFamily: 'monospace'
-                }}>
-                    <div>Media: {currentMediaIndex + 1}/{mediaList.length}</div>
-                    <div>Type: {mediaType}</div>
-                    <div>File: {currentMedia.filename}</div>
-                    {mediaType === 'image' && (
-                        <div>Duration: {currentMedia.duration} menit ({currentMedia.duration * 60} detik)</div>
-                    )}
-                    <div style={{marginTop: '5px', fontSize: '12px', opacity: 0.7}}>
-                        Timer akan otomatis pindah ke media berikutnya
-                    </div>
-                </div> */}
             </div>
         );
     }

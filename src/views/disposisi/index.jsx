@@ -181,10 +181,6 @@ export default function Disposisi() {
         const divisiIds = selecteddivisi.map((d) => d.id);
         const formData = new FormData();
 
-        // console.log('pegawai ID:', selectedpegawai);
-        // console.log('direktorat ID:', direktoratIds);
-        // console.log('divisi ID:', divisiIds);
-
         formData.append("nama_kegiatan", form.namakegiatan);
         formData.append("agenda_kegiatan", form.agenda);
         formData.append("nama_yang_dituju", JSON.stringify(pegawaiIds));
@@ -453,46 +449,51 @@ export default function Disposisi() {
         if (!rowData) return "";
 
         const now = new Date();
-        const mulai = rowData.jam_mulai ? new Date(rowData.jam_mulai) : null;
 
-        const selesai = rowData.jam_selesai && rowData.jam_selesai.trim() !== ""
-            ? new Date(rowData.jam_selesai)
-            : null;
+        // tanggal kegiatan (tanpa jam)
+        const baseDate = new Date(rowData.tanggal);
+        baseDate.setHours(0, 0, 0, 0);
 
-        // laporan dah buat jadi hijau highlightnya
+        // jam mulai
+        let mulai = null;
+        if (rowData.jam_mulai) {
+            const jm = new Date(rowData.jam_mulai);
+            mulai = new Date(baseDate);
+            mulai.setHours(jm.getHours(), jm.getMinutes(), 0, 0);
+        }
+
+        // jam selesai
+        let selesai = null;
+        if (rowData.jam_selesai) {
+            const js = new Date(rowData.jam_selesai);
+            selesai = new Date(baseDate);
+            selesai.setHours(js.getHours(), js.getMinutes(), 0, 0);
+        }
+
+        // laporan sudah dibuat → hijau
         if (rowData.laporan_status === "SUDAH") {
             return "completed-row";
         }
 
-        // Normalisasi tanggal kegiatan
-        const tanggalKegiatan = new Date(
-            new Date(rowData.tanggal).getFullYear(),
-            new Date(rowData.tanggal).getMonth(),
-            new Date(rowData.tanggal).getDate()
-        );
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-        const today = new Date(
-            now.getFullYear(),
-            now.getMonth(),
-            now.getDate()
-        );
-
-        // tanggal dah lewat dan warna jadi kuning
-        if (tanggalKegiatan < today) {
+        // tanggal sudah lewat
+        if (baseDate < today) {
             return "highlight-row";
         }
 
         // tanggal hari ini
-        if (tanggalKegiatan.getTime() === today.getTime()) {
-            // warna biasa (gak ada waena)
+        if (baseDate.getTime() === today.getTime()) {
+            // belum mulai
             if (mulai && now < mulai) return "";
 
-            // Sedang berlangsung
+            // sedang berlangsung
             if (mulai && now >= mulai && (!selesai || now <= selesai)) {
                 return "highlight-row";
             }
 
-            // lewat jam selesai dan belum isi laporan
+            // lewat jam selesai dan belum laporan
             if (selesai && now > selesai) {
                 return "highlight-row";
             }
@@ -500,7 +501,6 @@ export default function Disposisi() {
 
         return "";
     };
-
 
     // setting date 
     const formDate = (date) => {
