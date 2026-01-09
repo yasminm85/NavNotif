@@ -7,7 +7,6 @@ const cookieParser = require('cookie-parser');
 
 // routes initialize
 const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
 const disposisiRoutes = require('./routes/disposisiRoutes');
 const notifRoutes = require('./routes/notifRoutes');
 const displayRoutes = require('./routes/displayRoutes');
@@ -46,7 +45,6 @@ app.use('/uploads/display', express.static('uploads/display'));
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
 app.use('/api/task', disposisiRoutes);
 app.use('/api/notif', notifRoutes);
 app.use('/api/media', displayRoutes);
