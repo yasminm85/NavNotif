@@ -10,7 +10,6 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './appDisplay.css';
 import alarmSound from './alarm-sound.mp3';
-import logo from '../../assets/images/image.png'
 
 export default function Disposisi() {
 
@@ -42,9 +41,6 @@ export default function Disposisi() {
     const mediaTimerRef = useRef(null);
     const mediaListLengthRef = useRef(0);
     const [orientation, setOrientation] = useState("landscape");
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [nextIndex, setNextIndex] = useState(null);
-    const [isMorphing, setIsMorphing] = useState(false);
 
     const getMediaType = (mimetype) => {
         if (!mimetype) return 'unknown';
@@ -73,8 +69,9 @@ export default function Disposisi() {
             });
 
             setIsTransitioning(false);
-        }, 800); 
+        }, 800); // durasi transisi
     };
+
 
     const detectOrientation = (e) => {
         const img = e.target;
@@ -84,8 +81,7 @@ export default function Disposisi() {
         setOrientation(prev => (prev === next ? prev : next));
     };
 
-
-    // check reminder
+    // ---------------------------- CHECK REMINDER ----------------------------
     const checkReminderActive = (items) => {
         const now = new Date();
         const activeReminders = [];
@@ -108,7 +104,7 @@ export default function Disposisi() {
         return activeReminders;
     };
 
-    // filter item
+    // ---------------------------- FILTER VALID ITEMS ----------------------------
     const filterValidItems = (data) => {
         const now = new Date();
         return data.map(item => {
@@ -142,7 +138,7 @@ export default function Disposisi() {
         });
     };
 
-    // status row
+    // ---------------------------- STATUS ROW ----------------------------
     const isOngoing = (item) => {
         if (!item.tanggal || !item.jam_mulai) return false;
         const now = new Date();
@@ -170,7 +166,7 @@ export default function Disposisi() {
         return now >= start && now <= end;
     };
 
-    // alarm audio
+    // ---------------------------- ALARM AUDIO ----------------------------
     const [playedReminders, setPlayedReminders] = useState([]);
 
     const playAlarmSound = () => {
@@ -197,7 +193,7 @@ export default function Disposisi() {
         });
     };
 
-    // Get Data
+    // ---------------------------- GET DATA ----------------------------
     const getDataDisposisi = async () => {
         try {
             setLoading(true);
@@ -273,7 +269,7 @@ export default function Disposisi() {
         }
     };
 
-    // Get duration
+    // ================= GET FILTER (KELOLA DISPLAY) =================
     const getDisplayDuration = async () => {
         try {
             const res = await axios.get('http://localhost:3000/api/media/get-duration');
@@ -291,16 +287,18 @@ export default function Disposisi() {
         }
     };
 
-    // Get All Media
+    // GET DATA MEDIA
     const getMedia = async () => {
         try {
             const res = await axios.get('http://localhost:3000/api/media/getAll-media');
             const newMediaList = res.data || [];
 
+            // Cek apakah media list berubah
             if (newMediaList.length !== mediaListLengthRef.current) {
                 console.log('Media list updated:', newMediaList.length);
                 mediaListLengthRef.current = newMediaList.length;
 
+                // Jika sedang di mode MEDIA dan index tidak valid, reset
                 if (mode === MODE.MEDIA && currentMediaIndex >= newMediaList.length) {
                     setCurrentMediaIndex(0);
                     // Clear timer untuk restart
@@ -317,7 +315,7 @@ export default function Disposisi() {
         }
     };
 
-    // khususon init
+    // ================= INIT =================
     useEffect(() => {
         getDisplayDuration();
         getMedia();
@@ -331,7 +329,7 @@ export default function Disposisi() {
         };
     }, []);
 
-    // update data setiap 10 menit 
+    // ================= DATA UPDATE SETIAP 10 DETIK (CEK REMINDER) =================
     useEffect(() => {
         if (!agendaSelesaiFilter.startDate) return;
 
@@ -340,7 +338,7 @@ export default function Disposisi() {
         return () => clearInterval(interval);
     }, [agendaSelesaiFilter]);
 
-    // auto update data
+    // ---------------------------- AUTO UPDATE DATA ----------------------------
     useEffect(() => {
         const saved = localStorage.getItem("playedReminders");
         if (saved) {
@@ -348,7 +346,7 @@ export default function Disposisi() {
         }
     }, []);
 
-    // rotasi agenda 
+    // ================= MODE ROTATION (KEGIATAN ↔ SELESAI ↔ MEDIA) =================
     useEffect(() => {
         if (mode === MODE.TODAY) {
             return;
@@ -374,11 +372,13 @@ export default function Disposisi() {
         return () => clearTimeout(timer);
     }, [mode]);
 
+    // ================= MEDIA TIMER - DIPERBAIKI =================
     useEffect(() => {
         if (mode !== MODE.MEDIA || mediaList.length === 0) return;
 
         const currentMedia = mediaList[currentMediaIndex];
 
+        // Validasi media exists
         if (!currentMedia) {
             console.log('Current media not found, resetting index');
             setCurrentMediaIndex(0);
@@ -388,8 +388,9 @@ export default function Disposisi() {
         const mediaType = getMediaType(currentMedia.mimetype);
 
         if (mediaType === 'image') {
-            
-            const durationInMs = currentMedia.duration * 60 * 1000; 
+            // PERBAIKAN: duration sudah dalam menit, jadi cukup * 60 * 1000 untuk convert ke ms
+            // Tapi di database duration = 1 berarti 1 MENIT bukan 1 detik
+            const durationInMs = currentMedia.duration * 60 * 1000; // 1 menit = 60000 ms
             console.log(`Setting timer for image ${currentMediaIndex + 1}: ${currentMedia.duration} menit (${durationInMs}ms)`);
 
             mediaTimerRef.current = setTimeout(() => {
@@ -406,10 +407,10 @@ export default function Disposisi() {
             };
         }
 
+        // Video akan otomatis pindah lewat onEnded event
         console.log(`Displaying video ${currentMediaIndex + 1}, will auto-advance on video end`);
     }, [mode, currentMediaIndex, mediaList.length]);
-
-    // update judul
+    // ================= UPDATE PAGE TITLE & DATA =================
     useEffect(() => {
         if (mode === MODE.TODAY) {
             setPageTitle("AGENDA KEGIATAN HARI INI");
@@ -427,6 +428,7 @@ export default function Disposisi() {
         }
     }, [mode, agendaKegiatan, agendaSelesai]);
 
+    // ================= AUTO SCROLL =================
     useEffect(() => {
         if (showDisposisi.length <= rows) return;
 
@@ -449,6 +451,7 @@ export default function Disposisi() {
         };
     }, []);
 
+    // ---------------------------- FORMATTER ----------------------------
     const formDate = (date) => {
         if (!date) return "";
         return new Date(date).toLocaleDateString("id-ID", {
@@ -466,10 +469,12 @@ export default function Disposisi() {
         });
     };
 
+    // ---------------------------- SORT NORMAL ----------------------------
     const sortNormal = (items) => {
         return items.sort((a, b) => new Date(a.jam_mulai) - new Date(b.jam_mulai));
     };
 
+    // ---------------------------- RENDER ----------------------------
     const [panDirection, setPanDirection] = useState("pan-right");
 
     useEffect(() => {
@@ -486,6 +491,7 @@ export default function Disposisi() {
 
         const currentMedia = mediaList[currentMediaIndex];
 
+        // Validasi currentMedia exists
         if (!currentMedia) {
             console.log('No current media, switching to KEGIATAN mode');
             setTimeout(() => {
@@ -547,26 +553,9 @@ export default function Disposisi() {
     return (
         <div className="card">
             <MainCard title={
-                <div style={{ position: 'relative', textAlign: 'center' }}>
-                    <img
-                        src={logo}
-                        alt="Logo"
-                        style={{
-                            position: 'absolute',
-                            left: '0',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            width: '140px',
-                            height: '80px'
-                        }}
-                    />
-                    <span style={{
-                        fontSize: '24px',
-                        fontWeight: 'bold'
-                    }}>
-                        {pageTitle}
-                    </span>
-                </div>
+                <span style={{ textAlign: 'center', display: 'block', fontSize: '24px', fontWeight: 'bold' }}>
+                    {pageTitle}
+                </span>
             }>
                 <DataTable
                     value={showDisposisi}
@@ -591,15 +580,6 @@ export default function Disposisi() {
                             try {
                                 const start = new Date(row.jam_mulai);
 
-                                // ini untuk reminder 5 menit
-                                const fiveMinutesBefore = new Date(start.getTime());
-                                fiveMinutesBefore.setMinutes(fiveMinutesBefore.getMinutes() - 5);
-
-                                if (now >= fiveMinutesBefore && now < start) {
-                                    return "row-upcoming-blink";
-                                }
-
-                                // ini untuk reminder 30 menit
                                 const reminderStart = new Date(start.getTime());
                                 reminderStart.setMinutes(reminderStart.getMinutes() - 30);
                                 const reminderEnd = new Date(reminderStart);
