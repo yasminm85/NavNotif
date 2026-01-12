@@ -42,6 +42,7 @@ export default function Disposisi() {
     const mediaTimerRef = useRef(null);
     const mediaListLengthRef = useRef(0);
     const [orientation, setOrientation] = useState("landscape");
+const [panMode, setPanMode] = useState("pan-right-zoom-in");
 
     const getMediaType = (mimetype) => {
         if (!mimetype) return 'unknown';
@@ -80,6 +81,14 @@ export default function Disposisi() {
 
         setOrientation(prev => (prev === next ? prev : next));
     };
+
+    useEffect(() => {
+    setPanMode(prev =>
+        prev === "pan-right-zoom-in"
+            ? "pan-left-zoom-out"
+            : "pan-right-zoom-in"
+    );
+}, [currentMediaIndex]);
 
 
     // check reminder
@@ -511,14 +520,15 @@ export default function Disposisi() {
                 {/* IMAGE MODE */}
                 {mediaType === "image" && (
                     <div className={`media-wrapper ${isTransitioning ? "fade-out" : "fade-in"}`}>
-                        <img
-                            key={currentMediaIndex}
-                            src={mediaUrl}
-                            className={`kenburns-pan ${orientation} ${panDirection}`}
-                            style={{ "--pan-duration": `${currentMedia.duration * 60}s` }}
-                            onLoad={detectOrientation}
-                            onError={goToNextMedia}
-                        />
+                       <img
+   key={currentMediaIndex}
+   src={mediaUrl}
+   className={`kenburns ${panMode} ${orientation}`}
+   style={{ "--pan-duration": `${currentMedia.duration * 60}s` }}
+   onLoad={detectOrientation}
+   onError={goToNextMedia}
+/>
+
                     </div>
                 )}
 
