@@ -42,7 +42,7 @@ export default function Disposisi() {
     const mediaTimerRef = useRef(null);
     const mediaListLengthRef = useRef(0);
     const [orientation, setOrientation] = useState("landscape");
-const [panMode, setPanMode] = useState("pan-right-zoom-in");
+    const [panMode, setPanMode] = useState("pan-right-zoom-in");
 
     const getMediaType = (mimetype) => {
         if (!mimetype) return 'unknown';
@@ -83,12 +83,12 @@ const [panMode, setPanMode] = useState("pan-right-zoom-in");
     };
 
     useEffect(() => {
-    setPanMode(prev =>
-        prev === "pan-right-zoom-in"
-            ? "pan-left-zoom-out"
-            : "pan-right-zoom-in"
-    );
-}, [currentMediaIndex]);
+        setPanMode(prev =>
+            prev === "pan-right-zoom-in"
+                ? "pan-left-zoom-out"
+                : "pan-right-zoom-in"
+        );
+    }, [currentMediaIndex]);
 
 
     // check reminder
@@ -520,14 +520,14 @@ const [panMode, setPanMode] = useState("pan-right-zoom-in");
                 {/* IMAGE MODE */}
                 {mediaType === "image" && (
                     <div className={`media-wrapper ${isTransitioning ? "fade-out" : "fade-in"}`}>
-                       <img
-   key={currentMediaIndex}
-   src={mediaUrl}
-   className={`kenburns ${panMode} ${orientation}`}
-   style={{ "--pan-duration": `${currentMedia.duration * 60}s` }}
-   onLoad={detectOrientation}
-   onError={goToNextMedia}
-/>
+                        <img
+                            key={currentMediaIndex}
+                            src={mediaUrl}
+                            className={`kenburns ${panMode} ${orientation}`}
+                            style={{ "--pan-duration": `${currentMedia.duration * 60}s` }}
+                            onLoad={detectOrientation}
+                            onError={goToNextMedia}
+                        />
 
                     </div>
                 )}
@@ -606,15 +606,15 @@ const [panMode, setPanMode] = useState("pan-right-zoom-in");
                             try {
                                 const start = new Date(row.jam_mulai);
 
-                                // ini untuk reminder 5 menit
+                                // ini untuk reminder 25 menit di agenda kegiatan
                                 const fiveMinutesBefore = new Date(start.getTime());
-                                fiveMinutesBefore.setMinutes(fiveMinutesBefore.getMinutes() - 5);
+                                fiveMinutesBefore.setMinutes(fiveMinutesBefore.getMinutes() - 25);
 
                                 if (now >= fiveMinutesBefore && now < start) {
                                     return "row-upcoming-blink";
                                 }
 
-                                // ini untuk reminder 30 menit
+                                // ini untuk reminder 30 menit di agenda kegiatan hari ini
                                 const reminderStart = new Date(start.getTime());
                                 reminderStart.setMinutes(reminderStart.getMinutes() - 30);
                                 const reminderEnd = new Date(reminderStart);
