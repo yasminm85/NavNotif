@@ -4,12 +4,9 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
-import { Dropdown } from 'primereact/dropdown';
 import { Card } from 'primereact/card';
 import { TabView, TabPanel } from 'primereact/tabview';
-import { InputSwitch } from 'primereact/inputswitch';
 import { FileUpload } from 'primereact/fileupload';
 import { Chip } from 'primereact/chip';
 import { Box, Typography, Paper } from '@mui/material';
@@ -361,7 +358,7 @@ export default function KelolaDisplay() {
         <Box sx={{ p: 3 }}>
             <MainCard title={
                 <Typography variant="h3" component="div">
-                    Dashboard Admin TV Display
+                    Kelola TV Display
                 </Typography>
             }>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
