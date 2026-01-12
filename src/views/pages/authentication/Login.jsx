@@ -26,17 +26,17 @@ export default function Login() {
   );
 
   // Redirect after login
-useEffect(() => {
-  if (user || isSuccess) {
-    if (user.role === "admin") {
-      navigate("/dashboard/default");
-    } else if (user.role === "pegawai") {
-      navigate("/dashboard-pegawai");
-    } else if (user.role === "EVP") {
-      navigate("/dashboard-evp");
+  useEffect(() => {
+    if (user || isSuccess) {
+      if (user.role === "admin") {
+        navigate("/dashboard/default");
+      } else if (user.role === "pegawai") {
+        navigate("/dashboard-pegawai");
+      } else if (user.role === "EVP") {
+        navigate("/dashboard-evp");
+      }
     }
-  }
-}, [user, isSuccess]);
+  }, [user, isSuccess]);
 
 
   const handleLogin = (e) => {
@@ -93,15 +93,17 @@ useEffect(() => {
 
                   {/* Login Form */}
                   <Grid size={12}>
-                    <AuthLogin
-                      email={email}
-                      password={password}
-                      setEmail={setEmail}
-                      setPassword={setPassword}
-                      handleSubmit={handleLogin}
-                      isLoading={isLoading}
-                    />
+                    <form onSubmit={handleLogin}>
+                      <AuthLogin
+                        email={email}
+                        password={password}
+                        setEmail={setEmail}
+                        setPassword={setPassword}
+                        isLoading={isLoading}
+                      />
+                    </form>
                   </Grid>
+
 
                   <Grid size={12}><Divider /></Grid>
 

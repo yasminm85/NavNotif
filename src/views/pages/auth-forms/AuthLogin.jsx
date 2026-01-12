@@ -65,6 +65,7 @@ export default function AuthLogin({
             size="large"
             variant="contained"
             onClick={handleSubmit}
+            type='submit'
           >
             {isLoading ? "Loading..." : "Login"}
           </Button>
