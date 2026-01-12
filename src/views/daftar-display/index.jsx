@@ -42,9 +42,6 @@ export default function Disposisi() {
     const mediaTimerRef = useRef(null);
     const mediaListLengthRef = useRef(0);
     const [orientation, setOrientation] = useState("landscape");
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [nextIndex, setNextIndex] = useState(null);
-    const [isMorphing, setIsMorphing] = useState(false);
 
     const getMediaType = (mimetype) => {
         if (!mimetype) return 'unknown';
@@ -499,49 +496,6 @@ export default function Disposisi() {
         const mediaPath = `uploads/display/${currentMedia.filename}`;
         const mediaUrl = `http://localhost:3000/${mediaPath}`;
 
-        // return (
-        //     <div
-        //         style={{
-        //             position: 'fixed',
-        //             top: 0,
-        //             left: 0,
-        //             width: '100vw',
-        //             height: '100vh',
-        //             backgroundColor: '#000',
-        //             zIndex: 9999,
-        //             display: 'flex',
-        //             alignItems: 'center',
-        //             justifyContent: 'center'
-        //         }}
-        //     >
-        //         <div className={`media-wrapper ${isTransitioning ? "fade-out" : "fade-in"}`}>
-        //             {mediaType === "image" ? (
-        //                 <img
-        //                     src={mediaUrl}
-        //                     alt="Display"
-        //                     className={`kenburns-pan ${orientation} ${panDirection}`}
-        //                     style={{ "--pan-duration": `${currentMedia.duration * 60}s` }}
-        //                     onLoad={detectOrientation}
-        //                     onError={goToNextMedia}
-        //                 />
-
-
-        //             ) : mediaType === "video" ? (
-        //                 <video
-        //                     key={currentMedia._id}
-        //                     src={mediaUrl}
-        //                     autoPlay
-        //                     onEnded={goToNextMedia}
-        //                     onError={() => goToNextMedia()}
-        //                 />
-        //             ) : (
-        //                 <div style={{ color: 'white' }}>
-        //                     Format media tidak didukung
-        //                 </div>
-        //             )}
-        //         </div>
-        //     </div>
-        // );
         return (
             <div
                 style={{
@@ -558,6 +512,7 @@ export default function Disposisi() {
                 {mediaType === "image" && (
                     <div className={`media-wrapper ${isTransitioning ? "fade-out" : "fade-in"}`}>
                         <img
+                            key={currentMediaIndex}
                             src={mediaUrl}
                             className={`kenburns-pan ${orientation} ${panDirection}`}
                             style={{ "--pan-duration": `${currentMedia.duration * 60}s` }}
@@ -569,14 +524,17 @@ export default function Disposisi() {
 
                 {/* VIDEO MODE */}
                 {mediaType === "video" && (
-                    <div className="video-wrapper">
+                    <div className="media-wrapper">
                         <video
+                            key={currentMedia._id}
                             src={mediaUrl}
                             autoPlay
+                            playsInline
                             preload="auto"
                             onEnded={goToNextMedia}
                             onError={goToNextMedia}
                         />
+
                     </div>
                 )}
 
