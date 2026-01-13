@@ -67,10 +67,9 @@ export default function DashboardPegawai() {
   const [countActive, setCountActive] = useState(0);
   const [countDone, setCountDone] = useState(0);
 
-  // untuk nge-track toast yang sudah pernah ditampilkan biar ga spam tiap polling
   const toastIdByNotifId = useRef(new Map());
-  const shownToastIds = useRef(new Set());       
-  const shownReminderIds = useRef(new Set());    
+  const shownToastIds = useRef(new Set());
+  const shownReminderIds = useRef(new Set());
 
   const fetchNotifications = useCallback(async () => {
     if (!token) return;
@@ -82,7 +81,6 @@ export default function DashboardPegawai() {
     const onCreate = Array.isArray(res.data?.notifications) ? res.data.notifications : [];
     const reminders = Array.isArray(res.data?.reminders) ? res.data.reminders : [];
 
-    // gabungkan supaya satu Data Source
     setNotifications([...onCreate, ...reminders]);
 
     setCountActive(res.data?.countActive || 0);
@@ -98,13 +96,11 @@ export default function DashboardPegawai() {
 
       setNotifications((prev) => prev.map((n) => (n._id === notifId ? { ...n, isDone: true } : n)));
 
-      // countActive & countDone hanya untuk ON_CREATE (sesuai backend kamu)
       if (target.notifType === 'ON_CREATE') {
         setCountActive((prev) => Math.max(0, prev - 1));
         setCountDone((prev) => prev + 1);
       }
 
-      // tutup toast kalau ada
       const toastId = toastIdByNotifId.current?.get(notifId);
       if (toastId) toast.dismiss(toastId);
 
@@ -136,6 +132,24 @@ export default function DashboardPegawai() {
     [notifications, token]
   );
 
+  const formDate = (date) => {
+    if (!date) return "";
+    return new Date(date).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+  };
+
+  const formTime = (date) => {
+        if (!date) return "Selesai";
+
+        return new Date(date).toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
+
   useEffect(() => {
     if (!Array.isArray(notifications)) return;
 
@@ -146,8 +160,21 @@ export default function DashboardPegawai() {
         shownToastIds.current.add(n._id);
 
         const kegiatan = n.disposisi?.nama_kegiatan || 'Disposisi';
+        const tanggal = n.disposisi?.tanggal || 'Tanggal';
+        const jamMulai = n.disposisi?.jam_mulai || 'Jam Mulai';
+        const jamSelesai = n.disposisi?.jam_selesai || 'Jam Selesai';
         const toastId = toast.info(
-          <NotifToast message={`Disposisi baru: ${kegiatan}`} onOke={() => handleOke(n._id)} />,
+          <NotifToast
+            message={
+              <>
+                <div>Disposisi baru: {kegiatan}</div>
+                <div>Tanggal: {formDate(tanggal)}</div>
+                <div>Jam: {formTime(jamMulai)} - {formTime(jamSelesai)}</div>
+              </>
+            }
+            onOke={() => handleOke(n._id)}
+          />
+          ,
           { autoClose: false }
         );
 
@@ -165,10 +192,9 @@ export default function DashboardPegawai() {
           n.notifType === 'REMINDER_1H'
             ? '1 jam'
             : n.notifType === 'REMINDER_30M'
-            ? '30 menit'
-            : '2 menit';
+              ? '30 menit'
+              : '2 menit';
 
-        // reminder juga pakai tombol oke biar bisa di-done dan gak balik lagi
         const toastId = toast.info(
           <NotifToast message={`Reminder: ${kegiatan} dimulai ${label} lagi`} onOke={() => handleOke(n._id)} />,
           { autoClose: false }

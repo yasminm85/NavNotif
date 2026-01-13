@@ -571,7 +571,7 @@ export default function Disposisi() {
                             left: '0',
                             top: '50%',
                             transform: 'translateY(-50%)',
-                            width: '140px',
+                            width: '160px',
                             height: '80px'
                         }}
                     />

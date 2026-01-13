@@ -99,6 +99,7 @@ export default function DashboardEVP() {
 
     const getSeverity = (status) => (status === 'SUDAH' ? 'success' : 'danger');
     const statusBodyTemplate = (rowData) => <Tag value={rowData.laporan_status} severity={getSeverity(rowData.laporan_status)} />;
+    const hasKomentar = currentTask?.komentar && currentTask.komentar.trim() !== "";
 
 
     const namaPegawaiTemplate = (rowData) => {
@@ -256,23 +257,35 @@ export default function DashboardEVP() {
                     <Typography className='mt-3'>Ditulis Tanggal: {formDate(laporanat) ?? "-"} - Jam: {formTimeLaporan(laporanat) ?? "-"}</Typography>
 
                     <div className="mt-3">
-                        <label className="block mb-2 font-semibold">Berikan Komentar atau Feedback</label>
+                        <label className="block mb-2 font-semibold">
+                            Berikan Komentar atau Feedback
+                        </label>
+
                         <InputTextarea
                             rows={5}
                             className={`w-full ${errors.komentar ? "p-invalid" : ""} mb-3`}
                             value={komentarText || ""}
                             onChange={(e) => setKomentar(e.target.value)}
                             placeholder="Tuliskan komentar laporan di sini..."
+                            disabled={hasKomentar}
                         />
-                        { komentarText && komentarText.length > 0 ? (
-                            <div className="flex justify-end mt-2">
-                                <Button label="Kembali" onClick={() => setShowLaporan(false)} />
 
-                            </div>
-                        ) : (
-                            <Button label="Kirim" onClick={handleSendComment} />
-                        )}
+                        <div className="flex justify-end mt-2">
+                            {hasKomentar ? (
+                                <Button
+                                    label="Kembali"
+                                    onClick={() => setShowLaporan(false)}
+                                />
+                            ) : (
+                                <Button
+                                    label="Kirim"
+                                    onClick={handleSendComment}
+                                />
+                            )}
+                        </div>
+
                     </div>
+
 
                 </Dialog>
 
