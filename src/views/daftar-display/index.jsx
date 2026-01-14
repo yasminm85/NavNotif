@@ -117,36 +117,37 @@ export default function Disposisi() {
     // filter item
     const filterValidItems = (data) => {
         const now = new Date();
+
         return data.map(item => {
             let selesai = false;
             if (!item.tanggal) return { ...item, isSelesai: false };
 
-            const getValidDate = (val, baseDate) => {
-                if (!val || val === "-" || val.toLowerCase() === "selesai") return null;
-                const d = new Date(val);
-                if (!isNaN(d.getTime())) return d;
-                return null;
-            };
-
             const agendaDate = new Date(item.tanggal);
-            agendaDate.setHours(0, 0, 0, 0);
-            const today = new Date(now);
-            today.setHours(0, 0, 0, 0);
 
-            if (agendaDate < today) {
-                selesai = true;
-            }
-            else if (agendaDate.getTime() === today.getTime()) {
-                const endTime = getValidDate(item.jam_selesai, item.tanggal) ||
-                    getValidDate(item.jam_mulai, item.tanggal);
+            const endOfDay = new Date(agendaDate);
+            endOfDay.setHours(23, 59, 59, 999);
 
-                if (endTime) {
-                    selesai = now > endTime;
+            let endTime = null;
+            if (item.jam_selesai &&
+                item.jam_selesai !== "-" &&
+                item.jam_selesai.toLowerCase() !== "selesai") {
+
+                const d = new Date(item.jam_selesai);
+                if (!isNaN(d.getTime())) {
+                    endTime = d;
                 }
             }
+
+            const finalEndTime = endTime ?? endOfDay;
+
+            if (now > finalEndTime) {
+                selesai = true;
+            }
+
             return { ...item, isSelesai: selesai };
         });
     };
+
 
     // status row
     const isOngoing = (item) => {

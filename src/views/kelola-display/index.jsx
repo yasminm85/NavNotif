@@ -125,20 +125,75 @@ export default function KelolaDisplay() {
 
             const now = new Date();
 
-            const selesai = res.data.filter(item => {
+            const parseTime = (timeRangeStr, baseDate, takeEnd = false) => {
+                if (!timeRangeStr) return null;
 
+                // kalau sudah ISO date
+                const d = new Date(timeRangeStr);
+                if (!isNaN(d.getTime())) return d;
+
+                // format "12.33 - 13.33"
+                try {
+                    const parts = timeRangeStr.split("-");
+                    const timeStr = takeEnd ? parts[1].trim() : parts[0].trim();
+                    const [h, m] = timeStr.replace(".", ":").split(":");
+
+                    const result = new Date(baseDate);
+                    result.setHours(parseInt(h), parseInt(m), 0, 0);
+                    return result;
+                } catch {
+                    return null;
+                }
+            };
+
+            const selesai = res.data.filter(item => {
                 if (!item.tanggal) return false;
 
-                const tgl = new Date(item.tanggal);
-                tgl.setHours(23, 59, 59, 999);
+                const now = new Date();
+                const agendaDate = new Date(item.tanggal);
+                agendaDate.setHours(0, 0, 0, 0);
 
-                return tgl < now;
+                const today = new Date(now);
+                today.setHours(0, 0, 0, 0);
+
+                // 🔹 Jika tanggal sudah lewat → pasti selesai
+                if (agendaDate < today) return true;
+
+                // 🔹 Jika hari ini → tentukan jam akhir
+                if (agendaDate.getTime() === today.getTime()) {
+
+                    let endTime = null;
+
+                    // jika jam_selesai valid (bukan "-", bukan "Selesai")
+                    if (
+                        item.jam_selesai &&
+                        item.jam_selesai !== "-" &&
+                        item.jam_selesai.toLowerCase() !== "selesai"
+                    ) {
+                        const d = new Date(item.jam_selesai);
+                        if (!isNaN(d.getTime())) {
+                            endTime = d;
+                        }
+                    }
+
+                    // 🔹 kalau jam_selesai kosong / "Selesai" → pakai akhir hari
+                    if (!endTime) {
+                        endTime = new Date(item.tanggal);
+                        endTime.setHours(23, 59, 59, 999);
+                    }
+
+                    return now > endTime;
+                }
+
+                return false;
             });
+
             setAgendaSelesaiList(selesai);
         } catch (err) {
             console.error('Gagal ambil agenda selesai', err);
         }
     };
+
 
     useEffect(() => {
         fetchAgendaSelesai();
@@ -336,7 +391,7 @@ export default function KelolaDisplay() {
 
 
     const actionBodyTemplate = (rowData) => {
-        // console.log(rowData._id);
+        console.log(rowData._id);
         return (
             <div className="flex gap-2">
                 <Button
