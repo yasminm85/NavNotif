@@ -166,7 +166,6 @@ export default function DaftarNotifikasi() {
     // inih template buat kirim data pas pop up di data table
     const laporanActionTemplate = (row) => {
         const bolehLapor = isLaporanAllowed(row);
-        console.log(bolehLapor);
         return (
             <Button
                 label={row.laporan ? 'Sudah Melaporkan' : 'Isi Laporan'}

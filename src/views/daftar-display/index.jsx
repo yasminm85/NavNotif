@@ -304,7 +304,6 @@ export default function Disposisi() {
             const newMediaList = res.data || [];
 
             if (newMediaList.length !== mediaListLengthRef.current) {
-                console.log('Media list updated:', newMediaList.length);
                 mediaListLengthRef.current = newMediaList.length;
 
                 if (mode === MODE.MEDIA && currentMediaIndex >= newMediaList.length) {
@@ -396,23 +395,19 @@ export default function Disposisi() {
         if (mediaType === 'image') {
 
             const durationInMs = currentMedia.duration * 60 * 1000;
-            console.log(`Setting timer for image ${currentMediaIndex + 1}: ${currentMedia.duration} menit (${durationInMs}ms)`);
 
             mediaTimerRef.current = setTimeout(() => {
-                console.log('Image timer finished, going to next');
                 goToNextMedia();
             }, durationInMs);
 
             return () => {
                 if (mediaTimerRef.current) {
-                    console.log('Cleaning up timer');
                     clearTimeout(mediaTimerRef.current);
                     mediaTimerRef.current = null;
                 }
             };
         }
 
-        console.log(`Displaying video ${currentMediaIndex + 1}, will auto-advance on video end`);
     }, [mode, currentMediaIndex, mediaList.length]);
 
     // update judul
@@ -493,7 +488,6 @@ export default function Disposisi() {
         const currentMedia = mediaList[currentMediaIndex];
 
         if (!currentMedia) {
-            console.log('No current media, switching to KEGIATAN mode');
             setTimeout(() => {
                 setMode(MODE.KEGIATAN);
                 setCurrentMediaIndex(0);

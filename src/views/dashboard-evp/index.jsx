@@ -58,7 +58,7 @@ export default function DashboardEVP() {
 
     // laporan body template buat data table
     const laporanBodyTemplate = (rowData) => {
-        console.log(rowData);
+        // console.log(rowData);
         return (
             <div className="flex gap-2">
                 <Button
@@ -79,7 +79,7 @@ export default function DashboardEVP() {
     };
 
     const laporanTambahanBodyTemplate = (rowData) => {
-        console.log(rowData);
+        // console.log(rowData);
         return (
             <div className="flex gap-2">
                 <Button

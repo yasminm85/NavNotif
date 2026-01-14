@@ -336,7 +336,7 @@ export default function KelolaDisplay() {
 
 
     const actionBodyTemplate = (rowData) => {
-        console.log(rowData._id);
+        // console.log(rowData._id);
         return (
             <div className="flex gap-2">
                 <Button

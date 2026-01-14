@@ -320,7 +320,7 @@
     }
 }
 
-/* Zoom OUT (selang-seling) */
+/* Zoom OUT  */
 .kenburns.reverse {
     animation-name: kenburnsZoomOut;
 }
@@ -335,11 +335,9 @@
     }
 }
 
-/* ================== PAN KEN BURNS ================== */
 
 .kenburns-pan {
     width: 110%;
-    /* LEBIH BESAR dari layar */
     height: 110%;
     animation-timing-function: linear;
     animation-fill-mode: forwards;
@@ -357,12 +355,12 @@
     background: black;
 }
 
-/* Geser KIRI → KANAN */
+/* Geser dari kiri ke kanan */
 .pan-right {
     animation-name: panRight;
 }
 
-/* Geser KANAN → KIRI */
+/* Geser dar kanan ke kiri */
 .pan-left {
     animation-name: panLeft;
 }

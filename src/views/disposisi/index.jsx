@@ -335,7 +335,7 @@ export default function Disposisi() {
                     className="p-button-rounded p-button-warning p-button-sm"
                     onClick={() => {
                         if (!rowData) return;
-                        console.log(rowData);
+                        // console.log(rowData);
                         const pegawaiSelected = pegawaisel.filter(p =>
                             (rowData.nama_yang_dituju || []).some(id =>
                                 id === p._id || id?._id === p._id
@@ -447,7 +447,7 @@ export default function Disposisi() {
         if (!data) return <span>-</span>;
 
         const url = `http://localhost:3000/${data}`;
-        console.log(url);
+        // console.log(url);
         return (
             <Button
                 label="Lihat"

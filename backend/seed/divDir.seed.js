@@ -9,7 +9,7 @@ const DIREKTORAT = [
     { _id: 'DO', name: 'Direktorat Operasi', order: 3 },
     { _id: 'DT', name: 'Direktorat Teknik', order: 4 },
     { _id: 'DS', name: 'Direktorat Keselamatan Keamanan dan Standardisasi', order: 5 },
-    { _id: 'DM', name: 'Direktorat SDM dan Umum', order: 6 },
+    { _id: 'DP', name: 'Direktorat SDM dan Umum', order: 6 },
 ];
 
 const DIVISI = [
@@ -30,10 +30,10 @@ const DIVISI = [
     { _id: 'IT', name: 'Information Technology', direktoratId: 'DT', order: 4 },
     { _id: 'SS', name: 'Standard Security', direktoratId: 'DS', order: 5 },
     { _id: 'SO', name: 'Safety Operation', direktoratId: 'DS', order: 5 },
-    { _id: 'HC', name: 'Human Capital Planning', direktoratId: 'DM', order: 6 },
-    { _id: 'HCS', name: 'Human Capital Services', direktoratId: 'DM', order: 6 },
-    { _id: 'CSE', name: 'Corporate Services', direktoratId: 'DM', order: 6 },
-    { _id: 'LKM', name: 'Learning and Knowledge Management', direktoratId: 'DM', order: 6 },
+    { _id: 'HC', name: 'Human Capital Planning', direktoratId: 'DP', order: 6 },
+    { _id: 'HCS', name: 'Human Capital Services', direktoratId: 'DP', order: 6 },
+    { _id: 'CSE', name: 'Corporate Services', direktoratId: 'DP', order: 6 },
+    { _id: 'LKM', name: 'Learning and Knowledge Management', direktoratId: 'DP', order: 6 },
 ];
 
 async function main() {
