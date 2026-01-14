@@ -119,6 +119,11 @@ export default function Disposisi() {
         fetchSeed();
     }, []);
 
+    //pilih ruangan
+    const ruangan = [
+        { label: 'Gedung Pusat'},
+        { label: 'Gedung Support'},
+    ];
 
     // reminder notif
     const notifOptions = [
@@ -250,10 +255,13 @@ export default function Disposisi() {
                 tanggal: null,
                 jamMulai: "",
                 jamSelesai: "",
+                ruangan: "",
                 tempat: "",
                 file: null,
                 catatan: "",
                 dresscode: "",
+                notifOptions: ""
+
             });
             setSelectedpegawai([]);
             setSelecteddirektorat([]);
@@ -552,16 +560,19 @@ export default function Disposisi() {
                                 tanggal: null,
                                 jamMulai: "",
                                 jamSelesai: "",
+                                ruangan: "",
                                 tempat: "",
                                 file: null,
                                 catatan: "",
                                 dresscode: "",
+                                notifOptions: "",
                             });
 
                             // reset multiselect
                             setSelectedpegawai([]);
                             setSelecteddirektorat([]);
                             setSelecteddivisi([]);
+                            setSelectedNotifOptions([]);
                         }}
                     />
                 </div>
@@ -680,6 +691,17 @@ export default function Disposisi() {
                         </div>
                     </div>
                     {errors.jamMulai && <small className="p-error">{errors.jamMulai}</small>}
+
+                    <div className="mb-3">
+                        <Dropdown
+                            placeholder="Pilih ruangan"
+                            className="w-full"
+                            value={selectedNotifOptions}
+                            options={ruangan}
+                            display="chip"
+                            onChange={(e) => setSelectedNotifOptions(e.value)}
+                        />
+                    </div>
 
                     {/* Tempat */}
                     <div className="mt-3 mb-3">
