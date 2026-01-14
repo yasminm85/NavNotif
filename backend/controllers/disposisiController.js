@@ -53,6 +53,7 @@ const createDisposisi = async (req, res) => {
         const nama_yang_dituju = req.body.nama_yang_dituju ? JSON.parse(req.body.nama_yang_dituju) : [];
         const direktorat = req.body.direktorat ? JSON.parse(req.body.direktorat) : [];
         const divisi = req.body.divisi ? JSON.parse(req.body.divisi) : [];
+        const ruangan = req.body.ruangan ? JSON.parse(req.body.ruangan) : [];
 
         let notificationOptions = [];
         try {
@@ -90,6 +91,7 @@ const createDisposisi = async (req, res) => {
             jam_mulai: req.body.jam_mulai,
             jam_selesai: req.body.jam_selesai,
             tempat: req.body.tempat,
+            ruangan,
             catatan: req.body.catatan,
             dresscode: req.body.dresscode,
             file_path: filePath,
@@ -169,6 +171,7 @@ const updateDisposisi = async (req, res) => {
             jam_mulai,
             jam_selesai,
             tempat,
+            ruangan,
             catatan,
             dresscode,
             file_path
@@ -191,6 +194,7 @@ const updateDisposisi = async (req, res) => {
         }
 
         if (tempat !== undefined) updateData.tempat = tempat;
+        if (ruangan !== undefined) updateData.ruangan = ruangan;
         if (catatan !== undefined) updateData.catatan = catatan;
         if (dresscode !== undefined) updateData.dresscode = dresscode;
 

@@ -36,6 +36,7 @@ export default function Disposisi() {
     const [showLaporan, setShowLaporan] = useState(false);
     const [showDisposisi, setShowDisposisi] = useState([]);
     const [selectedNotifOptions, setSelectedNotifOptions] = useState([]);
+    const [selectedRuangan, setSelectedRuangan] = useState([]);
     const [direktorat, setDirektorat] = useState([]);
     const [divisi, setDivisi] = useState([]);
     const [errors, setErrors] = useState({});
@@ -121,8 +122,8 @@ export default function Disposisi() {
 
     //pilih ruangan
     const ruangan = [
-        { label: 'Gedung Pusat'},
-        { label: 'Gedung Support'},
+        { label: 'Gedung Pusat', value: 'Gedung Pusat'},
+        { label: 'Gedung Support', value: 'Gedung Support'},
     ];
 
     // reminder notif
@@ -210,6 +211,11 @@ export default function Disposisi() {
         formData.append(
             "notificationOptions",
             JSON.stringify(selectedNotifOptions)
+        );
+
+        formData.append(
+            "ruangan",
+            JSON.stringify(selectedRuangan)
         );
 
 
@@ -573,6 +579,7 @@ export default function Disposisi() {
                             setSelecteddirektorat([]);
                             setSelecteddivisi([]);
                             setSelectedNotifOptions([]);
+                            setSelectedRuangan([]);
                         }}
                     />
                 </div>
@@ -692,14 +699,14 @@ export default function Disposisi() {
                     </div>
                     {errors.jamMulai && <small className="p-error">{errors.jamMulai}</small>}
 
-                    <div className="mb-3">
+                    <div className="mt-3 mb-3">
                         <Dropdown
                             placeholder="Pilih ruangan"
                             className="w-full"
-                            value={selectedNotifOptions}
+                            value={selectedRuangan}
                             options={ruangan}
                             display="chip"
-                            onChange={(e) => setSelectedNotifOptions(e.value)}
+                            onChange={(e) => setSelectedRuangan(e.value)}
                         />
                     </div>
 

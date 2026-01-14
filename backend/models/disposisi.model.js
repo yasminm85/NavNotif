@@ -46,9 +46,12 @@ const DisposisiSchema = mongoose.Schema(
 
         tempat: {
             type: String,
-            required: true,
+            required: false,
         },
-
+        ruangan: {
+            type: String,
+            required: false,
+        },
         file_path: {
             type: String,
             required: false,
