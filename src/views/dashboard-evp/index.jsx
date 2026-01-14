@@ -385,7 +385,19 @@ export default function DashboardEVP() {
                     <Column header="Nama Pegawai" body={(row) => namaPegawaiTemplate(row.nama_yang_dituju)} style={{ minWidth: '10rem' }} />
                     <Column field="tanggal" header="Tanggal" body={(row) => formDate(row.tanggal)} style={{ minWidth: '10rem' }} />
                     <Column header="Jam" body={(row) => `${formTime(row.jam_mulai)} - ${formTime(row.jam_selesai)}`} style={{ minWidth: '10rem' }} />
-                    <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
+                    {/* <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} /> */}
+                     <Column
+                                            header="Tempat"
+                                            body={(rowData) => {
+                                                const ruangan = rowData.ruangan?.replace(/"/g, '').trim();
+                                                const tempat = rowData.tempat?.trim();
+                    
+                                                if (ruangan) return ruangan;
+                                                if (tempat) return tempat;
+                                                return "-";
+                                            }}
+                                            style={{ minWidth: '8rem' }}
+                                        />
                     <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
                     <Column header="Status Laporan" body={statusBodyTemplate} style={{ minWidth: '8rem' }} />
                     <Column field="laporan_tambahan" header="Laporan Tambahan" body={laporanTambahanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
