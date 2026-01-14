@@ -14,6 +14,11 @@ const DisplaySchema = mongoose.Schema(
             type: String,
             required: false,
         },
+        displayFileId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'fs.files',
+            default: null
+        },
         duration: { 
             type: Number,
             default: null,

@@ -1,7 +1,7 @@
 const Display = require('../models/display.model')
 const DurationAgenda = require('../models/durationAgenda.model')
-const fs = require('fs');
-const path = require('path');
+const mongoose = require('mongoose');
+const GridFSBucket = mongoose.mongo.GridFSBucket;
 
 // dapatin semua gambar atau video
 const getAllMedia = async (req, res) => {
@@ -17,40 +17,40 @@ const getAllMedia = async (req, res) => {
 const createMedia = async (req, res) => {
     try {
         if (!req.file) {
-            return res.status(400).json({ message: 'No file uploaded.' });
+            return res.status(400).json({ message: 'File wajib diupload' });
         }
 
-        const display = await Display.create({
-            filename: req.file.filename,
-            mimetype: req.file.mimetype,
-            path: req.file.path,
-            duration: req.body.duration
+        const bucket = new GridFSBucket(mongoose.connection.db);
+
+        const uploadStream = bucket.openUploadStream(req.file.originalname, {
+            contentType: req.file.mimetype
         });
 
-        const ext = path.extname(req.file.originalname);
-        const newFilename = `media-${display.id}${ext}`;
-        const newPath = path.join('uploads/display', newFilename);
+        uploadStream.end(req.file.buffer);
 
-        fs.renameSync(req.file.path, newPath);
+        const displayFileId = await new Promise((resolve, reject) => {
+            uploadStream.on('finish', () => resolve(uploadStream.id));
+            uploadStream.on('error', reject);
+        });
 
-        display.filename = newFilename;
-        display.path = newPath;
-        await display.save();
+        const display = await Display.create({
+            filename: req.file.originalname,
+            mimetype: req.file.mimetype,
+            displayFileId,
+            duration: req.body.duration
+        });
 
         res.status(201).json({
             message: 'File uploaded successfully',
             display
         });
-
     } catch (error) {
-        console.error(error);
-        if (req.file?.path && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
-
+        console.error('createMedia error:', error);
         res.status(500).json({ message: error.message });
     }
 };
+
+
 
 // dapatin durasi dari agenda
 const getAgendaDuration = async (req, res) => {
@@ -66,7 +66,7 @@ const getAgendaDuration = async (req, res) => {
 // buat agenda baru
 const createAgendaDuration = async (req, res) => {
     try {
-        console.log('BODY:', req.body); 
+        console.log('BODY:', req.body);
         const agenda = await DurationAgenda.findOneAndUpdate(
             {},
             req.body,
@@ -85,28 +85,29 @@ const deleteMedia = async (req, res) => {
         const { id } = req.params;
 
         const display = await Display.findById(id);
-
         if (!display) {
             return res.status(404).json({ message: "Media not found" });
         }
 
-        const filePath = path.join(
-            __dirname,
-            '../uploads/display/',
-            display.filename
-        );
+        if (display.displayFileId) {
+            const bucket = new GridFSBucket(mongoose.connection.db);
 
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
+            await bucket.delete(
+                new mongoose.Types.ObjectId(display.displayFileId)
+            );
         }
 
         await Display.findByIdAndDelete(id);
 
         res.status(200).json({ message: "Media successfully deleted" });
     } catch (error) {
+        console.error('deleteMedia error:', error);
         res.status(500).json({ message: error.message });
     }
 };
+
+
+
 
 module.exports = {
     createMedia,

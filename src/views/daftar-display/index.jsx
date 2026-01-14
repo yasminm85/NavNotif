@@ -489,6 +489,7 @@ export default function Disposisi() {
         const currentMedia = mediaList[currentMediaIndex];
 
         if (!currentMedia) {
+            console.log('No current media, switching to KEGIATAN mode');
             setTimeout(() => {
                 setMode(MODE.KEGIATAN);
                 setCurrentMediaIndex(0);
@@ -497,8 +498,8 @@ export default function Disposisi() {
         }
 
         const mediaType = getMediaType(currentMedia.mimetype);
-        const mediaPath = `uploads/display/${currentMedia.filename}`;
-        const mediaUrl = `http://localhost:3000/${mediaPath}`;
+        const mediaUrl = `http://localhost:3000/api/task/file/${currentMedia.displayFileId}`;
+
 
         return (
             <div

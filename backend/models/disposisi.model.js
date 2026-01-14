@@ -1,3 +1,4 @@
+const { type } = require('jquery');
 const mongoose = require('mongoose')
 
 const DisposisiSchema = mongoose.Schema(
@@ -56,7 +57,11 @@ const DisposisiSchema = mongoose.Schema(
             type: String,
             required: false,
         },
-
+        fileId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'fs.files',
+            default: null
+        },
         catatan: {
             type: String,
             required: false,
@@ -71,7 +76,11 @@ const DisposisiSchema = mongoose.Schema(
             type: String,
             default: null
         },
-
+        laporanFileId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'fs.files',
+            default: null
+        },
         laporan_file_path: {
             type: String,
             default: null
@@ -111,6 +120,11 @@ const DisposisiSchema = mongoose.Schema(
 
         laporan_tambahan_path: {
             type: String,
+            default: null
+        },
+        laporanFileTambahanId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'fs.files',
             default: null
         },
 

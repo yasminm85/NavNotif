@@ -6,7 +6,7 @@ const upload = require('../middleware/uploadMiddleware')
 const upload_laporan = require('../middleware/uploadFileLaporanMiddleware')
 const upload_laporan_tambahan = require('../middleware/uploadFileLaporanTambahanMiddleware')
 
-const { getDisposisi, getDisposisiCount, getDisposisis, createDisposisi, deleteDisposisi, getMyTasks, updateDisposisi, updateLaporan, createKomentar, statsDirektoratTotal, reportTable, updateLaporanTambahan } = require('../controllers/disposisiController');
+const { getDisposisi, getDisposisiCount, getDisposisis, createDisposisi, deleteDisposisi, getMyTasks, updateDisposisi, updateLaporan, createKomentar, statsDirektoratTotal, reportTable, updateLaporanTambahan, getUpload } = require('../controllers/disposisiController');
 
 // route all disposisi
 router.get('/disposisi', getDisposisi);
@@ -43,6 +43,8 @@ router.delete('/disposisi/:id', verifyToken, authorizationRoles('admin'), delete
 // update disposisi
 router.patch('/disposisi/:id', verifyToken, authorizationRoles('admin'), upload.single('file'),updateDisposisi);
 
+// get upload pdf 
+router.get('/file/:id', getUpload);
 
 module.exports = router;
 

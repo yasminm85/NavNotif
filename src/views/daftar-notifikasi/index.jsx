@@ -80,22 +80,22 @@ export default function DaftarNotifikasi() {
     };
 
     // file body template untuk data table
-    const fileBodyTemplate = (data) => {
-        if (!data) return <span>-</span>;
-        // const validation = validateForm();
-        // setErrors(validation);
+    // const fileBodyTemplate = (data) => {
+    //     if (!data) return <span>-</span>;
+    //     // const validation = validateForm();
+    //     // setErrors(validation);
 
-        const url = `http://localhost:3000/${data}`;
+    //     const url = `http://localhost:3000/${data}`;
 
-        return (
-            <Button
-                label="Lihat"
-                icon="pi pi-file"
-                className="p-button-text p-button-sm"
-                onClick={() => window.open(url, "_blank")}
-            />
-        );
-    };
+    //     return (
+    //         <Button
+    //             label="Lihat"
+    //             icon="pi pi-file"
+    //             className="p-button-text p-button-sm"
+    //             onClick={() => window.open(url, "_blank")}
+    //         />
+    //     );
+    // };
 
     const handleChange = (field, value) => {
 
@@ -268,6 +268,69 @@ export default function DaftarNotifikasi() {
         }
     };
 
+    const fileBodyTemplate = (fileId) => {
+        if (!fileId) return <span>-</span>;
+
+        const handleOpen = async () => {
+            try {
+                const res = await axios.get(
+                    `http://localhost:3000/api/task/file/${fileId}`,
+                    {
+                        responseType: 'blob'
+                    }
+                );
+
+                const fileURL = URL.createObjectURL(res.data);
+                window.open(fileURL);
+            } catch (err) {
+                console.error('Gagal buka file', err);
+            }
+        };
+
+        return (
+            <Button
+                label="Lihat"
+                icon="pi pi-file"
+                className="p-button-text p-button-sm"
+                onClick={handleOpen}
+            />
+        );
+    };
+
+
+    const handleOpenLaporan = async () => {
+        try {
+            const res = await axios.get(
+                `http://localhost:3000/api/task/file/${currentTask.laporanFileId}`,
+                {
+                    responseType: "blob"
+                }
+            );
+
+            const fileURL = URL.createObjectURL(res.data);
+            window.open(fileURL);
+        } catch (err) {
+            console.error("Gagal buka file laporan", err);
+        }
+    };
+
+    const handleOpenLaporanTambahan = async () => {
+        try {
+            const res = await axios.get(
+                `http://localhost:3000/api/task/file/${currentTaskTambahan.laporanFileTambahanId}`,
+                {
+                    responseType: "blob"
+                }
+            );
+
+            const fileURL = URL.createObjectURL(res.data);
+            window.open(fileURL);
+        } catch (err) {
+            console.error("Gagal buka file laporan tambahan", err);
+        }
+    };
+
+
     return (
         <div className="card">
             <MainCard title="Daftar Notifikasi">
@@ -314,14 +377,12 @@ export default function DaftarNotifikasi() {
                                 {errors.file && <small className="p-error">{errors.file}</small>}
                             </div>
 
-                            {laporanPath ? (
+                            {currentTask.laporanFileId ? (
                                 <Button
                                     label="Lihat File Laporan"
                                     icon="pi pi-file"
                                     className="p-button p-button-sm mb-2"
-                                    onClick={() =>
-                                        window.open(`http://localhost:3000/${laporanPath}`, "_blank")
-                                    }
+                                    onClick={handleOpenLaporan}
                                 />
                             ) : (
                                 <small className="text-gray-500 mb-2 block">Belum ada file laporan.</small>
@@ -389,14 +450,12 @@ export default function DaftarNotifikasi() {
                                 {errors.file && <small className="p-error">{errors.file}</small>}
                             </div>
 
-                            {laporanPathTambahan ? (
+                            {currentTaskTambahan.laporanFileTambahanId ? (
                                 <Button
                                     label="Lihat File Laporan"
                                     icon="pi pi-file"
                                     className="p-button p-button-sm mb-2"
-                                    onClick={() =>
-                                        window.open(`http://localhost:3000/${laporanPathTambahan}`, "_blank")
-                                    }
+                                    onClick={handleOpenLaporanTambahan}
                                 />
                             ) : (
                                 <small className="text-gray-500 mb-2 block">Belum ada file laporan.</small>
@@ -439,7 +498,7 @@ export default function DaftarNotifikasi() {
                             <p><strong>Jam Mulai:</strong> {formTime(selectedNotif.jam_mulai)}</p>
                             <p><strong>Jam Selesai:</strong> {formTime(selectedNotif.jam_selesai)}</p>
                             <p><strong>Tempat:</strong> {selectedNotif.tempat}</p>
-                            <p><strong>File:</strong>{fileBodyTemplate(selectedNotif.file_path)}</p>
+                            <p><strong>File:</strong>{fileBodyTemplate(selectedNotif.fileId)}</p>
                             <p><strong>Catatan:</strong> {selectedNotif.catatan || "-"}</p>
                         </div>
                     )}

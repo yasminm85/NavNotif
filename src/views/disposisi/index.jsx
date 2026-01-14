@@ -202,8 +202,8 @@ export default function Disposisi() {
         if (form.file) {
             formData.append("file", form.file);
         } else {
-            if (editMode && selectedData?.file_path) {
-                formData.append("file_path", selectedData.file_path);
+            if (editMode && selectedData?.fileId) {
+                formData.append("fileId", selectedData.fileId);
             }
         }
 
@@ -212,10 +212,6 @@ export default function Disposisi() {
             JSON.stringify(selectedNotifOptions)
         );
 
-        // formData.append(
-        //     "ruangan",
-        //     JSON.stringify(selectedRuangan || "")
-        // );
         formData.append("ruangan", selectedRuangan || "");
 
 
@@ -316,6 +312,7 @@ export default function Disposisi() {
 
     // action view, edit, and delete
     const actionBodyTemplate = (rowData) => {
+        console.log(rowData);
         return (
             <div className="flex gap-2">
 
@@ -443,20 +440,35 @@ export default function Disposisi() {
     };
 
     // file body template buat data table
-    const fileBodyTemplate = (data) => {
-        if (!data) return <span>-</span>;
+    const fileBodyTemplate = (fileId) => {
+        if (!fileId) return <span>-</span>;
 
-        const url = `http://localhost:3000/${data}`;
-        // console.log(url);
+        const handleOpen = async () => {
+            try {
+                const res = await axios.get(
+                    `http://localhost:3000/api/task/file/${fileId}`,
+                    {
+                        responseType: 'blob'
+                    }
+                );
+
+                const fileURL = URL.createObjectURL(res.data);
+                window.open(fileURL);
+            } catch (err) {
+                console.error('Gagal buka file', err);
+            }
+        };
+
         return (
             <Button
                 label="Lihat"
                 icon="pi pi-file"
                 className="p-button-text p-button-sm"
-                onClick={() => window.open(url, "_blank")}
+                onClick={handleOpen}
             />
         );
     };
+
 
     // Highlight row logic
     const rowClass = (rowData) => {
@@ -835,7 +847,7 @@ export default function Disposisi() {
                             <p><strong>Jam Selesai:</strong> {formTime(selectedData.jam_selesai)}</p>
                             <p><strong>Ruangan:</strong> {selectedData.ruangan}</p>
                             <p><strong>Tempat:</strong> {selectedData.tempat}</p>
-                            <p><strong>File:</strong>{fileBodyTemplate(selectedData.file_path)}</p>
+                            <p><strong>File:</strong>{fileBodyTemplate(selectedData.fileId)}</p>
                             <p><strong>Dresscode:</strong> {selectedData.dresscode || "-"}</p>
 
                         </div>

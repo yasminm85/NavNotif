@@ -2,6 +2,9 @@ const Disposisi = require('../models/disposisi.model')
 const Notification = require('../models/notif.model')
 const Direktorat = require('../models/direktorat.model')
 const Divisi = require('../models/divisi.model')
+const mongoose = require('mongoose');
+const GridFSBucket = mongoose.mongo.GridFSBucket;
+
 
 //get all disposisi
 const getDisposisi = async (req, res) => {
@@ -48,13 +51,31 @@ const REMINDER_OFFSET_MINUTES = {
 
 const createDisposisi = async (req, res) => {
     try {
-        const filePath = req.file ? req.file.path : null;
+        let fileId = null;
+
+        if (req.file) {
+            const bucket = new GridFSBucket(mongoose.connection.db);
+
+            const uploadStream = bucket.openUploadStream(req.file.originalname, {
+                contentType: req.file.mimetype
+            });
+
+            uploadStream.end(req.file.buffer);
+
+            await new Promise((resolve, reject) => {
+                uploadStream.on('finish', () => {
+                    fileId = uploadStream.id;
+                    resolve();
+                });
+                uploadStream.on('error', reject);
+            });
+        }
 
         const nama_yang_dituju = req.body.nama_yang_dituju ? JSON.parse(req.body.nama_yang_dituju) : [];
         const direktorat = req.body.direktorat ? JSON.parse(req.body.direktorat) : [];
         const divisi = req.body.divisi ? JSON.parse(req.body.divisi) : [];
         const ruangan = req.body.ruangan || "";
-
+        console.log(fileId);
 
         let notificationOptions = [];
         try {
@@ -93,9 +114,9 @@ const createDisposisi = async (req, res) => {
             jam_selesai: req.body.jam_selesai,
             tempat: req.body.tempat,
             ruangan,
+            fileId,
             catatan: req.body.catatan,
             dresscode: req.body.dresscode,
-            file_path: filePath,
             notificationOptions
         });
 
@@ -269,43 +290,42 @@ const updateLaporan = async (req, res) => {
         const userId = req.user.id || req.user._id;
         const userRole = req.user.role;
 
-        const file = req.file;
-        const filePath = file ? file.path : null;
-
-        const hasText = laporan && laporan.trim();
-        const hasFile = !!file;
-
-        if (!hasText && !hasFile) {
-            return res.status(400).json({ message: 'Laporan tidak boleh kosong' });
-        }
-
         if (!laporan || !laporan.trim()) {
             return res.status(400).json({ message: 'Laporan tidak boleh kosong' });
         }
 
         let query = { _id: id, nama_yang_dituju: userId };
-
-        if (userRole === 'admin') {
-            query = { _id: id };
-        }
+        if (userRole === 'admin') query = { _id: id };
 
         const disposisi = await Disposisi.findOne(query);
-
         if (!disposisi) {
-            return res.status(404).json({
-                message:
-                    'Disposisi tidak ditemukan'
+            return res.status(404).json({ message: 'Disposisi tidak ditemukan' });
+        }
+
+        let laporanFileId = null;
+
+        if (req.file) {
+            const bucket = new GridFSBucket(mongoose.connection.db);
+
+            const uploadStream = bucket.openUploadStream(req.file.originalname, {
+                contentType: req.file.mimetype
+            });
+
+            uploadStream.end(req.file.buffer);
+
+            await new Promise((resolve, reject) => {
+                uploadStream.on('finish', () => {
+                    laporanFileId = uploadStream.id;
+                    resolve();
+                });
+                uploadStream.on('error', reject);
             });
         }
 
-        if (hasText) disposisi.laporan = laporan;
-
-        if (hasFile) {
-            disposisi.laporan_file_path = filePath;
-        }
-
-        disposisi.laporan_by = userId
-        disposisi.laporan_status = "SUDAH"
+        disposisi.laporan = laporan;
+        disposisi.laporanFileId = laporanFileId;
+        disposisi.laporan_by = userId;
+        disposisi.laporan_status = 'SUDAH';
         disposisi.laporan_at = new Date();
 
         await disposisi.save();
@@ -324,6 +344,7 @@ const updateLaporan = async (req, res) => {
     }
 };
 
+
 //buat laporan tambahan
 const updateLaporanTambahan = async (req, res) => {
     try {
@@ -331,18 +352,6 @@ const updateLaporanTambahan = async (req, res) => {
         const { laporan_tambahan } = req.body;
         const userId = req.user.id || req.user._id;
         const userRole = req.user.role;
-
-        // console.log('userId:', userId);
-
-        const file = req.file;
-        const filePath = file ? file.path : null;
-
-        const hasText = laporan_tambahan && laporan_tambahan.trim();
-        const hasFile = !!file;
-
-        if (!hasText && !hasFile) {
-            return res.status(400).json({ message: 'Laporan Tambahan tidak boleh kosong' });
-        }
 
         if (!laporan_tambahan || !laporan_tambahan.trim()) {
             return res.status(400).json({ message: 'Laporan Tambahan tidak boleh kosong' });
@@ -363,13 +372,29 @@ const updateLaporanTambahan = async (req, res) => {
             });
         }
 
-        if (hasText) disposisi.laporan_tambahan = laporan_tambahan;
+        let laporanFileTambahanId = null;
 
-        if (hasFile) {
-            disposisi.laporan_tambahan_path = filePath;
+        if (req.file) {
+            const bucket = new GridFSBucket(mongoose.connection.db);
+
+            const uploadStream = bucket.openUploadStream(req.file.originalname, {
+                contentType: req.file.mimetype
+            });
+
+            uploadStream.end(req.file.buffer);
+
+            await new Promise((resolve, reject) => {
+                uploadStream.on('finish', () => {
+                    laporanFileTambahanId = uploadStream.id;
+                    resolve();
+                });
+                uploadStream.on('error', reject);
+            });
         }
 
+        disposisi.laporan_tambahan = laporan_tambahan;
         disposisi.laporan_tambahan_by = userId
+        disposisi.laporanFileTambahanId = laporanFileTambahanId;
         disposisi.laporan_tambahan_at = new Date();
         disposisi.laporan_tambahan_status = 'SUDAH';
 
@@ -462,7 +487,7 @@ const reportTable = async (req, res) => {
 
         if (year && month) {
             const y = Number(year);
-            const m = Number(month); 
+            const m = Number(month);
 
             const startDate = new Date(y, m - 1, 1, 0, 0, 0, 0);
             const endExclusive = new Date(y, m, 1, 0, 0, 0, 0);
@@ -577,6 +602,51 @@ const reportTable = async (req, res) => {
     }
 };
 
+const getUpload = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).send('Invalid file id');
+        }
+
+        const bucket = new mongoose.mongo.GridFSBucket(
+            mongoose.connection.db
+        );
+
+        const fileId = new mongoose.Types.ObjectId(id);
+
+        const files = await mongoose.connection.db
+            .collection('fs.files')
+            .find({ _id: fileId })
+            .toArray();
+
+        if (!files || files.length === 0) {
+            return res.status(404).send('File not found');
+        }
+
+        const file = files[0];
+
+        res.set({
+            'Content-Type': file.contentType || 'application/octet-stream',
+            'Content-Disposition': 'inline'
+        });
+
+        const downloadStream = bucket.openDownloadStream(fileId);
+
+        downloadStream.on('error', () => {
+            res.status(404).send('File not found');
+        });
+
+        downloadStream.pipe(res);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error retrieving file');
+    }
+};
+
+
+
 module.exports = {
     getDisposisi,
     getDisposisiCount,
@@ -589,7 +659,8 @@ module.exports = {
     createKomentar,
     statsDirektoratTotal,
     reportTable,
-    updateLaporanTambahan
+    updateLaporanTambahan,
+    getUpload
 };
 
 
