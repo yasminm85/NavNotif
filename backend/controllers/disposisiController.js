@@ -53,7 +53,9 @@ const createDisposisi = async (req, res) => {
         const nama_yang_dituju = req.body.nama_yang_dituju ? JSON.parse(req.body.nama_yang_dituju) : [];
         const direktorat = req.body.direktorat ? JSON.parse(req.body.direktorat) : [];
         const divisi = req.body.divisi ? JSON.parse(req.body.divisi) : [];
-        const ruangan = req.body.ruangan ? JSON.parse(req.body.ruangan) : [];
+        // const ruangan = req.body.ruangan ? JSON.parse(req.body.ruangan) : [];
+        const ruangan = req.body.ruangan || "";
+
 
         let notificationOptions = [];
         try {

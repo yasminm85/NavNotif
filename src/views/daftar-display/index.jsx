@@ -642,7 +642,19 @@ export default function Disposisi() {
                     />
                     <Column field="tanggal" header="Tanggal" body={(row) => formDate(row.tanggal)} />
                     <Column header="Jam" body={(row) => `${formTime(row.jam_mulai)} - ${formTime(row.jam_selesai)}`} />
-                    <Column field="tempat" header="Tempat" />
+                    {/* <Column field="tempat" header="Tempat" /> */}
+                    <Column
+                        header="Tempat"
+                        body={(rowData) => {
+                            const ruangan = rowData.ruangan?.replace(/"/g, '').trim();
+                            const tempat = rowData.tempat?.trim();
+
+                            if (ruangan) return ruangan;
+                            if (tempat) return tempat;
+                            return "-";
+                        }}
+                        style={{ minWidth: '8rem' }}
+                    />
                 </DataTable>
             </MainCard>
         </div>

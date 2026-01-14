@@ -36,7 +36,7 @@ export default function Disposisi() {
     const [showLaporan, setShowLaporan] = useState(false);
     const [showDisposisi, setShowDisposisi] = useState([]);
     const [selectedNotifOptions, setSelectedNotifOptions] = useState([]);
-    const [selectedRuangan, setSelectedRuangan] = useState([]);
+    const [selectedRuangan, setSelectedRuangan] = useState(null);
     const [direktorat, setDirektorat] = useState([]);
     const [divisi, setDivisi] = useState([]);
     const [errors, setErrors] = useState({});
@@ -66,7 +66,6 @@ export default function Disposisi() {
             newErrors.divisi = "Divisi wajib diisi.";
         if (!form.tanggal) newErrors.tanggal = "Tanggal wajib diisi.";
         if (!form.jamMulai) newErrors.jamMulai = "Jam mulai wajib diisi.";
-        if (!form.tempat) newErrors.tempat = "Tempat wajib diisi.";
         return newErrors;
     };
 
@@ -122,8 +121,8 @@ export default function Disposisi() {
 
     //pilih ruangan
     const ruangan = [
-        { label: 'Gedung Pusat', value: 'Gedung Pusat'},
-        { label: 'Gedung Support', value: 'Gedung Support'},
+        { label: 'Gedung Pusat', value: 'Gedung Pusat' },
+        { label: 'Gedung Support', value: 'Gedung Support' },
     ];
 
     // reminder notif
@@ -213,10 +212,11 @@ export default function Disposisi() {
             JSON.stringify(selectedNotifOptions)
         );
 
-        formData.append(
-            "ruangan",
-            JSON.stringify(selectedRuangan)
-        );
+        // formData.append(
+        //     "ruangan",
+        //     JSON.stringify(selectedRuangan || "")
+        // );
+        formData.append("ruangan", selectedRuangan || "");
 
 
         try {
@@ -266,7 +266,7 @@ export default function Disposisi() {
                 file: null,
                 catatan: "",
                 dresscode: "",
-                notifOptions: ""
+                notifOptions: "",
 
             });
             setSelectedpegawai([]);
@@ -713,12 +713,12 @@ export default function Disposisi() {
                     {/* Tempat */}
                     <div className="mt-3 mb-3">
                         <InputText
-                            placeholder="Tempat *"
+                            placeholder="Tempat "
                             className={`w-full ${errors.tempat ? "p-invalid" : ""}`}
                             value={form.tempat}
                             onChange={(e) => handleChange("tempat", e.target.value)}
                         />
-                        {errors.tempat && <small className="p-error">{errors.tempat}</small>}
+                        <small className="text-secondary"> *Tempat diisi jika Ruangan tidak tersedia </small>
                     </div>
 
                     {/* File */}
@@ -833,9 +833,11 @@ export default function Disposisi() {
                             <p><strong>Tanggal:</strong> {formDate(selectedData.tanggal)}</p>
                             <p><strong>Jam Mulai:</strong> {formTime(selectedData.jam_mulai)}</p>
                             <p><strong>Jam Selesai:</strong> {formTime(selectedData.jam_selesai)}</p>
+                            <p><strong>Ruangan:</strong> {selectedData.ruangan}</p>
                             <p><strong>Tempat:</strong> {selectedData.tempat}</p>
                             <p><strong>File:</strong>{fileBodyTemplate(selectedData.file_path)}</p>
                             <p><strong>Dresscode:</strong> {selectedData.dresscode || "-"}</p>
+
                         </div>
                     )}
                 </Dialog>
@@ -852,7 +854,20 @@ export default function Disposisi() {
                     <Column field="nama_kegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
                     <Column field="tanggal" header="Tanggal" body={(row) => formDate(row.tanggal)} style={{ minWidth: '10rem' }} />
                     <Column header="Jam" body={(row) => `${formTime(row.jam_mulai)} - ${formTime(row.jam_selesai)}`} style={{ minWidth: '10rem' }} />
-                    <Column field="tempat" header="Tempat" style={{ minWidth: '8rem' }} />
+                    <Column
+                        header="Tempat"
+                        body={(rowData) => {
+                            const ruangan = rowData.ruangan?.replace(/"/g, '').trim();
+                            const tempat = rowData.tempat?.trim();
+
+                            if (ruangan) return ruangan;
+                            if (tempat) return tempat;
+                            return "-";
+                        }}
+                        style={{ minWidth: '8rem' }}
+                    />
+
+
                     <Column field="laporan" header="Laporan" body={laporanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
                     <Column header="Catatan" body={catatanBodyTemplate} style={{ minWidth: '8rem', textAlign: 'center' }} />
                     {/*  Action */}

@@ -506,11 +506,10 @@ export default function KelolaDisplay() {
                                         placeholder="Pilih tanggal akhir"
                                     />
                                 </div>
+                                <small className="text-secondary"> * Hanya agenda selesai dalam rentang ini yang akan ditampilkan di TV </small>
                             </div>
 
-                            <small className="text-secondary">
-                                * Hanya agenda selesai dalam rentang ini yang akan ditampilkan di TV
-                            </small>
+
                         </Card>
 
                         <Card className="mb-3" style={{ background: '#f0fdf4', border: '1px solid #86efac' }}>
