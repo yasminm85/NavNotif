@@ -1,4 +1,3 @@
-// project imports
 import React, { useState, useEffect, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -92,7 +91,7 @@ export default function KelolaDisplay() {
     }, [currentMediaIndex]);
 
 
-    // check reminder
+    // cek reminder
     const checkReminderActive = (items) => {
         const now = new Date();
         const activeReminders = [];
@@ -120,37 +119,49 @@ export default function KelolaDisplay() {
         const now = new Date();
 
         return data.map(item => {
-            let selesai = false;
             if (!item.tanggal) return { ...item, isSelesai: false };
 
             const agendaDate = new Date(item.tanggal);
+            agendaDate.setHours(0, 0, 0, 0);
 
-            const endOfDay = new Date(agendaDate);
-            endOfDay.setHours(23, 59, 59, 999);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-            let endTime = null;
-            if (item.jam_selesai &&
-                item.jam_selesai !== "-" &&
-                item.jam_selesai.toLowerCase() !== "selesai") {
+            if (agendaDate < today) {
+                return { ...item, isSelesai: true };
+            }
 
-                const d = new Date(item.jam_selesai);
-                if (!isNaN(d.getTime())) {
-                    endTime = d;
+            if (agendaDate.getTime() === today.getTime()) {
+                const endOfDay = new Date(agendaDate);
+                endOfDay.setHours(23, 59, 59, 999);
+
+                let endTime = null;
+                
+                if (item.jam_selesai &&
+                    item.jam_selesai !== "-" &&
+                    item.jam_selesai.toLowerCase() !== "selesai") {
+
+                    const d = new Date(item.jam_selesai);
+                    if (!isNaN(d.getTime())) {
+                        endTime = d;
+                    }
                 }
+
+                // Jika jam_selesai = "selesai" atau tidak ada gunakan end of day (23:59)
+                const finalEndTime = endTime ?? endOfDay;
+
+                // Item dianggap SELESAI jika waktu sekarang sudah melewati finalEndTime
+                const isSelesai = now > finalEndTime;
+
+                return { ...item, isSelesai };
             }
 
-            const finalEndTime = endTime ?? endOfDay;
-
-            if (now > finalEndTime) {
-                selesai = true;
-            }
-
-            return { ...item, isSelesai: selesai };
+            return { ...item, isSelesai: false };
         });
     };
 
 
-    // status row
+    // ongoing yang biru
     const isOngoing = (item) => {
         if (!item.tanggal || !item.jam_mulai) return false;
         const now = new Date();
@@ -171,22 +182,20 @@ export default function KelolaDisplay() {
         };
 
         const start = getValidDate(item.jam_mulai, item.tanggal, true);
-
-        // Cek apakah jam_selesai adalah "selesai" atau "-"
+        
         let end;
-        if (!item.jam_selesai ||
-            item.jam_selesai === "-" ||
+        if (!item.jam_selesai || 
+            item.jam_selesai === "-" || 
             item.jam_selesai.toLowerCase() === "selesai") {
-            // Jika jam selesai adalah "selesai", set end ke akhir hari (23:59)
             end = new Date(item.tanggal);
             end.setHours(23, 59, 59, 999);
         } else {
-            // Coba parse jam selesai normal
             end = getValidDate(item.jam_selesai, item.tanggal, false) ||
-                getValidDate(item.jam_mulai, item.tanggal, false);
+                  getValidDate(item.jam_mulai, item.tanggal, false);
         }
 
         if (!start || !end) return false;
+        
         return now >= start && now <= end;
     };
 
@@ -217,7 +226,7 @@ export default function KelolaDisplay() {
         });
     };
 
-    // Get Data
+    // get data disposisi
     const getDataDisposisi = async () => {
         try {
             setLoading(true);
@@ -226,6 +235,12 @@ export default function KelolaDisplay() {
             const items = filterValidItems(response.data);
             const reminders = checkReminderActive(items);
 
+            console.log('=== DEBUG filterValidItems ===');
+            console.log('Total items:', items.length);
+            console.log('Items selesai:', items.filter(i => i.isSelesai).length);
+            console.log('agendaSelesaiFilter:', agendaSelesaiFilter);
+
+            // agenda kegiatan
             const kegiatan = items.filter(item => {
                 if (item.isSelesai) return false;
 
@@ -241,18 +256,36 @@ export default function KelolaDisplay() {
                 return tanggal >= today && tanggal <= threeDaysLater;
             });
 
+            // sgenda selesai
             const selesai = items.filter(item => {
                 if (!item.isSelesai) return false;
-                if (!agendaSelesaiFilter.startDate || !agendaSelesaiFilter.endDate) return false;
+                if (!agendaSelesaiFilter.startDate || !agendaSelesaiFilter.endDate) {
+                    console.log('Filter tanggal belum tersedia!');
+                    return false;
+                }
 
                 const tgl = new Date(item.tanggal);
                 tgl.setHours(0, 0, 0, 0);
 
-                return (
+                const isInRange = (
                     tgl >= agendaSelesaiFilter.startDate &&
                     tgl <= agendaSelesaiFilter.endDate
                 );
+
+                if (item.isSelesai && !isInRange) {
+                    console.log('Item selesai tapi di luar range:', {
+                        nama: item.nama_kegiatan,
+                        tanggal: tgl,
+                        filterStart: agendaSelesaiFilter.startDate,
+                        filterEnd: agendaSelesaiFilter.endDate
+                    });
+                }
+
+                return isInRange;
             });
+
+            console.log('Kegiatan:', kegiatan.length);
+            console.log('Selesai (filtered):', selesai.length);
 
             setAgendaKegiatan(sortNormal(kegiatan));
             setAgendaSelesai(sortNormal(selesai));
@@ -293,19 +326,63 @@ export default function KelolaDisplay() {
         }
     };
 
-    // Get duration
+    // Get duration 
     const getDisplayDuration = async () => {
         try {
             const res = await axios.get('http://localhost:3000/api/media/get-duration');
 
-            if (!res.data?.agenda_selesai_start || !res.data?.agenda_selesai_end) return;
+            console.log('Raw API response:', res.data);
 
-            const start = new Date(res.data.agenda_selesai_start);
-            const end = new Date(res.data.agenda_selesai_end);
+            if (!res.data?.agenda_selesai_start || !res.data?.agenda_selesai_end) {
+                console.log('Filter agenda selesai belum diset di kelola display');
+                return;
+            }
 
-            start.setHours(0, 0, 0, 0);
-            end.setHours(23, 59, 59, 999);
-            setAgendaSelesaiFilter({ startDate: start, endDate: end });
+            const parseDate = (dateStr, setTime = 'start') => {
+                if (!dateStr) return null;
+                
+                let d = new Date(dateStr);
+                
+                if (isNaN(d.getTime())) {
+                    const parts = dateStr.split('-');
+                    if (parts.length === 3) {
+                        d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                    }
+                }
+                
+                // Set waktu
+                if (!isNaN(d.getTime())) {
+                    if (setTime === 'start') {
+                        d.setHours(0, 0, 0, 0);
+                    } else {
+                        d.setHours(23, 59, 59, 999);
+                    }
+                }
+                
+                return d;
+            };
+
+            const start = parseDate(res.data.agenda_selesai_start, 'start');
+            const end = parseDate(res.data.agenda_selesai_end, 'end');
+
+            console.log('Parsed dates:', {
+                startRaw: res.data.agenda_selesai_start,
+                endRaw: res.data.agenda_selesai_end,
+                start: start,
+                end: end,
+                startValid: start && !isNaN(start.getTime()),
+                endValid: end && !isNaN(end.getTime())
+            });
+
+            if (start && end && !isNaN(start.getTime()) && !isNaN(end.getTime())) {
+                setAgendaSelesaiFilter({ startDate: start, endDate: end });
+                console.log('Filter agenda selesai berhasil di-set:', {
+                    start: start.toLocaleString('id-ID'),
+                    end: end.toLocaleString('id-ID')
+                });
+            } else {
+                console.error('Failed to parse dates:', { start, end });
+            }
         } catch (err) {
             console.error("Gagal ambil filter agenda selesai", err);
         }
@@ -322,7 +399,6 @@ export default function KelolaDisplay() {
 
                 if (mode === MODE.MEDIA && currentMediaIndex >= newMediaList.length) {
                     setCurrentMediaIndex(0);
-                    // Clear timer untuk restart
                     if (mediaTimerRef.current) {
                         clearTimeout(mediaTimerRef.current);
                         mediaTimerRef.current = null;
@@ -350,9 +426,12 @@ export default function KelolaDisplay() {
         };
     }, []);
 
-    // update data setiap 10 menit 
+    // update data setiap 10 deti tapi hanya jika filter sudah ada
     useEffect(() => {
-        if (!agendaSelesaiFilter.startDate) return;
+        if (!agendaSelesaiFilter.startDate || !agendaSelesaiFilter.endDate) {
+            console.log('Menunggu filter agenda selesai dari API...');
+            return;
+        }
 
         getDataDisposisi();
         const interval = setInterval(getDataDisposisi, 10000);
@@ -615,7 +694,7 @@ export default function KelolaDisplay() {
                             try {
                                 const start = new Date(row.jam_mulai);
 
-                                // ini untuk reminder 25 menit di agenda kegiatan
+                                // reminder 25 menit sebelum kegiatan
                                 const fiveMinutesBefore = new Date(start.getTime());
                                 fiveMinutesBefore.setMinutes(fiveMinutesBefore.getMinutes() - 25);
 
@@ -623,7 +702,7 @@ export default function KelolaDisplay() {
                                     return "row-upcoming-blink";
                                 }
 
-                                // ini untuk reminder 30 menit di agenda kegiatan hari ini
+                                // reminder 30 menit sebelum kegiatan cihuy
                                 const reminderStart = new Date(start.getTime());
                                 reminderStart.setMinutes(reminderStart.getMinutes() - 30);
                                 const reminderEnd = new Date(reminderStart);
@@ -651,7 +730,6 @@ export default function KelolaDisplay() {
                     />
                     <Column field="tanggal" header="Tanggal" body={(row) => formDate(row.tanggal)} />
                     <Column header="Jam" body={(row) => `${formTime(row.jam_mulai)} - ${formTime(row.jam_selesai)}`} />
-                    {/* <Column field="tempat" header="Tempat" /> */}
                     <Column
                         header="Tempat"
                         body={(rowData) => {
