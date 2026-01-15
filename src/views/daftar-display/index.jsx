@@ -170,8 +170,20 @@ export default function Disposisi() {
         };
 
         const start = getValidDate(item.jam_mulai, item.tanggal, true);
-        const end = getValidDate(item.jam_selesai, item.tanggal, false) ||
-            getValidDate(item.jam_mulai, item.tanggal, false);
+
+        // Cek apakah jam_selesai adalah "selesai" atau "-"
+        let end;
+        if (!item.jam_selesai ||
+            item.jam_selesai === "-" ||
+            item.jam_selesai.toLowerCase() === "selesai") {
+            // Jika jam selesai adalah "selesai", set end ke akhir hari (23:59)
+            end = new Date(item.tanggal);
+            end.setHours(23, 59, 59, 999);
+        } else {
+            // Coba parse jam selesai normal
+            end = getValidDate(item.jam_selesai, item.tanggal, false) ||
+                getValidDate(item.jam_mulai, item.tanggal, false);
+        }
 
         if (!start || !end) return false;
         return now >= start && now <= end;
