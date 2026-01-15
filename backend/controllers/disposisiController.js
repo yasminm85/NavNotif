@@ -171,7 +171,13 @@ const createDisposisi = async (req, res) => {
             }
         }
 
-        res.status(200).json(disposisi);
+        const disposisiId = await Disposisi.findById(disposisi._id)
+            .populate("nama_yang_dituju", "name")
+            .populate("laporan_by", "name email")
+            .populate("laporan_tambahan_by", "name email");
+
+        res.status(200).json(disposisiId);
+
     } catch (error) {
         console.error('createDisposisi error:', error);
         res.status(500).json({ message: error.message });

@@ -321,6 +321,7 @@ export default function Disposisi() {
                     icon="pi pi-eye"
                     className="p-button-rounded p-button-info p-button-sm"
                     onClick={() => {
+                        console.log("ROW DATA:", rowData);
                         setSelectedData(rowData);
                         setShowView(true);
                     }}
@@ -496,7 +497,7 @@ export default function Disposisi() {
             selesai.setHours(js.getHours(), js.getMinutes(), 0, 0);
         }
 
-        // laporan sudah dibuat → hijau
+        // laporan sudah dibuat jadi hijau
         if (rowData.laporan_status === "SUDAH") {
             return "completed-row";
         }
