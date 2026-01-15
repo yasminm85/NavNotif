@@ -156,15 +156,12 @@ export default function KelolaDisplay() {
                 const today = new Date(now);
                 today.setHours(0, 0, 0, 0);
 
-                // 🔹 Jika tanggal sudah lewat → pasti selesai
                 if (agendaDate < today) return true;
 
-                // 🔹 Jika hari ini → tentukan jam akhir
                 if (agendaDate.getTime() === today.getTime()) {
 
                     let endTime = null;
 
-                    // jika jam_selesai valid (bukan "-", bukan "Selesai")
                     if (
                         item.jam_selesai &&
                         item.jam_selesai !== "-" &&
@@ -176,7 +173,6 @@ export default function KelolaDisplay() {
                         }
                     }
 
-                    // 🔹 kalau jam_selesai kosong / "Selesai" → pakai akhir hari
                     if (!endTime) {
                         endTime = new Date(item.tanggal);
                         endTime.setHours(23, 59, 59, 999);
@@ -323,6 +319,7 @@ export default function KelolaDisplay() {
             return;
         }
 
+        // 🔑 SIMPAN DATE ONLY (ANTI TIMEZONE)
         const start = startDate.toISOString().split('T')[0];
         const end = endDate.toISOString().split('T')[0];
 
