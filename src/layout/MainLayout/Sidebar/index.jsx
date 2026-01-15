@@ -1,11 +1,9 @@
 import { memo, useMemo } from 'react';
-
+import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import Chip from '@mui/material/Chip';
 import Drawer from '@mui/material/Drawer';
-import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
-
+import Grid from '@mui/material/Grid2';
 import { ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { IconLogout } from '@tabler/icons-react';
 import Swal from 'sweetalert2';
@@ -62,9 +60,15 @@ function Sidebar() {
 
   const logo = useMemo(
     () => (
-      <Box sx={{ display: 'flex', p: 2 }}>
-        <LogoSection />
-      </Box>
+      <Grid container alignItems="center" spacing={1}>
+        <Grid sx={{ display: 'flex', p: 2 }}><LogoSection /></Grid>
+        <Grid>
+          <Typography gutterBottom variant={downMD ? 'h3' : 'h2'}>
+            NavNotif
+          </Typography>
+        </Grid>
+      </Grid>
+
     ),
     []
   );
@@ -87,22 +91,22 @@ function Sidebar() {
             {drawerOpen && drawerContent}
           </Box>
         ) : (
-         <PerfectScrollbar style={{ height: 'calc(100vh - 88px)', ...drawerSX }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <PerfectScrollbar style={{ height: 'calc(100vh - 88px)', ...drawerSX }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
               <MenuList />
               {drawerOpen && drawerContent}
 
               {/* === LOGOUT BUTTON DI PALING BAWAH === */}
               <Box sx={{ mt: 'auto', mb: 1 }}>
-                  <ListItemButton onClick={handlelogout}>
-                      <ListItemIcon>
-                          <IconLogout stroke={1.5} size="20px" />
-                      </ListItemIcon>
-                      <ListItemText primary="Logout" />
-                  </ListItemButton>
+                <ListItemButton onClick={handlelogout}>
+                  <ListItemIcon>
+                    <IconLogout stroke={1.5} size="20px" />
+                  </ListItemIcon>
+                  <ListItemText primary="Logout" />
+                </ListItemButton>
               </Box>
-          </Box>
-      </PerfectScrollbar>
+            </Box>
+          </PerfectScrollbar>
 
         )}
       </>
