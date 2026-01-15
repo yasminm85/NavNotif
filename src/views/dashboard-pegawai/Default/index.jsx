@@ -142,6 +142,7 @@ export default function DashboardPegawai() {
   };
 
   const formTime = (date) => {
+        console.log(date);
         if (!date) return "Selesai";
 
         return new Date(date).toLocaleTimeString("id-ID", {
@@ -162,7 +163,7 @@ export default function DashboardPegawai() {
         const kegiatan = n.disposisi?.nama_kegiatan || 'Disposisi';
         const tanggal = n.disposisi?.tanggal || 'Tanggal';
         const jamMulai = n.disposisi?.jam_mulai || 'Jam Mulai';
-        const jamSelesai = n.disposisi?.jam_selesai || 'Jam Selesai';
+        const jamSelesai = n.disposisi?.jam_selesai;
         const toastId = toast.info(
           <NotifToast
             message={

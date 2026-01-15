@@ -312,7 +312,7 @@ export default function Disposisi() {
 
     // action view, edit, and delete
     const actionBodyTemplate = (rowData) => {
-        console.log(rowData);
+        // console.log(rowData);
         return (
             <div className="flex gap-2">
 
