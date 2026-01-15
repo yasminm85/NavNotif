@@ -12,6 +12,7 @@ import './appDisplay.css';
 import alarmSound from './alarm-sound.mp3';
 import logo from '../../assets/images/image.png'
 
+//bismillah
 export default function KelolaDisplay() {
 
     const [isTransitioning, setIsTransitioning] = useState(false);
