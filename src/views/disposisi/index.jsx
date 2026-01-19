@@ -121,8 +121,10 @@ export default function Disposisi() {
 
     //pilih ruangan
     const ruangan = [
-        { label: 'Gedung Pusat', value: 'Gedung Pusat' },
-        { label: 'Gedung Support', value: 'Gedung Support' },
+        { label: 'SULTAN MAHMUD BADARUDDIN II - Gd. PUSAT Lt.3', value: 'SULTAN MAHMUD BADARUDDIN II - Gd. PUSAT Lt.3' },
+        { label: 'AUDITORIUM PUSAT (SOEKARNO-HATTA) - Gd. PUSAT Lt.4', value: 'AUDITORIUM PUSAT (SOEKARNO-HATTA) - Gd. PUSAT Lt.4' },
+        { label: 'AUDITORIUM SUPPORT (SULTAN HASANUDDIN) - Gd. SUPPORT Lt.4', value: 'AUDITORIUM SUPPORT (SULTAN HASANUDDIN) - Gd. SUPPORT Lt.4' },
+
     ];
 
     // reminder notif
