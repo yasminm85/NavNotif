@@ -498,7 +498,7 @@ export default function KelolaDisplay() {
                                     style={{ width: '150px' }}
                                 />
                                 <Column
-                                    header="Aksi"
+                                    header="Action"
                                     body={actionBodyTemplate}
                                     style={{ width: '220px' }}
                                 />
