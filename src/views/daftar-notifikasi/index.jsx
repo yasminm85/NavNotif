@@ -55,9 +55,13 @@ export default function DaftarNotifikasi() {
 
     //validate form kalau ada laporan yang kosong belum diisi pas ngisi di form
     const validateForm = () => {
+
         let newErrors = {};
 
-        if (!form.laporan) newErrors.laporan = "Laporan wajib diisi.";
+        if (!laporanText || laporanText.trim() === "") {
+            newErrors.laporan = "Laporan wajib diisi.";
+        }
+
 
         return newErrors;
     };
@@ -217,7 +221,7 @@ export default function DaftarNotifikasi() {
             );
         }
     };
-    
+
     //simpan hasil laporan tambahan
     const handleSaveLaporanTambahan = async () => {
         if (!currentTaskTambahan) return;
@@ -504,18 +508,18 @@ export default function DaftarNotifikasi() {
                     <Column field="tanggal" header="Tanggal" body={(row) => formDate(row.tanggal)} style={{ minWidth: '10rem' }} />
                     <Column header="Jam" body={(row) => `${formTime(row.jam_mulai)} - ${formTime(row.jam_selesai)}`} style={{ minWidth: '10rem' }} />
                     {/* <Column field="tempat" header="Tempat" style={{ minWidth: '12rem' }} /> */}
-                     <Column
-                                            header="Tempat"
-                                            body={(rowData) => {
-                                                const ruangan = rowData.ruangan?.replace(/"/g, '').trim();
-                                                const tempat = rowData.tempat?.trim();
-                    
-                                                if (ruangan) return ruangan;
-                                                if (tempat) return tempat;
-                                                return "-";
-                                            }}
-                                            style={{ minWidth: '12rem' }}
-                                        />
+                    <Column
+                        header="Tempat"
+                        body={(rowData) => {
+                            const ruangan = rowData.ruangan?.replace(/"/g, '').trim();
+                            const tempat = rowData.tempat?.trim();
+
+                            if (ruangan) return ruangan;
+                            if (tempat) return tempat;
+                            return "-";
+                        }}
+                        style={{ minWidth: '12rem' }}
+                    />
                     <Column header="Detail" body={detailBodyTemplate} style={{ textAlign: 'left', width: '6rem' }} />
                     <Column header="Laporan" body={laporanActionTemplate} style={{ textAlign: 'center', width: '6rem' }} />
                     <Column header="Laporan Tambahan" body={laporanTambahanActionTemplate} style={{ textAlign: 'center', width: '6rem' }} />
