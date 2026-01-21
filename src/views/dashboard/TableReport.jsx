@@ -8,13 +8,14 @@ import { Dialog } from 'primereact/dialog';
 import * as XLSX from "xlsx-js-style";
 import { saveAs } from "file-saver";
 import axios from 'axios';
+import api from '../../api/axios';
 
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 
-const API_URL = 'http://localhost:3000/api/task/disposisi/report-table';
+const API_URL = '/api/task/disposisi/report-table';
 
 const TableReport = () => {
   const [data, setData] = useState([]);
@@ -58,7 +59,7 @@ const TableReport = () => {
 
     if (params.toString()) url += `?${params.toString()}`;
 
-    const res = await axios.get(url);
+    const res = await api.get(url);
     return res.data.data || [];
   };
 

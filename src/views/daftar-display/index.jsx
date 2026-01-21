@@ -147,10 +147,10 @@ export default function KelolaDisplay() {
                     }
                 }
 
-                // Jika jam_selesai = "selesai" atau tidak ada gunakan end of day (23:59)
+                // Jika jam_selesai = "selesai" gunakan end of day 23:59
                 const finalEndTime = endTime ?? endOfDay;
 
-                // Item dianggap SELESAI jika waktu sekarang sudah melewati finalEndTime
+                // Item dianggap selesai jika waktu sekarang sudah melewati finalEndTime
                 const isSelesai = now > finalEndTime;
 
                 return { ...item, isSelesai };

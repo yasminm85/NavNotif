@@ -13,7 +13,7 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import Swal from 'sweetalert2';
-
+import api from '../../api/axios';
 
 export default function Disposisi() {
     const token = localStorage.getItem('token');
@@ -66,7 +66,7 @@ export default function Disposisi() {
     // get data pegawai
     const fetchPegawai = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/auth/getAll', {
+            const res = await api.get('/api/auth/getAll', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -99,7 +99,7 @@ export default function Disposisi() {
         try {
             let res;
             if (editMode && selectedData?._id) {
-                res = await axios.patch(`http://localhost:3000/api/auth/update/user/${selectedData._id}`, {
+                res = await api.patch(`/api/auth/update/user/${selectedData._id}`, {
                     name: form.name,
                     email: form.email,
                     password: form.password,
@@ -126,7 +126,7 @@ export default function Disposisi() {
                 });
 
             } else {
-                res = await axios.post('http://localhost:3000/api/auth/register', {
+                res = await api.post('/api/auth/register', {
                     name: form.name,
                     email: form.email,
                     password: form.password,
@@ -188,7 +188,7 @@ export default function Disposisi() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await axios.delete(`http://localhost:3000/api/auth/delete/user/${id}`);
+                    await api.delete(`/api/auth/delete/user/${id}`);
                     Swal.fire(
                         'Deleted!',
                         'User berhasil dihapus.',

@@ -10,13 +10,14 @@ import { TabView, TabPanel } from 'primereact/tabview';
 import { FileUpload } from 'primereact/fileupload';
 import { Chip } from 'primereact/chip';
 import { Box, Typography, Paper } from '@mui/material';
+import { Calendar } from 'primereact/calendar';
 import MainCard from 'ui-component/cards/MainCard';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { Calendar } from 'primereact/calendar';
+import api from '../../api/axios';
 
-// Import PrimeReact CSS - pastikan ini ada di index.js atau App.js
+// primereact
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -31,7 +32,7 @@ export default function KelolaDisplay() {
     const [agendaSelesaiList, setAgendaSelesaiList] = useState([]);
 
 
-    // ==================== MEDIA STATE ====================
+    
     const [showMediaDialog, setShowMediaDialog] = useState(false);
     const [form, setForm] = useState({
         duration: "",
@@ -41,7 +42,7 @@ export default function KelolaDisplay() {
     const fetchMedia = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('http://localhost:3000/api/media/getAll-media', {
+            const res = await api.get('/api/media/getAll-media', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setMedia(res.data);
@@ -61,27 +62,7 @@ export default function KelolaDisplay() {
         endDate: null
     });
 
-
-    // ---------------------------- FORMATTER ----------------------------
-    const formDate = (date) => {
-        if (!date) return "";
-        return new Date(date).toLocaleDateString("id-ID", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric"
-        });
-    };
-
-    const formTime = (date) => {
-        if (!date) return "Selesai";
-        return new Date(date).toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    };
-
-
-    // ==================== AGENDA SETTINGS ====================
+    // setting agenda
     const [agendaSettings, setAgendaSettings] = useState({
         enableRotation: true,
         modes: [
@@ -118,8 +99,8 @@ export default function KelolaDisplay() {
 
     const fetchAgendaSelesai = async () => {
         try {
-            const res = await axios.get(
-                'http://localhost:3000/api/task/disposisi',
+            const res = await api.get(
+                '/api/task/disposisi',
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
@@ -128,11 +109,11 @@ export default function KelolaDisplay() {
             const parseTime = (timeRangeStr, baseDate, takeEnd = false) => {
                 if (!timeRangeStr) return null;
 
-                // kalau sudah ISO date
+                
                 const d = new Date(timeRangeStr);
                 if (!isNaN(d.getTime())) return d;
 
-                // format "12.33 - 13.33"
+                // format jam
                 try {
                     const parts = timeRangeStr.split("-");
                     const timeStr = takeEnd ? parts[1].trim() : parts[0].trim();
@@ -219,12 +200,11 @@ export default function KelolaDisplay() {
         setPreviewCount(total);
     }, [agendaSelesaiFilter, agendaSelesaiList]);
 
-    // ==================== GET AGENDA DURATION ====================
+    // fetch data agenda
     const fetchAgendaSelesaiFilter = async () => {
         try {
-            const res = await axios.get(
-                'http://localhost:3000/api/media/get-duration',
-                // { headers: { Authorization: `Bearer ${token}` } }
+            const res = await api.get(
+                '/api/media/get-duration',
             );
 
             if (!res.data?.agenda_selesai_start || !res.data?.agenda_selesai_end) return;
@@ -247,8 +227,8 @@ export default function KelolaDisplay() {
         formData.append("duration", form.duration);
         // console.log(form.file);
         // console.log(form.duration);
-        let response = await axios.post(
-            "http://localhost:3000/api/media/create-media",
+        let response = await api.post(
+            "/api/media/create-media",
             formData,
             {
                 headers: {
@@ -272,7 +252,7 @@ export default function KelolaDisplay() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await axios.delete(`http://localhost:3000/api/media/delete-media/${id}`, {
+                    await api.delete(`/api/media/delete-media/${id}`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     Swal.fire(
@@ -306,7 +286,7 @@ export default function KelolaDisplay() {
     };
 
 
-    // ==================== SAVE AGENDA ====================
+    // simpan agenda setting
     const handleSaveAgendaSettings = async () => {
         const { startDate, endDate } = agendaSelesaiFilter;
 
@@ -319,7 +299,7 @@ export default function KelolaDisplay() {
             return;
         }
 
-        // 🔑 SIMPAN DATE ONLY (ANTI TIMEZONE)
+        
         const start = startDate.toISOString().split('T')[0];
         const end = endDate.toISOString().split('T')[0];
 
@@ -351,7 +331,7 @@ export default function KelolaDisplay() {
         }
     };
 
-    // ==================== USE EFFECT ====================
+   
     useEffect(() => {
         fetchMedia();
         fetchAgendaSelesaiFilter();
@@ -506,7 +486,7 @@ export default function KelolaDisplay() {
                         </Card>
                     </TabPanel>
 
-                    {/* ==================== TAB 2: PENGATURAN AGENDA ==================== */}
+                    {/* Pengaturan agenda */}
                     <TabPanel header="Pengaturan Agenda" leftIcon="pi pi-calendar mr-2">
 
                         <Card className="mb-3">

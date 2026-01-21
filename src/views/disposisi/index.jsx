@@ -16,6 +16,7 @@ import 'primeflex/primeflex.css';
 import './app.css';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import api from '../../api/axios';
 
 
 export default function Disposisi() {
@@ -72,7 +73,7 @@ export default function Disposisi() {
     // get data pegawai
     const fetchPegawai = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/auth/getEmp', {
+            const res = await api.get('/api/auth/getEmp', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -91,7 +92,7 @@ export default function Disposisi() {
         try {
             setLoading(true);
             // console.log(token);
-            const response = await axios.get('http://localhost:3000/api/task/disposisi', {
+            const response = await api.get('/api/task/disposisi', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setShowDisposisi(response.data);
@@ -104,7 +105,7 @@ export default function Disposisi() {
 
     const fetchSeed = async () => {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:3000/api/task/disposisi/barchart", {
+        const res = await api.get("/api/task/disposisi/barchart", {
             headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -220,8 +221,8 @@ export default function Disposisi() {
         try {
             let response;
             if (editMode && selectedData?._id) {
-                response = await axios.patch(
-                    `http://localhost:3000/api/task/disposisi/${selectedData._id}`,
+                response = await api.patch(
+                    `/api/task/disposisi/${selectedData._id}`,
                     formData,
                     {
                         headers: { Authorization: `Bearer ${token}` }
@@ -235,8 +236,8 @@ export default function Disposisi() {
                 );
 
             } else {
-                response = await axios.post(
-                    'http://localhost:3000/api/task/disposisi',
+                response = await api.post(
+                    '/api/task/disposisi',
                     formData,
                     {
                         headers: { Authorization: `Bearer ${token}` }
@@ -292,7 +293,7 @@ export default function Disposisi() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await axios.delete(`http://localhost:3000/api/task/disposisi/${id}`, {
+                    await api.delete(`/api/task/disposisi/${id}`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     Swal.fire(
@@ -448,8 +449,8 @@ export default function Disposisi() {
 
         const handleOpen = async () => {
             try {
-                const res = await axios.get(
-                    `http://localhost:3000/api/task/file/${fileId}`,
+                const res = await api.get(
+                    `/api/task/file/${fileId}`,
                     {
                         responseType: 'blob'
                     }

@@ -6,6 +6,7 @@ import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { Editor } from 'primereact/editor';
 
+// prime react
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -31,8 +32,6 @@ export default function DaftarNotifikasi() {
     const [showDialogTambahan, setShowDialogTambahan] = useState(false);
     const [laporanText, setLaporanText] = useState('');
     const [laporanTextTambahan, setLaporanTextTambahan] = useState('');
-    const [laporanPath, setLaporanPath] = useState(null);
-    const [laporanPathTambahan, setLaporanPathTambahan] = useState(null);
     const token = localStorage.getItem('token');
 
     // fetch data disposisi
@@ -78,24 +77,6 @@ export default function DaftarNotifikasi() {
             ></Button>
         );
     };
-
-    // file body template untuk data table
-    // const fileBodyTemplate = (data) => {
-    //     if (!data) return <span>-</span>;
-    //     // const validation = validateForm();
-    //     // setErrors(validation);
-
-    //     const url = `http://localhost:3000/${data}`;
-
-    //     return (
-    //         <Button
-    //             label="Lihat"
-    //             icon="pi pi-file"
-    //             className="p-button-text p-button-sm"
-    //             onClick={() => window.open(url, "_blank")}
-    //         />
-    //     );
-    // };
 
     const handleChange = (field, value) => {
 
@@ -173,7 +154,6 @@ export default function DaftarNotifikasi() {
                 onClick={() => {
                     setCurrentTask(row);
                     setLaporanText(row.laporan || '');
-                    setLaporanPath(row.laporan_file_path);
                     setShowDialog(true);
                 }}
                 disabled={!bolehLapor}
@@ -181,6 +161,7 @@ export default function DaftarNotifikasi() {
         );
     };
 
+    // action pada data table pas kalo tekan button
     const laporanTambahanActionTemplate = (row) => {
         const bolehLapor = isLaporanAllowed(row);
 
@@ -193,7 +174,6 @@ export default function DaftarNotifikasi() {
                 onClick={() => {
                     setCurrentTaskTambahan(row);
                     setLaporanTextTambahan(row.laporan_tambahan || '');
-                    setLaporanPathTambahan(row.laporan_tambahan_path);
                     setShowDialogTambahan(true);
                 }}
                 disabled={!bolehLapor || !laporanUtamaSudahDiisi}
@@ -204,6 +184,10 @@ export default function DaftarNotifikasi() {
     // simpan hasil laporan
     const handleSaveLaporan = async () => {
         if (!currentTask) return;
+
+        const validation = validateForm();
+        setErrors(validation);
+        if (Object.keys(validation).length > 0) return;
 
         const formData = new FormData();
         if (form.file) formData.append("laporan_file_path", form.file);
@@ -233,7 +217,8 @@ export default function DaftarNotifikasi() {
             );
         }
     };
-
+    
+    //simpan hasil laporan tambahan
     const handleSaveLaporanTambahan = async () => {
         if (!currentTaskTambahan) return;
 
@@ -268,6 +253,7 @@ export default function DaftarNotifikasi() {
         }
     };
 
+    // handle action file di data table saat tekan tombol lihat laporan disposisi
     const fileBodyTemplate = (fileId) => {
         if (!fileId) return <span>-</span>;
 
@@ -363,6 +349,8 @@ export default function DaftarNotifikasi() {
                                     style={{ height: '200px' }}
                                     className={errors.laporan ? "p-invalid" : ""}
                                 />
+
+                                {errors.laporan && <small className="p-error">{errors.laporan}</small>}
 
                                 {/* File */}
                                 <div className="input_container">

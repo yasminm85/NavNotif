@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import api from '../api/axios';
 
 // Ambil user & token dari localStorage saat refresh
 const savedUser = JSON.parse(localStorage.getItem("user"));
@@ -24,8 +25,8 @@ export const LoginUser = createAsyncThunk(
   "user/LoginUser",
   async (user, thunkAPI) => {
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
+      const response = await api.post(
+        "/api/auth/login",
         {
           email: user.email,
           password: user.password,
@@ -45,8 +46,8 @@ export const RegisterUser = createAsyncThunk(
   "user/RegisterUser",
   async (user, thunkAPI) => {
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/register",
+      const response = await api.post(
+        "/api/auth/register",
         {
           name: user.name,
           email: user.email,
@@ -70,7 +71,7 @@ export const RegisterUser = createAsyncThunk(
 //   "user/getUserDetail",
 //   async (_, thunkAPI) => {
 //     try {
-//       const response = await axios.get("http://localhost:3000/api/auth/me");
+//       const response = await api.get("/api/auth/me");
 //       return response.data;
 //     } catch (error) {
 //       if (error.response) {
@@ -85,8 +86,8 @@ export const getUserDetail = createAsyncThunk(
     try {
       const token = localStorage.getItem("token");
 
-      const response = await axios.get(
-        "http://localhost:3000/api/auth/me",
+      const response = await api.get(
+        "/api/auth/me",
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -109,7 +110,7 @@ export const getUserDetail = createAsyncThunk(
 
 
 export const LogOut = createAsyncThunk("user/Logout", async () => {
-  await axios.post("http://localhost:3000/api/auth/logout");
+  await api.post("/api/auth/logout");
 });
 
 export const authSlice = createSlice({

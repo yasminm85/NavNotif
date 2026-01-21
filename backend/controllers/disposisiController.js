@@ -22,7 +22,7 @@ const getDisposisi = async (req, res) => {
 
 // hitung total dispo dibuat
 const getDisposisiCount = async (req, res) => {
-    console.log("User from token:", req.user);
+    // console.log("User from token:", req.user);
     try {
         const total = await Disposisi.countDocuments();
         res.status(200).json({ total });

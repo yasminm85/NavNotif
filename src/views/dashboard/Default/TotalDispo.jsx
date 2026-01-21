@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import api from '../../../api/axios';
 
 // material-ui
 import { useTheme } from "@mui/material/styles";
@@ -28,7 +29,7 @@ export default function TotalDispo() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get("http://localhost:3000/api/task/disposisi/count", {
+      const res = await api.get("/api/task/disposisi/count", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTotal(res.data.total || 0);

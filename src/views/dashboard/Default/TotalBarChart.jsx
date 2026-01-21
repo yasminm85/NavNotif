@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
+import api from '../../../api/axios';
+
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -72,7 +74,7 @@ export default function TotalBarChart({ isLoading }) {
       try {
         const token = localStorage.getItem('token');
 
-        const res = await axios.get('http://localhost:3000/api/task/disposisi/barchart', {
+        const res = await api.get('/api/task/disposisi/barchart', {
           headers: { Authorization: `Bearer ${token}` }
         });
 
