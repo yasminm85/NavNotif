@@ -7,7 +7,6 @@ import Avatar from '@mui/material/Avatar';
 import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import axios from 'axios';
 
 // third party
 import Chart from 'react-apexcharts';

@@ -29,7 +29,7 @@ export default function TotalDispo() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get("/api/task/disposisi/count", {
+      const res = await axios.get("/api/task/disposisi/count", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTotal(res.data.total || 0);

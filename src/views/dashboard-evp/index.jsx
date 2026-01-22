@@ -11,8 +11,9 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './app.css';
-import axios from 'axios';
 import { Tag } from 'primereact/tag';
+import api from '../../api/axios'
+import axios from 'axios';
 
 export default function DashboardEVP() {
     const token = localStorage.getItem('token');
@@ -248,7 +249,7 @@ export default function DashboardEVP() {
                             label="Lihat File Laporan"
                             icon="pi pi-file"
                             className="p-button p-button-sm"
-                            onClick={() => window.open(`http://localhost:3000/${laporanPath}`, "_blank")}
+                            onClick={() => window.open(`${api}/${laporanPath}`, "_blank")}
                         />
                     ) : (
                         <Typography color="error">Belum ada file laporan.</Typography>
@@ -329,7 +330,7 @@ export default function DashboardEVP() {
                             label="Lihat File Laporan"
                             icon="pi pi-file"
                             className="p-button p-button-sm"
-                            onClick={() => window.open(`http://localhost:3000/${laporanPathTambahan}`, "_blank")}
+                            onClick={() => window.open(`${api}/${laporanPathTambahan}`, "_blank")}
                         />
                     ) : (
                         <Typography color="error">Belum ada file laporan.</Typography>

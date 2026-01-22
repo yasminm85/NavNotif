@@ -2,14 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import MainCard from 'ui-component/cards/MainCard';
-import axios from 'axios';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './appDisplay.css';
 import alarmSound from './alarm-sound.mp3';
-import logo from '../../assets/images/image.png'
+import logo from '../../assets/images/image.png';
+import api from '../../api/axios';
+import axios from 'axios';
 
 //bismillah
 export default function KelolaDisplay() {
@@ -235,11 +236,6 @@ export default function KelolaDisplay() {
             const items = filterValidItems(response.data);
             const reminders = checkReminderActive(items);
 
-            console.log('=== DEBUG filterValidItems ===');
-            console.log('Total items:', items.length);
-            console.log('Items selesai:', items.filter(i => i.isSelesai).length);
-            console.log('agendaSelesaiFilter:', agendaSelesaiFilter);
-
             // agenda kegiatan
             const kegiatan = items.filter(item => {
                 if (item.isSelesai) return false;
@@ -260,7 +256,6 @@ export default function KelolaDisplay() {
             const selesai = items.filter(item => {
                 if (!item.isSelesai) return false;
                 if (!agendaSelesaiFilter.startDate || !agendaSelesaiFilter.endDate) {
-                    console.log('Filter tanggal belum tersedia!');
                     return false;
                 }
 
@@ -272,20 +267,18 @@ export default function KelolaDisplay() {
                     tgl <= agendaSelesaiFilter.endDate
                 );
 
-                if (item.isSelesai && !isInRange) {
-                    console.log('Item selesai tapi di luar range:', {
-                        nama: item.nama_kegiatan,
-                        tanggal: tgl,
-                        filterStart: agendaSelesaiFilter.startDate,
-                        filterEnd: agendaSelesaiFilter.endDate
-                    });
-                }
+                // if (item.isSelesai && !isInRange) {
+                //     console.log('Item selesai tapi di luar range:', {
+                //         nama: item.nama_kegiatan,
+                //         tanggal: tgl,
+                //         filterStart: agendaSelesaiFilter.startDate,
+                //         filterEnd: agendaSelesaiFilter.endDate
+                //     });
+                // }
 
                 return isInRange;
             });
 
-            console.log('Kegiatan:', kegiatan.length);
-            console.log('Selesai (filtered):', selesai.length);
 
             setAgendaKegiatan(sortNormal(kegiatan));
             setAgendaSelesai(sortNormal(selesai));
@@ -331,10 +324,7 @@ export default function KelolaDisplay() {
         try {
             const res = await axios.get('http://localhost:3000/api/media/get-duration');
 
-            console.log('Raw API response:', res.data);
-
             if (!res.data?.agenda_selesai_start || !res.data?.agenda_selesai_end) {
-                console.log('Filter agenda selesai belum diset di kelola display');
                 return;
             }
 
@@ -365,21 +355,21 @@ export default function KelolaDisplay() {
             const start = parseDate(res.data.agenda_selesai_start, 'start');
             const end = parseDate(res.data.agenda_selesai_end, 'end');
 
-            console.log('Parsed dates:', {
-                startRaw: res.data.agenda_selesai_start,
-                endRaw: res.data.agenda_selesai_end,
-                start: start,
-                end: end,
-                startValid: start && !isNaN(start.getTime()),
-                endValid: end && !isNaN(end.getTime())
-            });
+            // console.log('Parsed dates:', {
+            //     startRaw: res.data.agenda_selesai_start,
+            //     endRaw: res.data.agenda_selesai_end,
+            //     start: start,
+            //     end: end,
+            //     startValid: start && !isNaN(start.getTime()),
+            //     endValid: end && !isNaN(end.getTime())
+            // });
 
             if (start && end && !isNaN(start.getTime()) && !isNaN(end.getTime())) {
                 setAgendaSelesaiFilter({ startDate: start, endDate: end });
-                console.log('Filter agenda selesai berhasil di-set:', {
-                    start: start.toLocaleString('id-ID'),
-                    end: end.toLocaleString('id-ID')
-                });
+                // console.log('Filter agenda selesai berhasil di-set:', {
+                //     start: start.toLocaleString('id-ID'),
+                //     end: end.toLocaleString('id-ID')
+                // });
             } else {
                 console.error('Failed to parse dates:', { start, end });
             }
@@ -429,7 +419,6 @@ export default function KelolaDisplay() {
     // update data setiap 10 deti tapi hanya jika filter sudah ada
     useEffect(() => {
         if (!agendaSelesaiFilter.startDate || !agendaSelesaiFilter.endDate) {
-            console.log('Menunggu filter agenda selesai dari API...');
             return;
         }
 
@@ -478,7 +467,6 @@ export default function KelolaDisplay() {
         const currentMedia = mediaList[currentMediaIndex];
 
         if (!currentMedia) {
-            console.log('Current media not found, resetting index');
             setCurrentMediaIndex(0);
             return;
         }
@@ -581,7 +569,6 @@ export default function KelolaDisplay() {
         const currentMedia = mediaList[currentMediaIndex];
 
         if (!currentMedia) {
-            console.log('No current media, switching to KEGIATAN mode');
             setTimeout(() => {
                 setMode(MODE.KEGIATAN);
                 setCurrentMediaIndex(0);

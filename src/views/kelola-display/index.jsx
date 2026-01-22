@@ -16,6 +16,7 @@ import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import api from '../../api/axios';
+import axios from 'axios';
 
 // primereact
 import 'primereact/resources/themes/lara-light-blue/theme.css';
@@ -42,7 +43,7 @@ export default function KelolaDisplay() {
     const fetchMedia = async () => {
         try {
             setLoading(true);
-            const res = await api.get('/api/media/getAll-media', {
+            const res = await axios.get('http://localhost:3000/api/media/getAll-media', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setMedia(res.data);
@@ -99,8 +100,8 @@ export default function KelolaDisplay() {
 
     const fetchAgendaSelesai = async () => {
         try {
-            const res = await api.get(
-                '/api/task/disposisi',
+            const res = await axios.get(
+                'http://localhost:3000/api/task/disposisi',
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
@@ -203,8 +204,8 @@ export default function KelolaDisplay() {
     // fetch data agenda
     const fetchAgendaSelesaiFilter = async () => {
         try {
-            const res = await api.get(
-                '/api/media/get-duration',
+            const res = await axios.get(
+                'http://localhost:3000/api/media/get-duration',
             );
 
             if (!res.data?.agenda_selesai_start || !res.data?.agenda_selesai_end) return;
@@ -252,7 +253,7 @@ export default function KelolaDisplay() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await api.delete(`/api/media/delete-media/${id}`, {
+                    await axios.delete(`http://localhost:3000/api/media/delete-media/${id}`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     Swal.fire(

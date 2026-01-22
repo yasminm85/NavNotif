@@ -74,7 +74,7 @@ export default function TotalBarChart({ isLoading }) {
       try {
         const token = localStorage.getItem('token');
 
-        const res = await api.get('/api/task/disposisi/barchart', {
+        const res = await axios.get('http://localhost:3000/api/task/disposisi/barchart', {
           headers: { Authorization: `Bearer ${token}` }
         });
 

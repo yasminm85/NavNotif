@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import TotalNotifikasi from './TotalNotifikasi';
 import TotalSelesai from './TotalSelesai';
 import { gridSpacing } from 'store/constant';
-import axios from 'axios';
+import api from '../../../api/axios';
 
 function NotifToast({ message, onOke }) {
   return (
