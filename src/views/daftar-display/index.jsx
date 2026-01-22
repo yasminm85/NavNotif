@@ -677,6 +677,7 @@ export default function KelolaDisplay() {
                     rows={rows}
                     paginator={false}
                     dataKey="_id"
+                    className="datatable-besar" //bru update
                     rowClassName={(row) => {
                         if (mode === MODE.SELESAI) {
                             return row.laporan_status === "SUDAH" ? "row-laporan-sudah" : "row-laporan-belum";
@@ -727,6 +728,7 @@ export default function KelolaDisplay() {
                                 ? row.nama_yang_dituju.map(p => p.name).join(", ")
                                 : "-"
                         }
+                        
                     />
                     <Column field="tanggal" header="Tanggal" body={(row) => formDate(row.tanggal)} />
                     <Column header="Jam" body={(row) => `${formTime(row.jam_mulai)} - ${formTime(row.jam_selesai)}`} />

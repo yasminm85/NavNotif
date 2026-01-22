@@ -60,7 +60,7 @@
 .p-datatable {
     border-radius: 0 0 20px 20px;
     overflow: hidden;
-    font-size: 20px !important;
+    font-size: 30px !important;
 }
 
 .p-datatable .p-datatable-thead>tr>th {
@@ -97,6 +97,7 @@
     font-weight: 500;
     color: #2d3748;
 }
+
 
 
 .row-ongoing {
@@ -452,3 +453,13 @@
     transform: scale(1) translateX(0);
   }
 }
+
+/* font table terbaru*/
+.datatable-besar.p-datatable .p-datatable-thead > tr > th {
+    font-size: 21px !important;
+}
+
+.datatable-besar.p-datatable .p-datatable-tbody > tr > td {
+    font-size: 26px !important;
+}
+
