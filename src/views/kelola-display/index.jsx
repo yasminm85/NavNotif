@@ -227,7 +227,7 @@ export default function KelolaDisplay() {
         formData.append("duration", form.duration);
         // console.log(form.file);
         // console.log(form.duration);
-        let response = await api.post(
+        let response = await axios.post(
             "/api/media/create-media",
             formData,
             {
