@@ -72,7 +72,8 @@ export default function KelolaDisplay() {
             });
 
             setIsTransitioning(false);
-        }, 800);
+            // update
+        }, 300);
     };
 
     const detectOrientation = (e) => {
@@ -599,7 +600,8 @@ export default function KelolaDisplay() {
                             key={currentMediaIndex}
                             src={mediaUrl}
                             className={`kenburns ${panMode} ${orientation}`}
-                            style={{ "--pan-duration": `${currentMedia.duration * 60}s` }}
+                            // update
+                            style={{ "--pan-duration": `${currentMedia.duration}s` }}
                             onLoad={detectOrientation}
                             onError={goToNextMedia}
                         />
