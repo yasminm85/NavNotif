@@ -474,8 +474,8 @@ export default function KelolaDisplay() {
         const mediaType = getMediaType(currentMedia.mimetype);
 
         if (mediaType === 'image') {
-
-            const durationInMs = currentMedia.duration * 60 * 1000;
+            // update
+            const durationInMs = currentMedia.duration * 1000;
 
             mediaTimerRef.current = setTimeout(() => {
                 goToNextMedia();
