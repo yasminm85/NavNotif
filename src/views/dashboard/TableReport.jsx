@@ -7,8 +7,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
 import * as XLSX from "xlsx-js-style";
 import { saveAs } from "file-saver";
-import api from '../../api/axios';
-
+import axios from 'axios';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
