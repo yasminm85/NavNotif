@@ -560,9 +560,16 @@ export default function Disposisi() {
     );
 
     return (
-        <div className="card">
-            <MainCard title="Disposisi">
-                <div className="flex justify-content-end mb-3">
+        // 03feb2026
+        <div className="card h-full">
+            <MainCard title="Disposisi" className="h-full">
+                {/* HEADER */}
+                <div className="flex justify-content-between align-items-center mb-3">
+                    <span className="text-lg font-semibold">
+                        Daftar Diposisi
+                    </span>
+                    {/* 03feb2026 */}
+                    
                     <Button
                         label="Buat Disposisi"
                         onClick={() => {
@@ -813,8 +820,6 @@ export default function Disposisi() {
                     />
                 </Dialog>
 
-
-
                 {/* VIEW DETAIL LENGKAP */}
                 <Dialog
                     header="Detail Disposisi"
@@ -858,14 +863,22 @@ export default function Disposisi() {
                     )}
                 </Dialog>
 
+                {/* 03feb2026 */}
                 {/* TABLE */}
                 <DataTable
                     value={showDisposisi}
-                    paginator rows={5}
+                    paginator
+                    rows={5}
                     loading={loading}
                     dataKey="_id"
                     rowClassName={rowClass}
+                    emptyMessage={
+                        <div className="empty-center">
+                            📭 Belum ada daftar disposisi
+                        </div>
+                    }
                 >
+                    {/* 03feb2026\ */}
                     <Column field="status" header="Status" bodyClassName="text-center" style={{ minWidth: '5rem' }} headerStyle={{ textAlign: "center", justifyContent: "center", display: "flex" }} body={statusBodyTemplate} />
                     <Column field="nama_kegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
                     <Column field="tanggal" header="Tanggal" body={(row) => formDate(row.tanggal)} style={{ minWidth: '10rem' }} />
