@@ -25,10 +25,13 @@ const DaftarUser = Loadable(lazy(() => import('views/users')));
 // halaman kelola display 
 const KelolaDisplay = Loadable(lazy(() => import('views/kelola-display')));
 
+// 03feb2026
 // halaman tindak lanjut
-// const TindakLanjut = Loadable(lazy(() => import('views/tindak-lanjut')));
 const TindakLanjut = Loadable(lazy(() => import('views/tindak-lanjut')));
 
+// halaman tindak lanjut
+const DaftarTindakLanjut = Loadable(lazy(() => import('views/daftar-tindak-lanjut')));
+// 03feb2026
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -104,6 +107,16 @@ const MainRoutes = {
         </ProtectedRoute>
       )
     },
+    // 03feb2026
+    {
+      path: '/daftar-tindak-lanjut',
+      element: (
+        <ProtectedRoute allowedRoles={['pegawai']} >
+          <DaftarTindakLanjut />
+        </ProtectedRoute>
+      )
+    },
+    // 03feb2026
     {
       path: '/dashboard-evp',
       element: (
