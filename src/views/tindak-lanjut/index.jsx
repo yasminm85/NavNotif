@@ -217,9 +217,12 @@ export default function TindakLanjut() {
     return (
         <>
             {/* ===== MAIN CARD ===== */}
-            <div className="card h-full">
-                <MainCard title="Tindak Lanjut" className="h-full">
-                    {/* HEADER */}
+            <div className="card h-full flex">
+                <MainCard
+                    title="Tindak Lanjut"
+                    className="h-full w-full flex flex-column"
+                >
+                    {/* ===== HEADER ===== */}
                     <div className="flex justify-content-between align-items-center mb-3">
                         <span className="text-lg font-semibold">
                             Daftar Tindak Lanjut
@@ -247,7 +250,8 @@ export default function TindakLanjut() {
                     </div>
 
                     {/* TABLE */}
-                    <div style={{ minHeight: "400px" }}>
+                    {/* ===== TABLE ===== */}
+                    <div className="flex-1 overflow-auto">
                         <DataTable
                             value={showDisposisi}
                             paginator
@@ -257,14 +261,15 @@ export default function TindakLanjut() {
                             responsiveLayout="scroll"
                             stripedRows
                             showGridlines
-                            className="border-round-lg"
+                            className="h-full border-round-lg"
                             emptyMessage={
                                 <div className="empty-center">
-                                    Belum ada arahan
+                                    <span className="font-medium">
+                                        Belum ada arahan
+                                    </span>
                                 </div>
                             }
                         >
-
                             <Column header="No" body={nomorBodyTemplate} style={{ width: "4rem" }} />
                             <Column header="Personil yang Dituju" body={personilBodyTemplate} />
                             <Column header="Arahan" body={arahanBodyTemplate} />
