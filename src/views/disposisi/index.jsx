@@ -569,7 +569,7 @@ export default function Disposisi() {
                         Daftar Diposisi
                     </span>
                     {/* 03feb2026 */}
-                    
+
                     <Button
                         label="Buat Disposisi"
                         onClick={() => {
@@ -874,7 +874,7 @@ export default function Disposisi() {
                     rowClassName={rowClass}
                     emptyMessage={
                         <div className="empty-center">
-                            📭 Belum ada daftar disposisi
+                            Belum ada daftar disposisi
                         </div>
                     }
                 >
