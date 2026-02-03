@@ -25,19 +25,24 @@ const DaftarUser = Loadable(lazy(() => import('views/users')));
 // halaman kelola display 
 const KelolaDisplay = Loadable(lazy(() => import('views/kelola-display')));
 
+// halaman tindak lanjut
+// const TindakLanjut = Loadable(lazy(() => import('views/tindak-lanjut')));
+const TindakLanjut = Loadable(lazy(() => import('views/tindak-lanjut')));
+
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
   path: '/',
   element: (
     <ProtectedRoute>
-        <MainLayout />
+      <MainLayout />
     </ProtectedRoute>
   ),
   children: [
     {
       path: '/',
-      element: 
+      element:
         <DashboardDefault />
     },
     {
@@ -52,49 +57,59 @@ const MainRoutes = {
     {
       path: '/disposisi',
       element: (
-            <ProtectedRoute allowedRoles={['admin']} > 
-            <Disposisi />
-            </ProtectedRoute>
+        <ProtectedRoute allowedRoles={['admin']} >
+          <Disposisi />
+        </ProtectedRoute>
       )
     },
     {
       path: '/user',
       element: (
-            <ProtectedRoute allowedRoles={['admin']} > 
-            <DaftarUser />
-            </ProtectedRoute>
+        <ProtectedRoute allowedRoles={['admin']} >
+          <DaftarUser />
+        </ProtectedRoute>
       )
     },
     {
       path: '/kelola-display',
       element: (
-            <ProtectedRoute allowedRoles={['admin']} > 
-            <KelolaDisplay />
-            </ProtectedRoute>
+        <ProtectedRoute allowedRoles={['admin']} >
+          <KelolaDisplay />
+        </ProtectedRoute>
       )
     },
+    // 03feb2026
+    {
+      path: '/tindak-lanjut',
+      element: (
+        <ProtectedRoute allowedRoles={['admin']} >
+          <TindakLanjut />
+        </ProtectedRoute>
+      )
+    },
+    // 03feb2026
     {
       path: '/dashboard-pegawai',
       element: (
-            <ProtectedRoute allowedRoles={['pegawai']} > 
-            <DashboardPegawai />
-            </ProtectedRoute>
+        <ProtectedRoute allowedRoles={['pegawai']} >
+          <DashboardPegawai />
+        </ProtectedRoute>
       )
     },
     {
       path: '/daftar-notifikasi',
       element: (
-            <ProtectedRoute allowedRoles={['pegawai']} > 
-            <DaftarNotifikasi />
-            </ProtectedRoute>
+        <ProtectedRoute allowedRoles={['pegawai']} >
+          <DaftarNotifikasi />
+        </ProtectedRoute>
       )
     },
     {
       path: '/dashboard-evp',
       element: (
-            <ProtectedRoute allowedRoles={['EVP']} > 
-            <DashboardEVP />
-            </ProtectedRoute>
+        <ProtectedRoute allowedRoles={['EVP']} >
+          <DashboardEVP />
+        </ProtectedRoute>
       )
     },
   ]

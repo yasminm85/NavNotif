@@ -1,0 +1,45 @@
+/* 03feb2026 */
+
+/* Table header */
+.p-datatable thead th {
+    font-weight: 600;
+    background: #f8fafc;
+}
+
+/* Hover row */
+.p-datatable tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+.fadein {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.p-dialog-mask {
+    backdrop-filter: blur(2px);
+}
+
+.p-button {
+    transition: all 0.2s ease;
+}
+
+.empty-center {
+    text-align: center;
+    padding: 2rem;
+    color: #64748b;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* 03feb2026 */
