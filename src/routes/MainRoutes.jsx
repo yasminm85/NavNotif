@@ -32,6 +32,8 @@ const TindakLanjut = Loadable(lazy(() => import('views/tindak-lanjut')));
 // halaman tindak lanjut
 const DaftarTindakLanjut = Loadable(lazy(() => import('views/daftar-tindak-lanjut')));
 // 03feb2026
+// 04feb2026
+const DashboardTindakLanjut = Loadable(lazy(() => import('views/dashboard-tindak-lanjut')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -122,6 +124,15 @@ const MainRoutes = {
       element: (
         <ProtectedRoute allowedRoles={['EVP']} >
           <DashboardEVP />
+        </ProtectedRoute>
+      )
+    },
+    // 04feb2026
+    {
+      path: '/dashboard-tindak-lanjut',
+      element: (
+        <ProtectedRoute allowedRoles={['EVP']} >
+          <DashboardTindakLanjut />
         </ProtectedRoute>
       )
     },

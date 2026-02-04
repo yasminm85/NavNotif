@@ -3,7 +3,9 @@ import { IconDashboard } from '@tabler/icons-react';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { ManageAccounts } from '@mui/icons-material';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
-import FeedbackIcon from '@mui/icons-material/Feedback'; 
+// 03feb2026
+import FeedbackIcon from '@mui/icons-material/Feedback';
+// 03feb2026
 // constant
 const icons = { IconDashboard };
 
@@ -20,7 +22,7 @@ const dashboard = {
       type: 'item',
       url: '/dashboard/default',
       icon: icons.IconDashboard,
-      allowedRoles: ['admin'],   
+      allowedRoles: ['admin'],
       breadcrumbs: false
     },
     {
@@ -29,7 +31,7 @@ const dashboard = {
       type: 'item',
       url: '/disposisi',
       icon: AssignmentIcon,
-      allowedRoles: ['admin'],  
+      allowedRoles: ['admin'],
       breadcrumbs: false
     },
     {
@@ -38,7 +40,7 @@ const dashboard = {
       type: 'item',
       url: '/user',
       icon: ManageAccounts,
-      allowedRoles: ['admin'],  
+      allowedRoles: ['admin'],
       breadcrumbs: false
     },
     {
@@ -47,19 +49,20 @@ const dashboard = {
       type: 'item',
       url: '/kelola-display',
       icon: ViewStreamIcon,
-      allowedRoles: ['admin'],  
+      allowedRoles: ['admin'],
       breadcrumbs: false
     },
+    // 03feb2026
     {
       id: 'tindak-lanjut',
       title: 'Tindak Lanjut',
       type: 'item',
       url: '/tindak-lanjut',
       icon: FeedbackIcon,
-      allowedRoles: ['admin'],  
+      allowedRoles: ['admin'],
       breadcrumbs: false
     },
-
+    //  03feb2026
   ]
 };
 

@@ -381,6 +381,12 @@ export default function DashboardEVP() {
                     paginator rows={5}
                     loading={loading}
                     dataKey="_id"
+                    emptyMessage={
+                        <div className="empty-center">
+                            Belum ada daftar laporan disposisi
+                        </div>
+                    }
+                
                 >
                     <Column field="nama_kegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
                     <Column header="Nama Pegawai" body={(row) => namaPegawaiTemplate(row.nama_yang_dituju)} style={{ minWidth: '10rem' }} />

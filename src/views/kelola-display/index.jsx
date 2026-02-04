@@ -359,6 +359,7 @@ export default function KelolaDisplay() {
         return (
             <span>
                 <i className="pi pi-clock mr-2"></i>
+                {/* update */}
                 {rowData.duration} detik
             </span>
         );
@@ -419,7 +420,8 @@ export default function KelolaDisplay() {
                                         Total Durasi
                                     </Typography>
                                     <Typography variant="h3" sx={{ mt: 1, color: '#388E3C' }}>
-                                        {totalDuration} detik
+                                        {/* update */}
+                                        {totalDuration} detik 
                                     </Typography>
                                 </Paper>
                             </Grid>
@@ -609,6 +611,7 @@ export default function KelolaDisplay() {
             >
                 <div className="p-fluid">
                     <div className="field">
+                        {/* update */}
                         <label htmlFor="duration">Durasi Tampilan (detik)</label>
                         <InputNumber
                             id="duration"
