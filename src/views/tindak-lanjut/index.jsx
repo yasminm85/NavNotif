@@ -183,13 +183,8 @@ export default function TindakLanjut() {
 
     return (
         <>
-            {/* ===== MAIN CARD ===== */}
-            <div className="card h-full flex">
-                <MainCard
-                    title="Tindak Lanjut"
-                    className="h-full w-full flex flex-column"
-                >
-                    {/* ===== HEADER ===== */}
+            <div className="card h-full">
+                <MainCard title="Tindak Lanjut" className="h-full">
                     <div className="flex justify-content-between align-items-center mb-3">
                         <span className="text-lg font-semibold">
                             Daftar Tindak Lanjut
@@ -212,9 +207,7 @@ export default function TindakLanjut() {
                         />
                     </div>
 
-                    {/* TABLE */}
-                    {/* ===== TABLE ===== */}
-                    <div className="flex-1 overflow-auto">
+                    <div style={{ minHeight: "400px" }}>
                         <DataTable
                             value={showArahan}
                             paginator
