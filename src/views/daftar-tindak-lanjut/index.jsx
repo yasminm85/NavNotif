@@ -1,12 +1,10 @@
-// 03feb2026
 import MainCard from 'ui-component/cards/MainCard';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { Editor } from 'primereact/editor';
-import axios from 'axios';
 
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -15,10 +13,24 @@ import 'primeflex/primeflex.css';
 import './app.css';
 
 export default function DaftarTindakLanjut() {
-    const token = localStorage.getItem('token');
+    // ================= DUMMY DATA =================
+    const [tasks, setTasks] = useState([
+        {
+            _id: '1',
+            judul_arahan: 'Koordinasi dengan Tim IT',
+            isi_arahan: '<p>Mohon lakukan koordinasi terkait update sistem.</p>',
+            judul_tindak_lanjut: '',
+            isi_tindak_lanjut: ''
+        },
+        {
+            _id: '2',
+            judul_arahan: 'Laporan Evaluasi Bulanan',
+            isi_arahan: '<p>Susun laporan evaluasi bulan Januari.</p>',
+            judul_tindak_lanjut: 'Laporan disusun',
+            isi_tindak_lanjut: '<p>Laporan sudah dibuat dan dikirim.</p>'
+        }
+    ]);
 
-    const [loading, setLoading] = useState(true);
-    const [tasks, setTasks] = useState([]);
     const [showDialog, setShowDialog] = useState(false);
     const [currentTask, setCurrentTask] = useState(null);
 
@@ -28,61 +40,32 @@ export default function DaftarTindakLanjut() {
         file: null
     });
 
-    // ================= FETCH DATA =================
-    const fetchTasks = async () => {
-        try {
-            setLoading(true);
-            const res = await axios.get(
-                'http://localhost:3000/api/task/disposisi/my',
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setTasks(res.data);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchTasks();
-    }, []);
-
-    // ================= SUBMIT TINDAK LANJUT =================
-    const handleSubmitTindakLanjut = async () => {
+    // ================= SIMPAN (UI ONLY) =================
+    const handleSubmitTindakLanjut = () => {
         if (!currentTask) return;
 
-        const formData = new FormData();
-        formData.append("judul_tindak_lanjut", form.judul);
-        formData.append("isi_tindak_lanjut", form.isi);
-        if (form.file) formData.append("file_tindak_lanjut", form.file);
+        setTasks(prev =>
+            prev.map(t =>
+                t._id === currentTask._id
+                    ? {
+                          ...t,
+                          judul_tindak_lanjut: form.judul,
+                          isi_tindak_lanjut: form.isi
+                      }
+                    : t
+            )
+        );
 
-        try {
-            const res = await axios.patch(
-                `http://localhost:3000/api/task/disposisi/${currentTask._id}/tindak-lanjut`,
-                formData,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            setTasks(prev =>
-                prev.map(t =>
-                    t._id === res.data._id ? res.data : t
-                )
-            );
-
-            setShowDialog(false);
-            setCurrentTask(null);
-            setForm({ judul: '', isi: '', file: null });
-        } catch (err) {
-            console.error(err);
-        }
+        setShowDialog(false);
+        setCurrentTask(null);
+        setForm({ judul: '', isi: '', file: null });
     };
 
     // ================= TABLE ACTION =================
     const aksiTemplate = (row) => (
         <Button
-            label={row.judul_tindak_lanjut ? "Sudah Ditindaklanjuti" : "Isi Tindak Lanjut"}
-            severity={row.judul_tindak_lanjut ? "success" : "primary"}
+            label={row.judul_tindak_lanjut ? 'Sudah Ditindaklanjuti' : 'Isi Tindak Lanjut'}
+            severity={row.judul_tindak_lanjut ? 'success' : 'primary'}
             onClick={() => {
                 setCurrentTask(row);
                 setForm({
@@ -102,27 +85,20 @@ export default function DaftarTindakLanjut() {
                 title="Daftar Tindak Lanjut"
                 className="h-full w-full flex flex-column"
             >
-
                 {/* ===== TABLE ===== */}
                 <div className="flex-1">
                     <DataTable
                         value={tasks}
-                        loading={loading}
                         paginator
                         rows={5}
                         stripedRows
                         showGridlines
                         responsiveLayout="scroll"
                         className="h-full border-round-lg"
-                        emptyMessage={
-                            <div className="empty-center">
-                                <span className="font-medium">Belum ada arahan</span>
-                            </div>
-                        }
+                        emptyMessage="Belum ada arahan"
                     >
                         <Column
                             header="Arahan"
-                            field="judul_arahan"
                             body={(row) => (
                                 <span className="font-semibold text-primary">
                                     {row.judul_arahan}
@@ -134,7 +110,7 @@ export default function DaftarTindakLanjut() {
                             header="Isi Arahan"
                             body={(row) => (
                                 <div
-                                    className="text-600 isi-arahan"
+                                    className="text-600"
                                     dangerouslySetInnerHTML={{ __html: row.isi_arahan }}
                                 />
                             )}
@@ -146,7 +122,6 @@ export default function DaftarTindakLanjut() {
                             style={{ textAlign: 'center', width: '14rem' }}
                         />
                     </DataTable>
-
                 </div>
 
                 {/* ===== DIALOG ===== */}
@@ -154,7 +129,6 @@ export default function DaftarTindakLanjut() {
                     header="Tindak Lanjut Arahan"
                     visible={showDialog}
                     modal
-                    className="fadein colorful-dialog"
                     style={{ width: '42rem' }}
                     onHide={() => setShowDialog(false)}
                 >
@@ -163,11 +137,12 @@ export default function DaftarTindakLanjut() {
 
                             {/* ARAHAN */}
                             <div className="arahan-box">
-                                <span className="arahan-label">Arahan Admin</span>
-                                <h4 className="mt-2 mb-2">{currentTask.judul_arahan}</h4>
+                                <span className="font-medium">Arahan Admin</span>
+                                <h4 className="mt-2">{currentTask.judul_arahan}</h4>
                                 <div
-                                    className="text-700"
-                                    dangerouslySetInnerHTML={{ __html: currentTask.isi_arahan }}
+                                    dangerouslySetInnerHTML={{
+                                        __html: currentTask.isi_arahan
+                                    }}
                                 />
                             </div>
 
@@ -178,7 +153,6 @@ export default function DaftarTindakLanjut() {
                                 </label>
                                 <input
                                     className="p-inputtext w-full"
-                                    placeholder="Contoh: Koordinasi lanjutan dengan tim"
                                     value={form.judul}
                                     onChange={(e) =>
                                         setForm({ ...form, judul: e.target.value })
@@ -196,18 +170,17 @@ export default function DaftarTindakLanjut() {
                                     onTextChange={(e) =>
                                         setForm({ ...form, isi: e.htmlValue })
                                     }
-                                    style={{ height: "200px" }}
+                                    style={{ height: '200px' }}
                                 />
                             </div>
 
-                            {/* FILE */}
+                            {/* FILE (UI ONLY) */}
                             <div>
                                 <label className="font-medium block mb-2">
-                                    File Pendukung (PDF)
+                                    File Pendukung 
                                 </label>
                                 <input
                                     type="file"
-                                    accept="application/pdf"
                                     className="file-input"
                                     onChange={(e) =>
                                         setForm({ ...form, file: e.target.files[0] })
@@ -215,7 +188,7 @@ export default function DaftarTindakLanjut() {
                                 />
                             </div>
 
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-end">
                                 <Button
                                     label="Simpan Tindak Lanjut"
                                     icon="pi pi-check"
@@ -226,10 +199,7 @@ export default function DaftarTindakLanjut() {
                         </div>
                     )}
                 </Dialog>
-
             </MainCard>
         </div>
     );
-
 }
-// 03feb2026
