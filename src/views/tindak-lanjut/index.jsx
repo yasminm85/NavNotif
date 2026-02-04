@@ -118,16 +118,16 @@ export default function TindakLanjut() {
 
         try {
             let response;
-                response = await axios.post(
-                    'http://localhost:3000/api/tindaklanjut/create-tindaklanjut',
-                    formData,
-                    {
-                        headers: { Authorization: `Bearer ${token}` }
-                    }
-                );
+            response = await axios.post(
+                'http://localhost:3000/api/tindaklanjut/create-tindaklanjut',
+                formData,
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
 
-                setShowArahan(prev => [...prev, response.data]);
-            
+            setShowArahan(prev => [...prev, response.data]);
+
 
             setShowForm(false);
             setForm({
@@ -243,13 +243,18 @@ export default function TindakLanjut() {
             </div>
 
             <Dialog
-                header="Buat Tindak Lanjut"
                 visible={showForm}
                 modal
-                className="fadein colorful-dialog"
+                className="detail-dialog"
                 style={{ width: "52rem" }}
                 appendTo={document.body}
                 onHide={() => setShowForm(false)}
+                header={
+                    <div className="dialog-header">
+                        <i className="pi pi-clipboard mr-2" />
+                        Buat Tindak Lanjut
+                    </div>
+                }
             >
 
 

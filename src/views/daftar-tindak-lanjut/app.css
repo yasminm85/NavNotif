@@ -86,5 +86,121 @@ html, body, #root {
     width: 100%;
 }
 
+.file-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.file-card:hover {
+    background-color: #f9fafb;
+    border-color: #2563eb;
+}
+
+.file-icon {
+    font-size: 1.6rem;
+    color: #ef4444;
+}
+
+.file-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.file-name {
+    font-weight: 600;
+    color: #111827;
+}
+
+.file-action {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+
+.detail-dialog {
+    width: 42rem;
+}
+
+.detail-dialog .p-dialog-header {
+    background: linear-gradient(
+        90deg,
+        #80A1BA,
+        #91C4C3
+    );
+    color: #ffffff;
+    padding: 1rem 1.5rem;
+}
+
+.detail-dialog .p-dialog-content {
+    padding-top: 2rem;
+}
+
+.custom-datatable .p-datatable-thead > tr > th {
+    background: linear-gradient(180deg, #f8fafc, #eef2ff);
+    color: #1f2937;
+    font-weight: 600;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.custom-datatable .p-datatable-tbody > tr {
+    transition: background-color 0.2s ease;
+}
+
+.custom-datatable .p-datatable-tbody > tr:hover {
+    background-color: #f9fafb;
+}
+
+.summary-card {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.summary-card i {
+    font-size: 1.6rem;
+}
+
+.summary-value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.summary-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+/* STATUS COLOR */
+.summary-card.done i,
+.summary-card.done .summary-value {
+    color: #16a34a;
+}
+
+.summary-card.pending i,
+.summary-card.pending .summary-value {
+    color: #dc2626;
+}
+
+.summary-card.total i,
+.summary-card.total .summary-value {
+    color: #2563eb;
+}
+
 
 /* 03feb2026 */

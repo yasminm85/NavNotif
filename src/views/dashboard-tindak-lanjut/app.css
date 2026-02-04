@@ -286,3 +286,12 @@ body,
     }
 }
 
+.detail-card-title {
+    font-weight: 600;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+}

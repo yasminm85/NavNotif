@@ -502,7 +502,15 @@ export default function DaftarNotifikasi() {
                     rows={5}
                     loading={loading}
                     dataKey="_id"
-                    emptyMessage="Tidak ada data."
+                    // 04feb2026
+                    emptyMessage={
+                                <div className="empty-center">
+                                    <span className="font-medium">
+                                        Belum ada daftar notifikasi
+                                    </span>
+                                </div>
+                            }
+
                 >
                     <Column field="nama_kegiatan" header="Nama Kegiatan" style={{ minWidth: '10rem' }} />
                     <Column field="tanggal" header="Tanggal" body={(row) => formDate(row.tanggal)} style={{ minWidth: '10rem' }} />

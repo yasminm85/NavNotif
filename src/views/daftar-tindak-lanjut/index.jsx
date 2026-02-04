@@ -12,6 +12,7 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './app.css';
 import axios from 'axios';
+import CountUp from 'react-countup';
 
 export default function DaftarTindakLanjut() {
     const token = localStorage.getItem('token');
@@ -19,6 +20,7 @@ export default function DaftarTindakLanjut() {
     const [tasks, setTasks] = useState([]);
     const [showDialog, setShowDialog] = useState(false);
     const [currentTask, setCurrentTask] = useState(null);
+    const [filterStatus, setFilterStatus] = useState('ALL');
 
     const [form, setForm] = useState({
         judulTindakLanjut: '',
@@ -82,6 +84,22 @@ export default function DaftarTindakLanjut() {
         }
     };
 
+    const totalArahan = tasks.length;
+
+    const sudahTindakLanjut = tasks.filter(
+        (t) => t.isTindakLanjut === true
+    ).length;
+
+    const belumTindakLanjut = tasks.filter(
+        (t) => !t.isTindakLanjut
+    ).length;
+
+    const filteredTasks = tasks.filter((t) => {
+        if (filterStatus === 'DONE') return t.isTindakLanjut === true;
+        if (filterStatus === 'PENDING') return !t.isTindakLanjut;
+        return true;
+    });
+
     const aksiTemplate = (row) => (
         <Button
             label={row.judul_tindaklanjut ? 'Sudah Ditindaklanjuti' : 'Isi Tindak Lanjut'}
@@ -104,30 +122,82 @@ export default function DaftarTindakLanjut() {
                 title="Daftar Tindak Lanjut"
                 className="h-full w-full flex flex-column"
             >
+
+                <div className="flex gap-3 mb-3">
+                    <div
+                        className={`summary-card done ${filterStatus === 'DONE' ? 'active' : ''}`}
+                        onClick={() => setFilterStatus('DONE')}
+                    >
+                        <i className="pi pi-check-circle" />
+                        <div>
+                            <span className="summary-value">
+                                <CountUp end={sudahTindakLanjut} />
+                            </span>
+                            <span className="summary-label">Sudah Ditindaklanjuti</span>
+                        </div>
+                    </div>
+
+                    <div
+                        className={`summary-card pending ${filterStatus === 'PENDING' ? 'active' : ''}`}
+                        onClick={() => setFilterStatus('PENDING')}
+                    >
+                        <i className="pi pi-clock" />
+                        <div>
+                            <span className="summary-value">
+                                <CountUp end={belumTindakLanjut} />
+                            </span>
+                            <span className="summary-label">Belum Ditindaklanjuti</span>
+                        </div>
+                    </div>
+
+                    <div
+                        className={`summary-card total ${filterStatus === 'ALL' ? 'active' : ''}`}
+                        onClick={() => setFilterStatus('ALL')}
+                    >
+                        <i className="pi pi-list" />
+                        <div>
+                            <span className="summary-value">
+                                <CountUp end={tasks.length} />
+                            </span>
+                            <span className="summary-label">Total Arahan</span>
+                        </div>
+                    </div>
+                </div>
+
+
                 <div className="flex-1">
                     <DataTable
-                        value={tasks}
+                        value={filteredTasks}
                         paginator
                         rows={5}
                         stripedRows
+                        rowHover
                         showGridlines
-                        className="h-full border-round-lg"
-                        emptyMessage="Belum ada arahan"
+                        className="h-full border-round-lg custom-datatable"
+                        emptyMessage={
+                            <div className="empty-center">
+                                <i className="pi pi-inbox mb-2 text-400" />
+                                <span className="font-medium block">
+                                    Belum ada arahan
+                                </span>
+                            </div>
+                        }
                     >
                         <Column
                             header="Arahan"
                             body={(row) => (
-                                <span className="font-semibold text-primary">
+                                <div className="arahan-title">
                                     {row.judul_arahan}
-                                </span>
+                                </div>
                             )}
+                            style={{ width: '22%' }}
                         />
 
                         <Column
                             header="Isi Arahan"
                             body={(row) => (
                                 <div
-                                    className="text-600"
+                                    className="isi-arahan"
                                     dangerouslySetInnerHTML={{ __html: row.isi_arahan }}
                                 />
                             )}
@@ -136,17 +206,25 @@ export default function DaftarTindakLanjut() {
                         <Column
                             header="Aksi"
                             body={aksiTemplate}
-                            style={{ textAlign: 'center', width: '14rem' }}
+                            style={{ textAlign: 'center', width: '16%' }}
                         />
                     </DataTable>
+
                 </div>
 
                 <Dialog
-                    header="Tindak Lanjut Arahan"
                     visible={showDialog}
                     modal
+                    className="detail-dialog"
                     style={{ width: '42rem' }}
                     onHide={() => setShowDialog(false)}
+                    header={
+                        <div className="dialog-header">
+                            <i className="pi pi-clipboard mr-2" />
+                            Tindak Lanjut Arahan
+
+                        </div>
+                    }
                 >
                     {currentTask && (
                         <div className="flex flex-column gap-4">
@@ -160,6 +238,38 @@ export default function DaftarTindakLanjut() {
                                     }}
                                 />
                             </div>
+
+                            {/* DOKUMEN ARAHAN */}
+                            <div>
+                                <label className="font-medium block mb-2">
+                                    Dokumen Arahan
+                                </label>
+
+                                {currentTask.file_arahan ? (
+                                    <div
+                                        className="file-card"
+                                        onClick={() =>
+                                            window.open(
+                                                `/uploads/arahan/${currentTask.file_arahan}`,
+                                                '_blank'
+                                            )
+                                        }
+                                    >
+                                        <i className="pi pi-file-pdf file-icon" />
+                                        <div className="file-info">
+                                            <span className="file-name">
+                                                {currentTask.file_arahan}
+                                            </span>
+
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <small className="text-500 italic">
+                                        Tidak ada dokumen arahan yang dilampirkan
+                                    </small>
+                                )}
+                            </div>
+
 
                             <div>
                                 <label className="font-medium block mb-2">

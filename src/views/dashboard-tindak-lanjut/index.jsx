@@ -100,6 +100,34 @@ export default function DashboardTindakLanjutEVP() {
         }
     };
 
+
+    const htmlToPlainText = (html) => {
+        if (!html) return '';
+
+        let text = html;
+        text = text.replace(/<h[1-6][^>]*>(.*?)<\/h[1-6]>/gi, '\n$1\n');
+
+        let counter = 1;
+        text = text.replace(/<li[^>]*>(.*?)<\/li>/gi, (match, content) => {
+            const cleanContent = content.replace(/<[^>]*>/g, '');
+            return `\n${counter++}. ${cleanContent}`;
+        });
+
+        text = text.replace(/<p[^>]*>(.*?)<\/p>/gi, '\n$1\n');
+        text = text.replace(/<br\s*\/?>/gi, '\n');
+        text = text.replace(/<[^>]*>/g, '');
+        text = text.replace(/&nbsp;/g, ' ');
+        text = text.replace(/&amp;/g, '&');
+        text = text.replace(/&lt;/g, '<');
+        text = text.replace(/&gt;/g, '>');
+        text = text.replace(/&quot;/g, '"');
+        text = text.replace(/\n\s*\n/g, '\n\n');
+        text = text.trim();
+
+        return text;
+    };
+
+
     return (
         <div className="card h-full">
             <MainCard title="Dashboard Tindak Lanjut EVP"
@@ -225,10 +253,6 @@ export default function DashboardTindakLanjutEVP() {
                                 </div>
 
                                 {selected.file_arahan ? (
-                                    <div className="detail-empty">
-                                        Tidak ada dokumen arahan
-                                    </div>
-                                ) : (
                                     <div
                                         className="file-card"
                                         onClick={handleOpenFileArahan}
@@ -243,8 +267,13 @@ export default function DashboardTindakLanjutEVP() {
                                             </span>
                                         </div>
                                     </div>
+                                ) : (
+                                    <div className="detail-empty">
+                                        Tidak ada dokumen arahan
+                                    </div>
                                 )}
                             </div>
+
 
                             <div className="detail-section tinjut">
                                 <div className="detail-card-title">
@@ -259,8 +288,8 @@ export default function DashboardTindakLanjutEVP() {
                                         </div>
 
                                         {selected.isi_tindaklanjut ? (
-                                            <div className="detail-card-content">
-                                                {selected.isi_tindaklanjut}
+                                            <div className="detail-card-content pre-line">
+                                                {htmlToPlainText(selected.isi_tindaklanjut)}
                                             </div>
                                         ) : (
                                             <div className="detail-empty">
@@ -275,6 +304,7 @@ export default function DashboardTindakLanjutEVP() {
                                 )}
                             </div>
 
+
                             {selected.file_tindaklanjut && (
                                 <div className="detail-section dokumen tinjut">
                                     <div className="detail-card-title">
@@ -282,21 +312,28 @@ export default function DashboardTindakLanjutEVP() {
                                         Dokumen Tindak Lanjut
                                     </div>
 
-                                    <div
-                                        className="file-card"
-                                        onClick={handleOpenFileTindakLanjut}
-                                    >
-                                        <i className="pi pi-file-pdf file-icon" />
-                                        <div className="file-info">
-                                            <span className="file-name">
-                                                {selected.file_tindaklanjut}
-                                            </span>
-                                            <span className="file-action">
-                                                Klik untuk membuka
-                                            </span>
+                                    {selected.file_tindaklanjut ? (
+                                        <div
+                                            className="file-card"
+                                            onClick={handleOpenFileTindakLanjut}
+                                        >
+                                            <i className="pi pi-file-pdf file-icon" />
+                                            <div className="file-info">
+                                                <span className="file-name">
+                                                    {selected.file_tindaklanjut}
+                                                </span>
+                                                <span className="file-action">
+                                                    Klik untuk membuka
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="detail-empty">
+                                            Tidak ada dokumen tindak lanjut
+                                        </div>
+                                    )}
                                 </div>
+
                             )}
                         </div>
                     )}

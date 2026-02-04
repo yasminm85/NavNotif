@@ -54,4 +54,23 @@ html, body, #root {
     font-size: 1rem;
     text-align: center;
 }
+
+.detail-dialog {
+    width: 42rem;
+}
+
+.detail-dialog .p-dialog-header {
+    background: linear-gradient(
+        90deg,
+        #80A1BA,
+        #91C4C3
+    );
+    color: #ffffff;
+    padding: 1rem 1.5rem;
+}
+
+.detail-dialog .p-dialog-content {
+    padding-top: 2rem;
+}
+
 /* 03feb2026 */
