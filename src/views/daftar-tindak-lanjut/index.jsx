@@ -116,6 +116,23 @@ export default function DaftarTindakLanjut() {
         />
     );
 
+    const handleOpenFileArahan = async () => {
+            console.log(currentTask)
+            try {
+                const res = await axios.get(
+                    `http://localhost:3000/api/tindaklanjut/file_tindak/${currentTask.file_arahan}`,
+                    {
+                        responseType: "blob"
+                    }
+                );
+    
+                const fileURL = URL.createObjectURL(res.data);
+                window.open(fileURL);
+            } catch (err) {
+                console.error("Gagal buka file laporan", err);
+            }
+        };
+
     return (
         <div className="card h-full flex">
             <MainCard
@@ -239,7 +256,6 @@ export default function DaftarTindakLanjut() {
                                 />
                             </div>
 
-                            {/* DOKUMEN ARAHAN */}
                             <div>
                                 <label className="font-medium block mb-2">
                                     Dokumen Arahan
@@ -248,12 +264,7 @@ export default function DaftarTindakLanjut() {
                                 {currentTask.file_arahan ? (
                                     <div
                                         className="file-card"
-                                        onClick={() =>
-                                            window.open(
-                                                `/uploads/arahan/${currentTask.file_arahan}`,
-                                                '_blank'
-                                            )
-                                        }
+                                        onClick={handleOpenFileArahan}
                                     >
                                         <i className="pi pi-file-pdf file-icon" />
                                         <div className="file-info">
