@@ -2,6 +2,7 @@ const TindakLanjut = require('../models/tindaklanjut.model')
 const mongoose = require('mongoose');
 const GridFSBucket = mongoose.mongo.GridFSBucket;
 
+// mendapatkan data 
 const getTindakLanjut = async (req, res) => {
     try {
         const tindaklanjut = await TindakLanjut.find().populate("personil_yang_dituju", "name").sort({ createdAt: -1 });
