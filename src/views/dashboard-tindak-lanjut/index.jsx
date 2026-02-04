@@ -22,7 +22,6 @@ export default function DashboardTindakLanjutEVP() {
     const [showDetail, setShowDetail] = useState(false);
     const [showLegend, setShowLegend] = useState(true);
 
-    // ================= ROW HIGHLIGHT =================
     const rowClassName = (row) => ({
         'row-done': row.isTindakLanjut == true,
         'row-pending': row.isTindakLanjut == false
