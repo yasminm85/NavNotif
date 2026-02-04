@@ -1,5 +1,5 @@
 import MainCard from 'ui-component/cards/MainCard';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
@@ -11,66 +11,86 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './app.css';
+import axios from 'axios';
 
 export default function DaftarTindakLanjut() {
-    // ================= DUMMY DATA =================
-    const [tasks, setTasks] = useState([
-        {
-            _id: '1',
-            judul_arahan: 'Koordinasi dengan Tim IT',
-            isi_arahan: '<p>Mohon lakukan koordinasi terkait update sistem.</p>',
-            judul_tindak_lanjut: '',
-            isi_tindak_lanjut: ''
-        },
-        {
-            _id: '2',
-            judul_arahan: 'Laporan Evaluasi Bulanan',
-            isi_arahan: '<p>Susun laporan evaluasi bulan Januari.</p>',
-            judul_tindak_lanjut: 'Laporan disusun',
-            isi_tindak_lanjut: '<p>Laporan sudah dibuat dan dikirim.</p>'
-        }
-    ]);
-
+    const token = localStorage.getItem('token');
+    const [loading, setLoading] = useState(true);
+    const [tasks, setTasks] = useState([]);
     const [showDialog, setShowDialog] = useState(false);
     const [currentTask, setCurrentTask] = useState(null);
 
     const [form, setForm] = useState({
-        judul: '',
-        isi: '',
+        judulTindakLanjut: '',
+        isiTindakLanjut: '',
         file: null
     });
 
-    // ================= SIMPAN (UI ONLY) =================
-    const handleSubmitTindakLanjut = () => {
-        if (!currentTask) return;
-
-        setTasks(prev =>
-            prev.map(t =>
-                t._id === currentTask._id
-                    ? {
-                          ...t,
-                          judul_tindak_lanjut: form.judul,
-                          isi_tindak_lanjut: form.isi
-                      }
-                    : t
-            )
-        );
-
-        setShowDialog(false);
-        setCurrentTask(null);
-        setForm({ judul: '', isi: '', file: null });
+    const fetchTindakLanjut = async () => {
+        try {
+            setLoading(true);
+            const res = await axios.get('http://localhost:3000/api/tindaklanjut/get-arahan', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setTasks(res.data);
+        } catch (err) {
+            console.error('Error get tasks:', err.response?.data || err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // ================= TABLE ACTION =================
+    useEffect(() => {
+        fetchTindakLanjut();
+    }, []);
+
+    const handleSubmitTindakLanjut = async () => {
+        if (!currentTask) return;
+
+        const formData = new FormData();
+
+        if (form.file) formData.append("file_tindaklanjut", form.file);
+        formData.append("judul_tindaklanjut", form.judulTindakLanjut);
+        formData.append("isi_tindaklanjut", form.isiTindakLanjut);
+
+        try {
+            const res = await axios.patch(
+                `http://localhost:3000/api/tindaklanjut/update/${currentTask._id}/tindaklanjut`,
+                formData,
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+
+            setTasks(prev =>
+                prev.map(t =>
+                    t._id === currentTask._id
+                        ? {
+                            ...t,
+                            judul_tindak_lanjut: form.judulTindakLanjut,
+                            isi_tindak_lanjut: form.isiTindakLanjut
+                        }
+                        : t
+                )
+            );
+
+            setShowDialog(false);
+            setCurrentTask(null);
+            setForm({ judulTindakLanjut: '', isiTindakLanjut: '', file: null });
+        } catch (error) {
+
+        }
+    };
+
     const aksiTemplate = (row) => (
         <Button
-            label={row.judul_tindak_lanjut ? 'Sudah Ditindaklanjuti' : 'Isi Tindak Lanjut'}
-            severity={row.judul_tindak_lanjut ? 'success' : 'primary'}
+            label={row.judul_tindaklanjut ? 'Sudah Ditindaklanjuti' : 'Isi Tindak Lanjut'}
+            severity={row.judul_tindaklanjut ? 'success' : 'primary'}
             onClick={() => {
                 setCurrentTask(row);
                 setForm({
-                    judul: row.judul_tindak_lanjut || '',
-                    isi: row.isi_tindak_lanjut || '',
+                    judulTindakLanjut: row.judul_tindaklanjut || '',
+                    isiTindakLanjut: row.isi_tindaklanjut || '',
                     file: null
                 });
                 setShowDialog(true);
@@ -78,14 +98,12 @@ export default function DaftarTindakLanjut() {
         />
     );
 
-    // ================= RENDER =================
     return (
         <div className="card h-full flex">
             <MainCard
                 title="Daftar Tindak Lanjut"
                 className="h-full w-full flex flex-column"
             >
-                {/* ===== TABLE ===== */}
                 <div className="flex-1">
                     <DataTable
                         value={tasks}
@@ -93,7 +111,6 @@ export default function DaftarTindakLanjut() {
                         rows={5}
                         stripedRows
                         showGridlines
-                        responsiveLayout="scroll"
                         className="h-full border-round-lg"
                         emptyMessage="Belum ada arahan"
                     >
@@ -124,7 +141,6 @@ export default function DaftarTindakLanjut() {
                     </DataTable>
                 </div>
 
-                {/* ===== DIALOG ===== */}
                 <Dialog
                     header="Tindak Lanjut Arahan"
                     visible={showDialog}
@@ -135,7 +151,6 @@ export default function DaftarTindakLanjut() {
                     {currentTask && (
                         <div className="flex flex-column gap-4">
 
-                            {/* ARAHAN */}
                             <div className="arahan-box">
                                 <span className="font-medium">Arahan Admin</span>
                                 <h4 className="mt-2">{currentTask.judul_arahan}</h4>
@@ -146,38 +161,35 @@ export default function DaftarTindakLanjut() {
                                 />
                             </div>
 
-                            {/* JUDUL */}
                             <div>
                                 <label className="font-medium block mb-2">
                                     Judul Tindak Lanjut
                                 </label>
                                 <input
                                     className="p-inputtext w-full"
-                                    value={form.judul}
+                                    value={form.judulTindakLanjut}
                                     onChange={(e) =>
-                                        setForm({ ...form, judul: e.target.value })
+                                        setForm({ ...form, judulTindakLanjut: e.target.value })
                                     }
                                 />
                             </div>
 
-                            {/* ISI */}
                             <div>
                                 <label className="font-medium block mb-2">
                                     Isi Tindak Lanjut
                                 </label>
                                 <Editor
-                                    value={form.isi}
+                                    value={form.isiTindakLanjut}
                                     onTextChange={(e) =>
-                                        setForm({ ...form, isi: e.htmlValue })
+                                        setForm({ ...form, isiTindakLanjut: e.htmlValue })
                                     }
                                     style={{ height: '200px' }}
                                 />
                             </div>
 
-                            {/* FILE (UI ONLY) */}
                             <div>
                                 <label className="font-medium block mb-2">
-                                    File Pendukung 
+                                    File Pendukung
                                 </label>
                                 <input
                                     type="file"
@@ -189,12 +201,22 @@ export default function DaftarTindakLanjut() {
                             </div>
 
                             <div className="flex justify-end">
-                                <Button
-                                    label="Simpan Tindak Lanjut"
-                                    icon="pi pi-check"
-                                    className="p-button-success"
-                                    onClick={handleSubmitTindakLanjut}
-                                />
+                                {currentTask.isTindakLanjut == true ? (
+                                    <Button
+                                        label="Kembali"
+                                        icon="pi pi-arrow-left"
+                                        className="p-button-danger"
+                                        onClick={() => setShowDialog(false)}
+                                    />
+                                ) : (
+                                    <Button
+                                        label="Simpan Tindak Lanjut"
+                                        type='submit'
+                                        icon="pi pi-check"
+                                        className="p-button-success"
+                                        onClick={handleSubmitTindakLanjut}
+                                    />
+                                )}
                             </div>
                         </div>
                     )}

@@ -20,21 +20,18 @@ import axios from 'axios';
 
 export default function TindakLanjut() {
     const token = localStorage.getItem('token');
-    const [editMode, setEditMode] = useState(false);
     const [loading, setLoading] = useState(true);
     const [pegawaisel, setPegawai] = useState([]);
     const [selectedpegawai, setSelectedpegawai] = useState([]);
     const [showForm, setShowForm] = useState(false);
-    const [selectedData, setSelectedData] = useState(null);
-    const [showDisposisi, setShowDisposisi] = useState([]);
+    const [showArahan, setShowArahan] = useState([]);
     const [errors, setErrors] = useState({});
     const [form, setForm] = useState({
 
-        namayangdituju: "",
+        personilyangdituju: "",
         judulArahan: "",
         isiArahan: "",
-        file1: null,
-        file2: null
+        file: null,
     });
     const validateForm = () => {
         let newErrors = {};
@@ -64,38 +61,33 @@ export default function TindakLanjut() {
         }
     };
 
-    //get all data disposisi
-    const getDataDisposisi = async () => {
+    //get all data tindak lanjut
+    const getTindakLanjut = async () => {
         try {
             setLoading(true);
-            // console.log(token);
-            const response = await axios.get('http://localhost:3000/api/task/disposisi', {
+            const response = await axios.get('http://localhost:3000/api/tindaklanjut/get-tindaklanjut', {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setShowDisposisi(response.data);
+            setShowArahan(response.data);
         } catch (error) {
-            console.error("Error mengambil data disposisi", error)
+            console.error("Error mengambil data tindak lanjut", error)
         }
         setLoading(false)
 
     };
 
-    const fetchSeed = async () => {
-        const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:3000/api/task/disposisi/barchart", {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-
-        setDirektorat(res.data?.direktoratOptions || []);
-        setDivisi(res.data?.divisiOptions || []);
-    };
 
 
     useEffect(() => {
         fetchPegawai();
-        getDataDisposisi();
-        fetchSeed();
+        getTindakLanjut();
     }, []);
+
+    const handleChange = (field, value) => {
+
+        setForm({ ...form, [field]: value });
+        setErrors({ ...errors, [field]: "" });
+    };
 
     const handleFileChange = (field, e) => {
         const file = e.target.files[0];
@@ -116,59 +108,36 @@ export default function TindakLanjut() {
 
         const pegawaiIds = selectedpegawai.map((p) => p._id);
         const formData = new FormData();
+        console.log(pegawaiIds);
 
+        formData.append("personil_yang_dituju", JSON.stringify(pegawaiIds));
         formData.append("judul_arahan", form.judulArahan);
         formData.append("isi_arahan", form.isiArahan);
-        formData.append("nama_yang_dituju", JSON.stringify(pegawaiIds));
 
-        if (form.file1) formData.append("file1", form.file1);
-        if (form.file2) formData.append("file2", form.file2);
+        if (form.file) formData.append("file_arahan", form.file);
 
         try {
             let response;
-            if (editMode && selectedData?._id) {
-                response = await axios.patch(
-                    `http://localhost:3000/api/task/disposisi/${selectedData._id}`,
-                    formData,
-                    {
-                        headers: { Authorization: `Bearer ${token}` }
-                    }
-                );
-
-                setShowDisposisi(prev =>
-                    prev.map(item =>
-                        item._id === selectedData._id ? response.data : item
-                    )
-                );
-
-            } else {
                 response = await axios.post(
-                    'http://localhost:3000/api/task/disposisi',
+                    'http://localhost:3000/api/tindaklanjut/create-tindaklanjut',
                     formData,
                     {
                         headers: { Authorization: `Bearer ${token}` }
                     }
                 );
 
-                setShowDisposisi(prev => [...prev, response.data]);
-            }
+                setShowArahan(prev => [...prev, response.data]);
+            
 
-            // Reset form setelah submit
             setShowForm(false);
-            setEditMode(false);
-            setSelectedData(null);
             setForm({
-                namayangdituju: "",
-                direktorat: "",
-                divisi: "",
-                ruangan: "",
-                tempat: "",
+                personilyangdituju: "",
+                judulArahan: "",
+                isiArahan: "",
                 file: null,
 
             });
             setSelectedpegawai([]);
-            setSelecteddirektorat([]);
-            setSelecteddivisi([]);
             setErrors({});
 
         } catch (error) {
@@ -181,18 +150,16 @@ export default function TindakLanjut() {
     };
 
     const personilBodyTemplate = (rowData) => {
-        if (!rowData.nama_yang_dituju || rowData.nama_yang_dituju.length === 0) {
+        if (!rowData.personil_yang_dituju || rowData.personil_yang_dituju.length === 0) {
             return <span>-</span>;
         }
 
-        // kalau backend kirim object
-        if (typeof rowData.nama_yang_dituju[0] === "object") {
-            return rowData.nama_yang_dituju.map(p => p.name).join(", ");
+        if (typeof rowData.personil_yang_dituju[0] === "object") {
+            return rowData.personil_yang_dituju.map(p => p.name).join(", ");
         }
 
-        // fallback kalau cuma ID
         const names = pegawaisel
-            .filter(p => rowData.nama_yang_dituju.includes(p._id))
+            .filter(p => rowData.personil_yang_dituju.includes(p._id))
             .map(p => p.name);
 
         return names.join(", ");
@@ -209,7 +176,7 @@ export default function TindakLanjut() {
     const tindakLanjutBodyTemplate = (rowData) => {
         return (
             <span className="text-600">
-                {rowData.judul_tindak_lanjut || "-"}
+                {rowData.judul_tindaklanjut || "-"}
             </span>
         );
     };
@@ -233,15 +200,11 @@ export default function TindakLanjut() {
                             icon="pi pi-plus"
                             className="p-button-primary"
                             onClick={() => {
-                                console.log("BUTTON CLICKED");
-                                setEditMode(false);
-                                setSelectedData(null);
                                 setErrors({});
                                 setForm({
                                     judulArahan: "",
                                     isiArahan: "",
-                                    file1: null,
-                                    file2: null
+                                    file: null,
                                 });
                                 setSelectedpegawai([]);
                                 setShowForm(true);
@@ -253,7 +216,7 @@ export default function TindakLanjut() {
                     {/* ===== TABLE ===== */}
                     <div className="flex-1 overflow-auto">
                         <DataTable
-                            value={showDisposisi}
+                            value={showArahan}
                             paginator
                             rows={10}
                             loading={loading}
@@ -279,7 +242,6 @@ export default function TindakLanjut() {
                 </MainCard>
             </div>
 
-            {/* ===== DIALOG FORM (WAJIB DI LUAR CARD) ===== */}
             <Dialog
                 header="Buat Tindak Lanjut"
                 visible={showForm}
@@ -293,10 +255,9 @@ export default function TindakLanjut() {
 
                 <div className="p-fluid">
 
-                    {/* PERSONIL */}
                     <div className="mb-4">
                         <label className="font-medium mb-2 block">
-                            Personil Tujuan <span className="text-red-500">*</span>
+                            Personil yang dituju <span className="text-red-500">*</span>
                         </label>
                         <MultiSelect
                             value={selectedpegawai}
@@ -307,20 +268,19 @@ export default function TindakLanjut() {
                             className="w-full"
                             onChange={(e) => setSelectedpegawai(e.value)}
                         />
-                        {errors.namayangdituju && (
-                            <small className="p-error">{errors.namayangdituju}</small>
+                        {errors.personilyangdituju && (
+                            <small className="p-error">{errors.personilyangdituju}</small>
                         )}
                     </div>
 
                     <Divider />
 
-                    {/* JUDUL */}
                     <div className="mb-3">
                         <label className="font-medium mb-2 block">
                             Judul Arahan <span className="text-red-500">*</span>
                         </label>
                         <InputText
-                            value={form.judulArahan}
+                            value={form.judulArahan || ''}
                             onChange={(e) => handleChange("judulArahan", e.target.value)}
                             placeholder="Contoh: Tindak lanjut laporan"
                         />
@@ -329,7 +289,6 @@ export default function TindakLanjut() {
                         )}
                     </div>
 
-                    {/* ISI */}
                     <div className="mb-3">
                         <label className="font-medium mb-2 block">
                             Isi Arahan <span className="text-red-500">*</span>
@@ -337,7 +296,7 @@ export default function TindakLanjut() {
                         <InputTextarea
                             rows={6}
                             autoResize
-                            value={form.isiArahan}
+                            value={form.isiArahan || ''}
                             onChange={(e) => handleChange("isiArahan", e.target.value)}
                             placeholder="Tuliskan arahan secara jelas..."
                         />
@@ -348,13 +307,9 @@ export default function TindakLanjut() {
 
                     <Divider />
 
-                    {/* FILE */}
                     <div className="grid">
                         <div className="col-12 md:col-6">
-                            <input type="file" accept="application/pdf" onChange={(e) => handleFileChange("file1", e)} />
-                        </div>
-                        <div className="col-12 md:col-6">
-                            <input type="file" accept="application/pdf" onChange={(e) => handleFileChange("file2", e)} />
+                            <input type="file" accept="application/pdf" onChange={(e) => handleFileChange("file", e)} />
                         </div>
                     </div>
 

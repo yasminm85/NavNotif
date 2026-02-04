@@ -1,5 +1,5 @@
 import MainCard from 'ui-component/cards/MainCard';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
@@ -11,29 +11,12 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './app.css';
+import axios from 'axios';
 
 export default function DashboardTindakLanjutEVP() {
-    const [data] = useState([
-        {
-            id: 1,
-            personil: ['Andi Wijaya', 'Siti Aminah'],
-            arahan: 'Koordinasi dengan tim IT terkait update sistem',
-            arahan_file: 'arahan-evp-it.pdf',
-            judul_tindak_lanjut: 'Koordinasi dan Persiapan Sistem',
-            tindak_lanjut_text: 'Koordinasi telah dilakukan dan sistem siap digunakan',
-            tindak_lanjut_file: 'laporan-koordinasi.pdf'
-        },
-        {
-            id: 2,
-            personil: ['Budi Santoso'],
-            arahan: 'Susun laporan evaluasi bulanan',
-            arahan_file: '',
-            judul_tindak_lanjut: '',
-            tindak_lanjut_text: '',
-            tindak_lanjut_file: ''
-        }
-    ]);
-
+    const token = localStorage.getItem('token');
+    const [showArahan, setShowArahan] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const [selected, setSelected] = useState(null);
     const [showDetail, setShowDetail] = useState(false);
@@ -41,9 +24,81 @@ export default function DashboardTindakLanjutEVP() {
 
     // ================= ROW HIGHLIGHT =================
     const rowClassName = (row) => ({
-        'row-done': row.judul_tindak_lanjut,
-        'row-pending': !row.judul_tindak_lanjut
+        'row-done': row.isTindakLanjut == true,
+        'row-pending': row.isTindakLanjut == false
     });
+
+
+    //get all data tindak lanjut
+    const getTindakLanjut = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get('http://localhost:3000/api/tindaklanjut/get-tindaklanjut', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setShowArahan(response.data);
+        } catch (error) {
+            console.error("Error mengambil data tindak lanjut", error)
+        }
+        setLoading(false)
+
+    };
+
+
+
+    useEffect(() => {
+        getTindakLanjut();
+    }, []);
+
+    const personilBodyTemplate = (rowData) => {
+        if (!rowData.personil_yang_dituju || rowData.personil_yang_dituju.length === 0) {
+            return <span>-</span>;
+        }
+
+        if (typeof rowData.personil_yang_dituju[0] === "object") {
+            return rowData.personil_yang_dituju.map(p => p.name).join(", ");
+        }
+
+        const names = pegawaisel
+            .filter(p => rowData.personil_yang_dituju.includes(p._id))
+            .map(p => p.name);
+
+        return names.join(", ");
+    };
+
+    const handleOpenFileArahan = async () => {
+        console.log(selected)
+        try {
+            const res = await axios.get(
+                `http://localhost:3000/api/tindaklanjut/file_tindak/${selected.file_arahan}`,
+                {
+                    responseType: "blob"
+                }
+            );
+
+            const fileURL = URL.createObjectURL(res.data);
+            window.open(fileURL);
+        } catch (err) {
+            console.error("Gagal buka file laporan", err);
+        }
+    };
+
+    const handleOpenFileTindakLanjut = async () => {
+        console.log(selected)
+        try {
+            const res = await axios.get(
+                `http://localhost:3000/api/tindaklanjut/file_tindak/${selected.file_tindaklanjut}`,
+                {
+                    responseType: "blob"
+                }
+            );
+
+            const fileURL = URL.createObjectURL(res.data);
+            window.open(fileURL);
+        } catch (err) {
+            console.error("Gagal buka file laporan", err);
+        }
+    };
 
     return (
         <div className="card h-full">
@@ -77,10 +132,9 @@ export default function DashboardTindakLanjutEVP() {
                     </div>
                 )}
 
-                {/* TABLE CONTAINER — WAJIB */}
                 <div className="flex-1 overflow-hidden">
                     <DataTable
-                        value={data}
+                        value={showArahan}
                         paginator
                         rows={5}
                         stripedRows
@@ -103,22 +157,22 @@ export default function DashboardTindakLanjutEVP() {
 
                         <Column
                             header="Personil yang Ditugaskan"
-                            body={(row) => row.personil.join(', ')}
+                            body={personilBodyTemplate}
                             style={{ minWidth: '18rem' }}
                         />
 
                         <Column
                             header="Arahan"
-                            field="arahan"
+                            field="judul_arahan"
                             style={{ minWidth: '22rem' }}
                         />
 
                         <Column
                             header="Judul Tindak Lanjut"
                             body={(row) =>
-                                row.judul_tindak_lanjut ? (
+                                row.judul_tindaklanjut ? (
                                     <span className="judul-tindak-lanjut">
-                                        {row.judul_tindak_lanjut}
+                                        {row.judul_tindaklanjut}
                                     </span>
                                 ) : null
                             }
@@ -127,7 +181,6 @@ export default function DashboardTindakLanjutEVP() {
                     </DataTable>
                 </div>
 
-                {/* ===== POPUP DETAIL ===== */}
                 <Dialog
                     visible={showDetail}
                     modal
@@ -143,78 +196,71 @@ export default function DashboardTindakLanjutEVP() {
                     {selected && (
                         <div className="detail-wrapper">
 
-                            {/* PERSONIL */}
                             <div className="detail-section personil">
                                 <div className="detail-card-title">
                                     <i className="pi pi-users mr-2" />
                                     Personil
                                 </div>
                                 <div className="detail-card-content">
-                                    {selected.personil.join(', ')}
+                                    {Array.isArray(selected.personil_yang_dituju)
+                                        ? selected.personil_yang_dituju.map((u) => u.name).join(", ")
+                                        : "-"}
                                 </div>
                             </div>
 
-                            {/* ARAHAN */}
                             <div className="detail-section arahan">
                                 <div className="detail-card-title">
                                     <i className="pi pi-directions mr-2" />
                                     Arahan EVP
                                 </div>
                                 <div className="detail-card-content">
-                                    {selected.arahan}
+                                    {selected.isi_arahan}
                                 </div>
                             </div>
 
-                            {/* DOKUMEN ARAHAN */}
                             <div className="detail-section dokumen">
                                 <div className="detail-card-title">
                                     <i className="pi pi-file mr-2" />
                                     Dokumen Arahan
                                 </div>
 
-                                {selected.arahan_file ? (
+                                {selected.file_arahan ? (
+                                    <div className="detail-empty">
+                                        Tidak ada dokumen arahan
+                                    </div>
+                                ) : (
                                     <div
                                         className="file-card"
-                                        onClick={() =>
-                                            window.open(
-                                                `/dummy/${selected.arahan_file}`,
-                                                '_blank'
-                                            )
-                                        }
+                                        onClick={handleOpenFileArahan}
                                     >
                                         <i className="pi pi-file-pdf file-icon" />
                                         <div className="file-info">
                                             <span className="file-name">
-                                                {selected.arahan_file}
+                                                {selected.file_arahan}
                                             </span>
                                             <span className="file-action">
                                                 Klik untuk membuka dokumen
                                             </span>
                                         </div>
                                     </div>
-                                ) : (
-                                    <div className="detail-empty">
-                                        Tidak ada dokumen arahan
-                                    </div>
                                 )}
                             </div>
 
-                            {/* TINDAK LANJUT */}
                             <div className="detail-section tinjut">
                                 <div className="detail-card-title">
                                     <i className="pi pi-check-circle mr-2" />
                                     Tindak Lanjut Pegawai
                                 </div>
 
-                                {selected.judul_tindak_lanjut ? (
+                                {selected.judul_tindaklanjut ? (
                                     <>
                                         <div className="tindaklanjut-title">
-                                            {selected.judul_tindak_lanjut}
+                                            {selected.judul_tindaklanjut}
                                         </div>
 
-                                        {selected.tindak_lanjut_text ? (
+                                        {selected.isi_tindaklanjut ? (
                                             <div className="detail-card-content">
-                                                {selected.tindak_lanjut_text}
+                                                {selected.isi_tindaklanjut}
                                             </div>
                                         ) : (
                                             <div className="detail-empty">
@@ -229,8 +275,7 @@ export default function DashboardTindakLanjutEVP() {
                                 )}
                             </div>
 
-                            {/* FILE TINDAK LANJUT */}
-                            {selected.tindak_lanjut_file && (
+                            {selected.file_tindaklanjut && (
                                 <div className="detail-section dokumen tinjut">
                                     <div className="detail-card-title">
                                         <i className="pi pi-paperclip mr-2" />
@@ -239,17 +284,12 @@ export default function DashboardTindakLanjutEVP() {
 
                                     <div
                                         className="file-card"
-                                        onClick={() =>
-                                            window.open(
-                                                `/dummy/${selected.tindak_lanjut_file}`,
-                                                '_blank'
-                                            )
-                                        }
+                                        onClick={handleOpenFileTindakLanjut}
                                     >
                                         <i className="pi pi-file-pdf file-icon" />
                                         <div className="file-info">
                                             <span className="file-name">
-                                                {selected.tindak_lanjut_file}
+                                                {selected.file_tindaklanjut}
                                             </span>
                                             <span className="file-action">
                                                 Klik untuk membuka
