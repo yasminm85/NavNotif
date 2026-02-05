@@ -206,7 +206,7 @@ export default function DashboardEVP() {
 
     return (
         <div className="card">
-            <MainCard title="Dashboard">
+            <MainCard title="Rapat/Kegiatan">
 
                 {/* Laporan */}
                 <Dialog
