@@ -114,6 +114,9 @@ export default function TindakLanjut() {
         formData.append("personil_yang_dituju", JSON.stringify(pegawaiIds));
         formData.append("judul_arahan", form.judulArahan);
         formData.append("isi_arahan", form.isiArahan);
+        if (form.deadline) {
+            formData.append("deadline", form.deadline.toISOString());
+        }
 
         if (form.file) formData.append("file_arahan", form.file);
 
@@ -184,6 +187,24 @@ export default function TindakLanjut() {
         );
     };
 
+    const deadlineBodyTemplate = (rowData) => {
+        if (!rowData.deadline) {
+            return <span className="text-500">-</span>;
+        }
+
+        const deadline = new Date(rowData.deadline);
+        const isLate = deadline < new Date();
+
+        return (
+            <span
+                className={`px-2 py-1 text-xs border-round 
+            ${isLate ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}
+            >
+                {deadline.toLocaleString("id-ID")}
+            </span>
+        );
+    };
+
 
     return (
         <>
@@ -224,7 +245,6 @@ export default function TindakLanjut() {
                             loading={loading}
                             dataKey="_id"
                             responsiveLayout="scroll"
-                            stripedRows
                             showGridlines
                             className="h-full border-round-lg"
                             emptyMessage={
@@ -239,6 +259,8 @@ export default function TindakLanjut() {
                             <Column header="Personil yang Dituju" body={personilBodyTemplate} />
                             <Column header="Arahan" body={arahanBodyTemplate} />
                             <Column header="Tindak Lanjut" body={tindakLanjutBodyTemplate} />
+                            <Column header="Deadline" body={deadlineBodyTemplate} />
+
                         </DataTable>
                     </div>
                 </MainCard>

@@ -115,4 +115,16 @@ html, body, #root {
     font-size: 0.85rem;
 }
 
+.detail-dialog .p-dialog-content {
+    padding: 1.5rem;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+    background: #f8fafc;
+}
+
+.p-button-sm {
+    font-size: 0.85rem;
+}
+
 /* 03feb2026 */

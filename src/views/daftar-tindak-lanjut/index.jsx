@@ -117,7 +117,8 @@ export default function DaftarTindakLanjut() {
     );
 
     const handleOpenFileArahan = async () => {
-        console.log(currentTask)
+        if (!currentTask?.file_arahan) return;
+
         try {
             const res = await axios.get(
                 `http://localhost:3000/api/tindaklanjut/file_tindak/${currentTask.file_arahan}`,
@@ -132,21 +133,7 @@ export default function DaftarTindakLanjut() {
             console.error("Gagal buka file laporan", err);
         }
     };
-        console.log(currentTask)
-        try {
-            const res = await axios.get(
-                `http://localhost:3000/api/tindaklanjut/file_tindak/${currentTask.file_arahan}`,
-                {
-                    responseType: "blob"
-                }
-            );
 
-            const fileURL = URL.createObjectURL(res.data);
-            window.open(fileURL);
-        } catch (err) {
-            console.error("Gagal buka file laporan", err);
-        }
-    };
 
     const getFileName = async () => {
         try {
@@ -162,7 +149,7 @@ export default function DaftarTindakLanjut() {
     useEffect(() => {
         if (currentTask?.file_arahan) {
             getFileName(currentTask.file_arahan);
-        } 
+        }
     }, [currentTask?.file_arahan]);
 
     return (
