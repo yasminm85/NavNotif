@@ -145,6 +145,11 @@ export default function DashboardTindakLanjutEVP() {
         return true; // ALL
     });
 
+    const emptyMessageText =
+        filterStatus === 'LATE'
+            ? 'Tidak ada tindak lanjut yang terlambat'
+            : 'Belum ada tindak lanjut';
+
     return (
         <div className="card h-full">
             <MainCard title="Daftar Arahan"
@@ -241,7 +246,12 @@ export default function DashboardTindakLanjutEVP() {
                         }}
                         scrollable
                         scrollHeight="flex"
-                        emptyMessage="Belum ada tindak lanjut"
+                        emptyMessage={
+                            <div className="empty-center">
+                                {emptyMessageText}
+                            </div>
+                        }
+
                     >
 
                         <Column
