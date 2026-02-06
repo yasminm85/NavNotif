@@ -44,8 +44,6 @@ export default function DashboardTindakLanjutEVP() {
 
     };
 
-
-
     useEffect(() => {
         getTindakLanjut();
     }, []);
