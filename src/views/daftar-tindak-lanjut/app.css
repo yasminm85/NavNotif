@@ -277,4 +277,25 @@ html, body, #root {
     color: #dc2626;
 }
 
+.deadline-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+.deadline-badge.ontime { background-color: #d1fae5; color: #065f46; }  /* Hijau */
+.deadline-badge.late { background-color: #fee2e2; color: #b91c1c; }    /* Merah */
+.deadline-badge.neutral { background-color: #f3f4f6; color: #374151; } /* Abu-abu */
+
+.isi-arahan { font-size: 0.9rem; line-height: 1.4rem; }
+.arahan-title { font-weight: 600; font-size: 0.95rem; }
+.text-truncate { 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+}
+
 /* 03feb2026 */

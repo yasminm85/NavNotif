@@ -240,6 +240,35 @@ export default function DaftarTindakLanjut() {
                         />
 
                         <Column
+                            header="Tanggal Dibuat"
+                            body={(row) =>
+                                row.createdAt ? new Date(row.createdAt).toLocaleDateString('id-ID', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric'
+                                }) : '-'
+                            }
+                            style={{ width: '14%' }}
+                        />
+
+                        <Column
+                            header="Deadline"
+                            body={(row) => {
+                                if (!row.deadline) return <span className="deadline-badge neutral">-</span>;
+                                const isLate = new Date(row.deadline) < new Date();
+                                return (
+                                    <span className={`deadline-badge ${isLate ? 'late' : 'ontime'}`}>
+                                        {new Date(row.deadline).toLocaleDateString('id-ID', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        })}
+                                    </span>
+                                );
+                            }}
+                            style={{ width: '14%' }}
+                        />
+                        <Column
                             header="Aksi"
                             body={aksiTemplate}
                             style={{ textAlign: 'center', width: '16%' }}

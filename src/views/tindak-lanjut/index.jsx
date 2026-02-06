@@ -26,6 +26,8 @@ export default function TindakLanjut() {
     const [showForm, setShowForm] = useState(false);
     const [showArahan, setShowArahan] = useState([]);
     const [errors, setErrors] = useState({});
+    const [personilFilter, setPersonilFilter] = useState("");
+
     const [form, setForm] = useState({
         personilyangdituju: "",
         judulArahan: "",
@@ -189,21 +191,31 @@ export default function TindakLanjut() {
 
     const deadlineBodyTemplate = (rowData) => {
         if (!rowData.deadline) {
-            return <span className="text-500">-</span>;
+            return <span className="deadline-badge neutral">Tidak Ada</span>;
         }
 
-        const deadline = new Date(rowData.deadline);
-        const isLate = deadline < new Date();
+        const isLate = new Date(rowData.deadline) < new Date();
 
         return (
-            <span
-                className={`px-2 py-1 text-xs border-round 
-            ${isLate ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}
-            >
-                {deadline.toLocaleString("id-ID")}
+            <span className={`deadline-badge ${isLate ? "late" : "ontime"}`}>
+                {isLate ? "Sudah Lewat" : "Belum Lewat"}
             </span>
         );
     };
+
+    const filteredArahan = showArahan.filter(item => {
+        if (!personilFilter) return true;
+
+        const names = item.personil_yang_dituju?.map(p => {
+            if (typeof p === "object") return p.name;
+            const match = pegawaisel.find(emp => emp._id === p);
+            return match?.name;
+        }) || [];
+
+        return names.some(name =>
+            name.toLowerCase().includes(personilFilter.toLowerCase())
+        );
+    });
 
 
     return (
@@ -236,10 +248,19 @@ export default function TindakLanjut() {
                         />
                     </div>
 
+                    <div className="mb-3">
+                        <InputText
+                            placeholder="Cari personil..."
+                            value={personilFilter}
+                            onChange={(e) => setPersonilFilter(e.target.value)}
+                            className="w-full"
+                        />
+                    </div>
+
 
                     <div style={{ minHeight: "400px" }}>
                         <DataTable
-                            value={showArahan}
+                            value={filteredArahan}
                             paginator
                             rows={10}
                             loading={loading}
@@ -255,11 +276,12 @@ export default function TindakLanjut() {
                                 </div>
                             }
                         >
-                            <Column header="No" body={nomorBodyTemplate} style={{ width: "4rem" }} />
-                            <Column header="Personil yang Dituju" body={personilBodyTemplate} />
-                            <Column header="Arahan" body={arahanBodyTemplate} />
-                            <Column header="Tindak Lanjut" body={tindakLanjutBodyTemplate} />
-                            <Column header="Deadline" body={deadlineBodyTemplate} />
+                            <Column header="No" body={nomorBodyTemplate} style={{ width: "4rem" }} headerClassName='th-center' />
+                            <Column header="Personil yang Dituju" body={personilBodyTemplate} headerClassName='th-center' />
+                            <Column header="Arahan" body={arahanBodyTemplate} headerClassName='th-center' />
+                            <Column header="Tindak Lanjut" body={tindakLanjutBodyTemplate} headerClassName='th-center' />
+                            <Column header="Deadline" body={deadlineBodyTemplate} headerClassName='th-center' />
+
 
                         </DataTable>
                     </div>
