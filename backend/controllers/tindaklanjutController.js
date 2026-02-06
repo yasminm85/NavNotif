@@ -96,12 +96,15 @@ const updateTindakLanjut = async (req, res) => {
         tindaklanjut.judul_tindaklanjut = judul_tindaklanjut;
         tindaklanjut.isi_tindaklanjut = isi_tindaklanjut;
         tindaklanjut.file_tindaklanjut = fileTindakLanjutId;
+        tindaklanjut.tindaklanjut_by = userId;
+        tindaklanjut.tanggal_tindaklanjut = Date.now();
         tindaklanjut.isTindakLanjut = true;
 
         await tindaklanjut.save();
 
         const populated = await TindakLanjut.findById(tindaklanjut._id)
-            .populate('personil_yang_dituju', 'name');
+            .populate('personil_yang_dituju', 'name')
+            .populate('tindaklanut_by', 'name');
         
         res.json({
             message: 'Tindak Lanjut Telah Berhasil Diisi',
