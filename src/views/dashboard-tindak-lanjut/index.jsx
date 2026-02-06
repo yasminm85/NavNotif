@@ -16,12 +16,11 @@ export default function DashboardTindakLanjutEVP() {
     const token = localStorage.getItem('token');
     const [showArahan, setShowArahan] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filename, setFilename] = useState('');
-    const [filenametinjut, setFilenameTinjut] = useState('');
 
     const [selected, setSelected] = useState(null);
     const [showDetail, setShowDetail] = useState(false);
     const [showLegend, setShowLegend] = useState(true);
+    const [filterStatus, setFilterStatus] = useState('ALL');
 
     const rowClassName = (row) => ({
         'row-done': row.isTindakLanjut === true,
@@ -46,6 +45,7 @@ export default function DashboardTindakLanjutEVP() {
     };
 
 
+
     useEffect(() => {
         getTindakLanjut();
     }, []);
@@ -67,6 +67,7 @@ export default function DashboardTindakLanjutEVP() {
     };
 
     const handleOpenFileArahan = async () => {
+        console.log(selected)
         try {
             const res = await axios.get(
                 `http://localhost:3000/api/tindaklanjut/file_tindak/${selected.file_arahan}`,
@@ -78,11 +79,12 @@ export default function DashboardTindakLanjutEVP() {
             const fileURL = URL.createObjectURL(res.data);
             window.open(fileURL);
         } catch (err) {
-            console.error("Gagal buka file arahan", err);
+            console.error("Gagal buka file laporan", err);
         }
     };
 
     const handleOpenFileTindakLanjut = async () => {
+        console.log(selected)
         try {
             const res = await axios.get(
                 `http://localhost:3000/api/tindaklanjut/file_tindak/${selected.file_tindaklanjut}`,
@@ -94,55 +96,9 @@ export default function DashboardTindakLanjutEVP() {
             const fileURL = URL.createObjectURL(res.data);
             window.open(fileURL);
         } catch (err) {
-            console.error("Gagal buka file tindak lanjut", err);
+            console.error("Gagal buka file laporan", err);
         }
     };
-
-    const getFileName = async (fileId) => {
-        console.log(fileId);
-        try {
-            const response = await axios.get(
-                `http://localhost:3000/api/tindaklanjut/file_meta/${fileId}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setFilename(response.data.filename || "");
-        } catch (error) {
-            setFilename("");
-        }
-    };
-
-
-
-    const getFileNameTinjut = async (fileId) => {
-        try {
-            const response = await axios.get(
-                `http://localhost:3000/api/tindaklanjut/file_meta/${fileId}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setFilenameTinjut(response.data.filename || "");
-        } catch (error) {
-            console.error("Error mengambil filename tinjut", error);
-            setFilenameTinjut("");
-        }
-    };
-
-
-    useEffect(() => {
-        setFilename("");
-        if (!selected?.file_arahan) return;
-
-        getFileName(selected.file_arahan);
-    }, [selected?.file_arahan]);
-
-
-    useEffect(() => {
-        setFilenameTinjut("");
-        if (!selected?.file_tindaklanjut) return;
-
-        getFileNameTinjut(selected.file_tindaklanjut);
-    }, [selected?.file_tindaklanjut]);
-
-
 
 
     const htmlToPlainText = (html) => {
@@ -184,6 +140,12 @@ export default function DashboardTindakLanjutEVP() {
         return new Date(deadline) < new Date();
     };
 
+    const filteredArahan = showArahan.filter((d) => {
+        if (filterStatus === 'DONE') return d.isTindakLanjut === true;
+        if (filterStatus === 'PENDING') return d.isTindakLanjut === false;
+        if (filterStatus === 'LATE') return isLate(d.deadline);
+        return true; // ALL
+    });
 
     return (
         <div className="card h-full">
@@ -219,7 +181,11 @@ export default function DashboardTindakLanjutEVP() {
 
                 <div className="flex-1 overflow-hidden">
                     <div className="table-summary">
-                        <div className="summary-box total">
+
+                        <div
+                            className={`summary-box total ${filterStatus === 'ALL' ? 'active' : ''}`}
+                            onClick={() => setFilterStatus('ALL')}
+                        >
                             <i className="pi pi-list" />
                             <div>
                                 <span>Total Arahan</span>
@@ -227,7 +193,10 @@ export default function DashboardTindakLanjutEVP() {
                             </div>
                         </div>
 
-                        <div className="summary-box done">
+                        <div
+                            className={`summary-box done ${filterStatus === 'DONE' ? 'active' : ''}`}
+                            onClick={() => setFilterStatus('DONE')}
+                        >
                             <i className="pi pi-check-circle" />
                             <div>
                                 <span>Selesai</span>
@@ -235,7 +204,10 @@ export default function DashboardTindakLanjutEVP() {
                             </div>
                         </div>
 
-                        <div className="summary-box pending">
+                        <div
+                            className={`summary-box pending ${filterStatus === 'PENDING' ? 'active' : ''}`}
+                            onClick={() => setFilterStatus('PENDING')}
+                        >
                             <i className="pi pi-clock" />
                             <div>
                                 <span>Belum</span>
@@ -243,7 +215,10 @@ export default function DashboardTindakLanjutEVP() {
                             </div>
                         </div>
 
-                        <div className="summary-box late">
+                        <div
+                            className={`summary-box late ${filterStatus === 'LATE' ? 'active' : ''}`}
+                            onClick={() => setFilterStatus('LATE')}
+                        >
                             <i className="pi pi-exclamation-triangle" />
                             <div>
                                 <span>Terlambat</span>
@@ -252,10 +227,11 @@ export default function DashboardTindakLanjutEVP() {
                                 </strong>
                             </div>
                         </div>
+
                     </div>
 
                     <DataTable
-                        value={showArahan}
+                        value={filteredArahan}
                         paginator
                         rows={5}
                         stripedRows
@@ -377,33 +353,25 @@ export default function DashboardTindakLanjutEVP() {
                                     </div>
                                 </div>
 
-                            <div className="detail-section dokumen">
-                                <div className="detail-card-title">
-                                    <i className="pi pi-file mr-2" />
-                                    Dokumen Arahan
-                                </div>
+                                {/* DOKUMEN ARAHAN */}
+                                <div className="detail-section dokumen">
+                                    <div className="detail-card-title">
+                                        <i className="pi pi-file mr-2" />
+                                        Dokumen Arahan
+                                    </div>
 
-                                {selected.file_arahan ? (
-                                    <div
-                                        className="file-card"
-                                        onClick={handleOpenFileArahan}
-                                    >
-                                        <i className="pi pi-file-pdf file-icon" />
-                                        <div className="file-info">
-                                            <span className="file-name">
-                                                {filename && <span>{filename}</span>}
-                                            </span>
-                                            <span className="file-action">
-                                                Klik untuk membuka dokumen
-                                            </span>
+                                    {selected.file_arahan ? (
+                                        <div className="file-card" onClick={handleOpenFileArahan}>
+                                            <i className="pi pi-file-pdf file-icon" />
+                                            <div className="file-info">
+                                                <span className="file-name">{selected.file_arahan}</span>
+                                                <span className="file-action">Klik untuk membuka dokumen</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                ) : (
-                                    <div className="detail-empty">
-                                        Tidak ada dokumen arahan
-                                    </div>
-                                )}
-                            </div>
+                                    ) : (
+                                        <div className="detail-empty">Tidak ada dokumen arahan</div>
+                                    )}
+                                </div>
 
                                 {/* TINDAK LANJUT */}
                                 <div className="detail-section tinjut">
@@ -428,40 +396,31 @@ export default function DashboardTindakLanjutEVP() {
                                     )}
                                 </div>
 
-
-                            <div className="detail-section dokumen tinjut">
-                                <div className="detail-card-title">
-                                    <i className="pi pi-paperclip mr-2" />
-                                    Dokumen Tindak Lanjut
-                                </div>
-                                {selected.file_tindaklanjut ? (
-                                    <div
-                                        className="file-card"
-                                        onClick={handleOpenFileTindakLanjut}
-                                    >
-                                        <i className="pi pi-file-pdf file-icon" />
-                                        <div className="file-info">
-                                            <span className="file-name">
-                                                {filenametinjut && <span>{filenametinjut}</span>}
-                                            </span>
-                                            <span className="file-action">
-                                                Klik untuk membuka dokumen
-                                            </span>
+                                {/* DOKUMEN TINDAK LANJUT */}
+                                {selected.file_tindaklanjut && (
+                                    <div className="detail-section dokumen tinjut">
+                                        <div className="detail-card-title">
+                                            <i className="pi pi-paperclip mr-2" />
+                                            Dokumen Tindak Lanjut
                                         </div>
-                                    </div>
-                                ) : (
-                                    <div className="detail-empty">
-                                        Tidak ada dokumen tindak lanjut
+
+                                        <div className="file-card" onClick={handleOpenFileTindakLanjut}>
+                                            <i className="pi pi-file-pdf file-icon" />
+                                            <div className="file-info">
+                                                <span className="file-name">
+                                                    {selected.file_tindaklanjut}
+                                                </span>
+                                                <span className="file-action">
+                                                    Klik untuk membuka dokumen
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                             </div>
-                        </div>
                         </>
                     )}
-                    
                 </Dialog>
-
-
 
             </MainCard>
         </div >

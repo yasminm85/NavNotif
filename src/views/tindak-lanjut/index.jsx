@@ -365,8 +365,6 @@ export default function TindakLanjut() {
                             <Calendar
                                 value={form.deadline}
                                 onChange={(e) => handleChange("deadline", e.value)}
-                                showTime
-                                hourFormat="24"
                                 showIcon={false}
                                 placeholder="Pilih tanggal & jam deadline"
                                 className="w-full"

@@ -170,10 +170,15 @@ html, body, #root {
 .custom-datatable .p-datatable-tbody > tr {
     transition: background-color 0.2s ease;
 }
-
-.custom-datatable .p-datatable-tbody > tr:hover {
-    background-color: #f9fafb;
+.custom-datatable .p-datatable-tbody > tr,
+.custom-datatable .p-datatable-tbody > tr > td {
+    background-color: transparent !important;
 }
+.custom-datatable .p-datatable-tbody > tr:hover,
+.custom-datatable .p-datatable-tbody > tr:hover > td {
+    background-color: transparent !important;
+}
+
 
 .summary-card {
     flex: 1;
@@ -217,6 +222,21 @@ html, body, #root {
 .summary-card.total .summary-value {
     color: #2563eb;
 }
+
+.summary-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.summary-card:hover {
+    background-color: #f3f4f6; 
+    transform: translateY(-2px);
+}
+
+.summary-card.active {
+    border: 2px solid #2563eb;
+}
+
 
 .section-title {
     display: flex;

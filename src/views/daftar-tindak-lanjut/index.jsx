@@ -207,7 +207,6 @@ export default function DaftarTindakLanjut() {
                         paginator
                         rows={5}
                         stripedRows
-                        rowHover
                         showGridlines
                         className="h-full border-round-lg custom-datatable"
                         emptyMessage={
