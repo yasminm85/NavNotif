@@ -9,6 +9,7 @@ import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { MultiSelect } from 'primereact/multiselect';
 import { Divider } from 'primereact/divider';
+import { Calendar } from 'primereact/calendar';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -16,7 +17,6 @@ import 'primeflex/primeflex.css';
 import './app.css';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-
 
 export default function TindakLanjut() {
     const token = localStorage.getItem('token');
@@ -27,12 +27,13 @@ export default function TindakLanjut() {
     const [showArahan, setShowArahan] = useState([]);
     const [errors, setErrors] = useState({});
     const [form, setForm] = useState({
-
         personilyangdituju: "",
         judulArahan: "",
         isiArahan: "",
+        deadline: null,
         file: null,
     });
+
     const validateForm = () => {
         let newErrors = {};
         if (!selectedpegawai || selectedpegawai.length === 0)
@@ -134,9 +135,10 @@ export default function TindakLanjut() {
                 personilyangdituju: "",
                 judulArahan: "",
                 isiArahan: "",
+                deadline: null,
                 file: null,
-
             });
+
             setSelectedpegawai([]);
             setErrors({});
 
@@ -144,6 +146,7 @@ export default function TindakLanjut() {
             console.error("Error disposisi:", error.response?.data || error.message);
         }
     };
+
 
     const nomorBodyTemplate = (rowData, options) => {
         return options.rowIndex + 1;
@@ -181,26 +184,29 @@ export default function TindakLanjut() {
         );
     };
 
-    
 
     return (
         <>
             <div className="card h-full">
                 <MainCard title="Tindak Lanjut" className="h-full">
                     <div className="flex justify-content-between align-items-center mb-3">
-                        <span className="text-lg font-semibold">
-                            Daftar Tindak Lanjut
-                        </span>
+                        <div>
+                            <h3 className="m-0">📌 Daftar Tindak Lanjut</h3>
+                            <small className="text-500">
+                                Data arahan dan tindak lanjut yang telah dibuat
+                            </small>
+                        </div>
 
                         <Button
                             label="Buat Tindak Lanjut"
                             icon="pi pi-plus"
-                            className="p-button-primary"
+                            className="p-button-sm p-button-primary"
                             onClick={() => {
                                 setErrors({});
                                 setForm({
                                     judulArahan: "",
                                     isiArahan: "",
+                                    deadline: null,
                                     file: null,
                                 });
                                 setSelectedpegawai([]);
@@ -208,6 +214,7 @@ export default function TindakLanjut() {
                             }}
                         />
                     </div>
+
 
                     <div style={{ minHeight: "400px" }}>
                         <DataTable
@@ -251,7 +258,6 @@ export default function TindakLanjut() {
                     </div>
                 }
             >
-
 
                 <div className="p-fluid">
 
@@ -304,6 +310,35 @@ export default function TindakLanjut() {
                             <small className="p-error">{errors.isiArahan}</small>
                         )}
                     </div>
+
+                    <div className="mb-4">
+                        <label className="font-medium mb-2 block">
+                            Deadline <span className="text-red-500">(opsional)</span>
+                        </label>
+
+                        <span className="p-input-icon-right w-full">
+                            <i className="pi pi-calendar" />
+                            <Calendar
+                                value={form.deadline}
+                                onChange={(e) => handleChange("deadline", e.value)}
+                                showTime
+                                hourFormat="24"
+                                showIcon={false}
+                                placeholder="Pilih tanggal & jam deadline"
+                                className="w-full"
+                                inputClassName="w-full"
+                                minDate={new Date()}
+                                dateFormat="dd/mm/yy"
+                            />
+                        </span>
+
+                        {errors.deadline && (
+                            <small className="p-error block mt-1">
+                                {errors.deadline}
+                            </small>
+                        )}
+                    </div>
+
 
                     <Divider />
 

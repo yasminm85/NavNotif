@@ -73,4 +73,46 @@ html, body, #root {
     padding-top: 2rem;
 }
 
+.p-calendar {
+    width: 100%;
+}
+
+.p-calendar .p-inputtext {
+    padding-right: 2.5rem;
+}
+
+/* Kecilkan popup calendar */
+.p-datepicker {
+    transform: scale(0.9);
+    transform-origin: top left;
+}
+
+/* Kecilkan header bulan & tahun */
+.p-datepicker .p-datepicker-title {
+    font-size: 0.9rem;
+}
+
+/* Kecilkan angka tanggal */
+.p-datepicker table td > span {
+    width: 2rem;
+    height: 2rem;
+    line-height: 2rem;
+    font-size: 0.85rem;
+}
+
+/* Kecilkan nama hari (Su, Mo, dst) */
+.p-datepicker table th {
+    font-size: 0.75rem;
+    padding: 0.4rem;
+}
+
+/* Kecilkan time picker */
+.p-datepicker .p-timepicker {
+    padding: 0.5rem;
+}
+
+.p-datepicker .p-timepicker span {
+    font-size: 0.85rem;
+}
+
 /* 03feb2026 */
