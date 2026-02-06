@@ -10,7 +10,7 @@ const other2 = {
   children: [
     {
       id: 'dashboard-evp',
-      title: 'Dashboard',
+      title: 'Rapat/Kegiatan',
       type: 'item',
       url: '/dashboard-evp',
       icon: IconDashboard,
@@ -20,7 +20,7 @@ const other2 = {
     // 04feb2026
     {
       id: 'dashboard-tindak-lanjut',
-      title: 'Dashboard Tindak Lanjut',
+      title: 'Arahan',
       type: 'item',
       url: '/dashboard-tindak-lanjut',
       icon: FeedbackIcon,

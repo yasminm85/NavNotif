@@ -4,7 +4,6 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
-import { Divider } from 'primereact/divider';
 
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -25,9 +24,10 @@ export default function DashboardTindakLanjutEVP() {
     const [showLegend, setShowLegend] = useState(true);
 
     const rowClassName = (row) => ({
-        'row-done': row.isTindakLanjut == true,
-        'row-pending': row.isTindakLanjut == false
+        'row-done': row.isTindakLanjut === true,
+        'row-pending': row.isTindakLanjut === false,
     });
+
 
 
     //get all data tindak lanjut
@@ -170,12 +170,25 @@ export default function DashboardTindakLanjutEVP() {
 
         return text;
     };
+    const formatTanggal = (date) => {
+        if (!date) return '-';
+        return new Date(date).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+    };
+
+    const isLate = (deadline) => {
+        if (!deadline) return false;
+        return new Date(deadline) < new Date();
+    };
 
 
     return (
         <div className="card h-full">
-            <MainCard title="Dashboard Tindak Lanjut EVP"
-                className="h-full flex flex-column"
+            <MainCard title="Daftar Arahan"
+                className="h-full flex flex-column arahan-card"
             >
                 <div className="flex justify-content-between align-items-center mb-2">
                     <span className="text-sm text-600 font-medium">
@@ -205,6 +218,42 @@ export default function DashboardTindakLanjutEVP() {
                 )}
 
                 <div className="flex-1 overflow-hidden">
+                    <div className="table-summary">
+                        <div className="summary-box total">
+                            <i className="pi pi-list" />
+                            <div>
+                                <span>Total Arahan</span>
+                                <strong>{showArahan.length}</strong>
+                            </div>
+                        </div>
+
+                        <div className="summary-box done">
+                            <i className="pi pi-check-circle" />
+                            <div>
+                                <span>Selesai</span>
+                                <strong>{showArahan.filter(d => d.isTindakLanjut).length}</strong>
+                            </div>
+                        </div>
+
+                        <div className="summary-box pending">
+                            <i className="pi pi-clock" />
+                            <div>
+                                <span>Belum</span>
+                                <strong>{showArahan.filter(d => !d.isTindakLanjut).length}</strong>
+                            </div>
+                        </div>
+
+                        <div className="summary-box late">
+                            <i className="pi pi-exclamation-triangle" />
+                            <div>
+                                <span>Terlambat</span>
+                                <strong>
+                                    {showArahan.filter(d => isLate(d.deadline)).length}
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
                     <DataTable
                         value={showArahan}
                         paginator
@@ -239,6 +288,7 @@ export default function DashboardTindakLanjutEVP() {
                             style={{ minWidth: '22rem' }}
                         />
 
+
                         <Column
                             header="Judul Tindak Lanjut"
                             body={(row) =>
@@ -266,29 +316,66 @@ export default function DashboardTindakLanjutEVP() {
                     }
                 >
                     {selected && (
-                        <div className="detail-wrapper">
-
-                            <div className="detail-section personil">
-                                <div className="detail-card-title">
-                                    <i className="pi pi-users mr-2" />
-                                    Personil
+                        <>
+                            {/* 🔹 SUMMARY CARD TANGGAL */}
+                            <div className="summary-card">
+                                <div className="summary-item">
+                                    <div className="summary-icon bg-blue">
+                                        <i className="pi pi-calendar" />
+                                    </div>
+                                    <div className="summary-content">
+                                        <span className="summary-label">Tanggal Arahan</span>
+                                        <span className="summary-value">
+                                            {formatTanggal(selected.tanggal_arahan)}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="detail-card-content">
-                                    {Array.isArray(selected.personil_yang_dituju)
-                                        ? selected.personil_yang_dituju.map((u) => u.name).join(", ")
-                                        : "-"}
+
+                                <div className={`summary-item ${isLate(selected.deadline) ? 'danger' : ''}`}>
+                                    <div className="summary-icon bg-orange">
+                                        <i className="pi pi-clock" />
+                                    </div>
+                                    <div className="summary-content">
+                                        <span className="summary-label">Deadline</span>
+                                        <span className="summary-value">
+                                            {formatTanggal(selected.deadline)}
+                                        </span>
+
+                                        {isLate(selected.deadline) && (
+                                            <span className="deadline-badge">
+                                                <i className="pi pi-exclamation-circle mr-1" />
+                                                Terlambat
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="detail-section arahan">
-                                <div className="detail-card-title">
-                                    <i className="pi pi-directions mr-2" />
-                                    Arahan EVP
+                            {/* 🔹 DETAIL */}
+                            <div className="detail-wrapper">
+                                {/* PERSONIL */}
+                                <div className="detail-section personil">
+                                    <div className="detail-card-title">
+                                        <i className="pi pi-users mr-2" />
+                                        Personil
+                                    </div>
+                                    <div className="detail-card-content">
+                                        {Array.isArray(selected.personil_yang_dituju)
+                                            ? selected.personil_yang_dituju.map((u) => u.name).join(", ")
+                                            : "-"}
+                                    </div>
                                 </div>
-                                <div className="detail-card-content">
-                                    {selected.isi_arahan}
+
+                                {/* ARAHAN */}
+                                <div className="detail-section arahan">
+                                    <div className="detail-card-title">
+                                        <i className="pi pi-directions mr-2" />
+                                        Arahan EVP
+                                    </div>
+                                    <div className="detail-card-content">
+                                        {selected.isi_arahan}
+                                    </div>
                                 </div>
-                            </div>
 
                             <div className="detail-section dokumen">
                                 <div className="detail-card-title">
@@ -318,35 +405,28 @@ export default function DashboardTindakLanjutEVP() {
                                 )}
                             </div>
 
+                                {/* TINDAK LANJUT */}
+                                <div className="detail-section tinjut">
+                                    <div className="detail-card-title">
+                                        <i className="pi pi-check-circle mr-2" />
+                                        Tindak Lanjut Pegawai
+                                    </div>
 
-                            <div className="detail-section tinjut">
-                                <div className="detail-card-title">
-                                    <i className="pi pi-check-circle mr-2" />
-                                    Tindak Lanjut Pegawai
-                                </div>
-
-                                {selected.judul_tindaklanjut ? (
-                                    <>
-                                        <div className="tindaklanjut-title">
-                                            {selected.judul_tindaklanjut}
-                                        </div>
-
-                                        {selected.isi_tindaklanjut ? (
+                                    {selected.judul_tindaklanjut ? (
+                                        <>
+                                            <div className="tindaklanjut-title">
+                                                {selected.judul_tindaklanjut}
+                                            </div>
                                             <div className="detail-card-content pre-line">
                                                 {htmlToPlainText(selected.isi_tindaklanjut)}
                                             </div>
-                                        ) : (
-                                            <div className="detail-empty">
-                                                Tidak ada keterangan tertulis
-                                            </div>
-                                        )}
-                                    </>
-                                ) : (
-                                    <div className="detail-empty">
-                                        Belum ada tindak lanjut dari pegawai
-                                    </div>
-                                )}
-                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="detail-empty">
+                                            Belum ada tindak lanjut dari pegawai
+                                        </div>
+                                    )}
+                                </div>
 
 
                             <div className="detail-section dokumen tinjut">
@@ -380,7 +460,8 @@ export default function DashboardTindakLanjutEVP() {
                 </Dialog>
 
 
+
             </MainCard>
-        </div>
+        </div >
     );
 }

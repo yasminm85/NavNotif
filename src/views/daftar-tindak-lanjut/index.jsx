@@ -132,6 +132,21 @@ export default function DaftarTindakLanjut() {
             console.error("Gagal buka file laporan", err);
         }
     };
+        console.log(currentTask)
+        try {
+            const res = await axios.get(
+                `http://localhost:3000/api/tindaklanjut/file_tindak/${currentTask.file_arahan}`,
+                {
+                    responseType: "blob"
+                }
+            );
+
+            const fileURL = URL.createObjectURL(res.data);
+            window.open(fileURL);
+        } catch (err) {
+            console.error("Gagal buka file laporan", err);
+        }
+    };
 
     const getFileName = async () => {
         try {
@@ -264,7 +279,11 @@ export default function DaftarTindakLanjut() {
                         <div className="flex flex-column gap-4">
 
                             <div className="arahan-box">
-                                <span className="font-medium">Arahan Admin</span>
+                                <div className="section-title">
+                                    <i className="pi pi-directions" />
+                                    <span>Arahan Admin</span>
+                                </div>
+
                                 <h4 className="mt-2">{currentTask.judul_arahan}</h4>
                                 <div
                                     dangerouslySetInnerHTML={{
@@ -273,10 +292,13 @@ export default function DaftarTindakLanjut() {
                                 />
                             </div>
 
+
                             <div>
-                                <label className="font-medium block mb-2">
-                                    Dokumen Arahan
+                                <label className="section-title">
+                                    <i className="pi pi-file" />
+                                    <span>Dokumen Arahan</span>
                                 </label>
+
 
                                 {currentTask.file_arahan ? (
                                     <div
@@ -300,9 +322,11 @@ export default function DaftarTindakLanjut() {
 
 
                             <div>
-                                <label className="font-medium block mb-2">
-                                    Judul Tindak Lanjut
+                                <label className="section-title">
+                                    <i className="pi pi-tag" />
+                                    <span>Judul Tindak Lanjut</span>
                                 </label>
+
                                 <input
                                     className="p-inputtext w-full"
                                     value={form.judulTindakLanjut}
@@ -313,9 +337,11 @@ export default function DaftarTindakLanjut() {
                             </div>
 
                             <div>
-                                <label className="font-medium block mb-2">
-                                    Isi Tindak Lanjut
+                                <label className="section-title">
+                                    <i className="pi pi-pencil" />
+                                    <span>Isi Tindak Lanjut</span>
                                 </label>
+
                                 <Editor
                                     value={form.isiTindakLanjut}
                                     onTextChange={(e) =>
@@ -326,7 +352,8 @@ export default function DaftarTindakLanjut() {
                             </div>
 
                             <div>
-                                <label className="font-medium block mb-2">
+                                <label className="section-title">
+                                    <i className="pi pi-paperclip" />
                                     File Pendukung
                                 </label>
                                 <input
