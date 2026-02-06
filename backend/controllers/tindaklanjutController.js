@@ -42,6 +42,8 @@ const createTindakLanjut = async (req, res) => {
             judul_arahan: req.body.judul_arahan,
             isi_arahan: req.body.isi_arahan,
             file_arahan: fileArahanId,
+            tanggal_arahan: Date.now(),
+            deadline: req.body.deadline
         });
 
         const tindaklanjutId = await TindakLanjut.findById(tindaklanjut._id)
@@ -155,7 +157,7 @@ const getFile = async (req, res) => {
 
         res.set({
             'Content-Type': file.contentType || 'application/octet-stream',
-            'Content-Disposition': 'inline'
+            'Content-Disposition': `inline; filename="${file.filename}"`
         });
 
         const downloadStream = bucket.openDownloadStream(fileId);
@@ -171,6 +173,36 @@ const getFile = async (req, res) => {
     }
 };
 
+const getFileMeta = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid file id' });
+    }
+
+    const file = await mongoose.connection.db
+      .collection('fs.files')
+      .findOne({ _id: new mongoose.Types.ObjectId(id) });
+
+    if (!file) {
+      return res.status(404).json({ message: 'File not found' });
+    }
+
+    res.json({
+      id: file._id,
+      filename: file.filename,
+      contentType: file.contentType,
+      length: file.length,
+      uploadDate: file.uploadDate
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error retrieving file metadata' });
+  }
+};
+
+
 
 module.exports =
 {
@@ -178,6 +210,7 @@ module.exports =
     createTindakLanjut,
     updateTindakLanjut,
     getMyArahan,
-    getFile
+    getFile,
+    getFileMeta
 }
 

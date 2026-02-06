@@ -20,6 +20,14 @@ const TindakLanjutSchema = mongoose.Schema(
             ref: 'fs.files',
             default: null
         }],
+        tanggal_arahan: {
+            type: Date,
+            default: null
+        },
+        deadline: {
+            type: Date,
+            default: null
+        },
         judul_tindaklanjut: {
             type: String,
             required: false

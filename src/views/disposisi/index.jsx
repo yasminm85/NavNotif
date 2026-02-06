@@ -560,7 +560,7 @@ export default function Disposisi() {
     );
 
     return (
-        // 03feb2026
+        // 2026
         <div className="card h-full">
             <MainCard title="Disposisi" className="h-full">
                 {/* HEADER */}
@@ -568,7 +568,7 @@ export default function Disposisi() {
                     <span className="text-lg font-semibold">
                         Daftar Diposisi
                     </span>
-                    {/* 03feb2026 */}
+                    {/* 2026 */}
 
                     <Button
                         label="Buat Disposisi"
