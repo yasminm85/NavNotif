@@ -25,7 +25,7 @@ const DaftarUser = Loadable(lazy(() => import('views/users')));
 // halaman kelola display 
 const KelolaDisplay = Loadable(lazy(() => import('views/kelola-display')));
 
-// 03feb2026
+// 2026
 // halaman tindak lanjut
 const TindakLanjut = Loadable(lazy(() => import('views/tindak-lanjut')));
 
