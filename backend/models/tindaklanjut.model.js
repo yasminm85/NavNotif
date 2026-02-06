@@ -41,6 +41,15 @@ const TindakLanjutSchema = mongoose.Schema(
             ref: 'fs.files',
             default: null
         }],
+        tanggal_tindaklanjut: {
+            type: Date,
+            default: null
+        },
+        tindaklanut_by: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            default: null
+        },
         isTindakLanjut: {
             type: Boolean,
             default: false,
